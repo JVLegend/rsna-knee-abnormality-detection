@@ -39,10 +39,12 @@ def select_subset(
     train_series: pd.DataFrame,
     per_class: int = 1,
     max_studies: int | None = 24,
+    excluded_studies: set[str] | None = None,
 ) -> dict[str, object]:
     if per_class < 1:
         raise ValueError("--per-class precisa ser pelo menos 1.")
 
+    excluded_studies = excluded_studies or set()
     selected: dict[str, dict[str, object]] = {}
     for target in TARGET_COLUMNS:
         labels = pd.to_numeric(train[target], errors="coerce")
@@ -51,6 +53,8 @@ def select_subset(
             added = 0
             for _, row in candidates.iterrows():
                 study_uid = str(row[KEY_COLUMN])
+                if study_uid in excluded_studies:
+                    continue
                 if study_uid not in selected:
                     selected[study_uid] = {
                         "study_uid": study_uid,
@@ -83,6 +87,7 @@ def select_subset(
         "selection_policy": {
             "per_class_per_target": per_class,
             "max_studies": max_studies,
+            "excluded_studies": len(excluded_studies),
             "series_priority": "Fluid_Sensitive, Fat_Suppression, Sagittal, SeriesInstanceUID",
             "labels_are_local_only": True,
         },
@@ -95,6 +100,7 @@ def main() -> None:
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--per-class", type=int, default=1)
     parser.add_argument("--max-studies", type=int, default=24)
+    parser.add_argument("--exclude-manifest", type=Path, default=None)
     parser.add_argument("--output", default="data/processed/dicom_subset_manifest.json")
     args = parser.parse_args()
 
@@ -103,7 +109,21 @@ def main() -> None:
     if tables["train"].empty or tables["train_series"].empty:
         raise RuntimeError("train.csv e train_series.csv são necessários.")
 
-    manifest = select_subset(tables["train"], tables["train_series"], args.per_class, args.max_studies)
+    excluded_studies: set[str] = set()
+    if args.exclude_manifest is not None:
+        exclude_path = args.exclude_manifest.expanduser()
+        if not exclude_path.is_absolute():
+            exclude_path = ROOT / exclude_path
+        excluded_manifest = json.loads(exclude_path.read_text(encoding="utf-8"))
+        excluded_studies = {str(entry["study_uid"]) for entry in excluded_manifest.get("studies", [])}
+
+    manifest = select_subset(
+        tables["train"],
+        tables["train_series"],
+        args.per_class,
+        args.max_studies,
+        excluded_studies,
+    )
     output = Path(args.output)
     if not output.is_absolute():
         output = ROOT / output

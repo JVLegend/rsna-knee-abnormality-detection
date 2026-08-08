@@ -135,6 +135,18 @@ listagem em árvore para consultar diretamente cada diretório de série, sem
 varrer todos os arquivos da competição; em versões anteriores há um fallback
 para a listagem plana, que pode sofrer rate limit nesse desafio.
 
+Para ampliar a amostra sem repetir estudos de um lote anterior, gere outro
+manifesto excluindo o primeiro:
+
+```bash
+python scripts/select_dicom_subset.py \
+  --data-dir data/raw \
+  --per-class 2 \
+  --max-studies 24 \
+  --exclude-manifest data/processed/dicom_subset_manifest.json \
+  --output data/processed/dicom_subset_manifest_v2.json
+```
+
 Antes de subir o notebook, valide o contrato do CSV:
 
 ```bash

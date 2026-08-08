@@ -13,6 +13,7 @@
 | 08/08/2026 | `dicom_series_smoke` | Confirmar aquisição incremental e decodificação antes de baixar o conjunto integral | 1 série real, 30/30 fatias, `320×320`, `uint16`, `MONOCHROME2`, ~6,19 MB; `pydicom` OK | — | Manter lote integral pendente; implementar seleção/normalização antes de ampliar |
 | 08/08/2026 | `dicom_subset_manifest` | Selecionar séries fluido-sensíveis, cobrindo positivo/negativo por alvo | Manifesto local com 10 estudos únicos e 1 série por estudo; ambos os valores presentes nos 12 alvos | — | Seleção congelada para o primeiro lote visual |
 | 08/08/2026 | `dicom_subset_download` | Baixar somente as séries do manifesto, sem varrer o dataset integral | 10 séries, 289/289 arquivos, `193.721.314` bytes; leitura DICOM e pixels OK; dimensões de `256×256` a `800×800` | — | Lote local pronto para o pipeline visual; aquisição integral não autorizada ainda |
+| 08/08/2026 | `dicom_subset_download_v2` | Ampliar a cobertura sem repetir estudos do primeiro manifesto | 8 estudos/séries, 232/232 arquivos, `169.086.016` bytes; os dois lotes somam 18 estudos e 521 fatias; leitura DICOM e pixels OK | — | Manter aquisição incremental; iniciar pipeline visual antes de novo lote |
 | 08/08/2026 | `kaggle_kernel_v0_2` | Executar a candidata v0.2 em kernel privado, sem internet e com a competição anexada | Versão 1: módulo não foi empacotado; versão 2: código autocontido, mas `train.csv` não foi montado em `/kaggle/input/rsna-knee-abnormality-detection/` | — | Corrigir aceite/vínculo da fonte; não enviar leaderboard |
 
 ## Detalhe da candidata v0.2

@@ -16,7 +16,8 @@ Produzir uma submissão válida, barata e auditável para estabelecer o primeiro
 - [x] Baixar os metadados pela Kaggle para `data/raw/`.
 - [x] Registrar tamanho, cabeçalhos, número de estudos e cobertura por alvo.
 - [x] Baixar uma série DICOM técnica (30 fatias, ~6,19 MB) e confirmar leitura com `pydicom`.
-- [x] Baixar lote estratificado de 10 estudos (289 fatias, ~193,7 MB) e confirmar leitura/pixels com `pydicom`.
+- [x] Baixar primeiro lote estratificado de 10 estudos (289 fatias, ~193,7 MB) e confirmar leitura/pixels com `pydicom`.
+- [x] Ampliar para 18 estudos em dois lotes disjuntos (521 fatias, ~362,8 MB) e confirmar leitura/pixels com `pydicom`.
 
 ### Fase 1 — v0 report + metadata
 
@@ -40,18 +41,18 @@ Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de
 ### Fase 3 — imagem por série
 
 O smoke DICOM e o primeiro lote estratificado já foram validados com
-`scripts/inspect_dicom_series.py` e `pydicom`. O lote contém 10 estudos, uma
-série fluido-sensível por estudo e 289 fatias; a soma local inclui ainda os 30
-slices técnicos baixados anteriormente. A aquisição integral continua fora
+`scripts/inspect_dicom_series.py` e `pydicom`. Os dois lotes contêm 18 estudos,
+uma série fluido-sensível por estudo e 521 fatias; a soma local inclui ainda os
+30 slices técnicos baixados anteriormente. A aquisição integral continua fora
 de escopo até medirmos ganho visual e custo de armazenamento.
 
 O manifesto `data/processed/dicom_subset_manifest.json` foi gerado com 10
 estudos únicos, cobrindo os dois valores de cada alvo. A listagem plana sofreu
 `429 Too Many Requests`; o downloader foi atualizado para usar a listagem em
 árvore do Kaggle CLI `>=2.2.2`, consultando somente os diretórios selecionados.
-O lote foi baixado incrementalmente para o HD externo e validado: 289/289
-arquivos esperados, 193.721.314 bytes, `MONOCHROME2`, dimensões entre
-`256×256` e `800×800`, e `uint16`/`int16`.
+Os lotes foram baixados incrementalmente para o HD externo e validados:
+`289/289 + 232/232` arquivos esperados, `362.807.330` bytes, `MONOCHROME2`,
+dimensões entre `256×256` e `800×800`, e `uint16`/`int16`.
 
 1. Decodificar DICOM com `pydicom`, normalizar orientação e intensidade sem depender de tags ausentes.
 2. Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.

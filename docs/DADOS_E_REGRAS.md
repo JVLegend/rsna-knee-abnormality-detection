@@ -65,6 +65,12 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - A leitura completa dos 289 arquivos passou com `pydicom`: `MONOCHROME2`, transfer syntax explícita little endian, dimensões `256×256`, `320×320`, `512×512`, `640×640` e `800×800`, com pixels `uint16` ou `int16`.
 - O downloader usa a listagem em árvore do Kaggle CLI `>=2.2.2`, consulta somente os diretórios do manifesto e é incremental. O conjunto integral continua fora de escopo até validar o pipeline visual.
 
+## Estado da aquisição local — segundo lote — 08/08/2026
+
+- O segundo manifesto excluiu os 10 estudos anteriores e acrescentou 8 estudos, 8 séries e 232 fatias, totalizando `169.086.016` bytes.
+- Os dois manifestos são disjuntos. Juntos, somam 18 estudos, 521 fatias e `362.807.330` bytes; com o smoke técnico, há 551 DICOMs locais no HD externo.
+- A leitura completa dos dois lotes passou com `pydicom`; todas as 521 fatias têm `MONOCHROME2` e pixels presentes. As dimensões observadas variam de `256×256` a `800×800`.
+
 ## Cronograma
 
 Todos os horários abaixo são 23:59 UTC, salvo atualização da organização:
