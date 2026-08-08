@@ -72,6 +72,15 @@ Há limite de 5 integrantes por equipe, até 5 submissões por dia e até 2 subm
 - Os dados da competição não podem ser transmitidos, duplicados, publicados ou redistribuídos para pessoas que não aceitaram as regras. Por isso, nenhum DICOM, CSV, relatório ou peso treinado com os dados será colocado no GitHub.
 - O vencedor deve entregar código, pesos e documentação reproduzíveis; o tipo de licença para a submissão vencedora é CC-BY-NC 4.0.
 
+## Uso no Brasil e limites da licença
+
+- As regras abrem a competição a residentes do mundo todo, com as exceções listadas; o Brasil não aparece entre as jurisdições excluídas. Devemos ainda observar LGPD, políticas institucionais e requisitos regulatórios locais.
+- A entrada não prevê cessão de equity ou participação societária. Para vencedores, porém, existem obrigações de entrega de código, pesos e documentação e de licenciamento da submissão vencedora.
+- A competição seleciona **Commercial and Academic Research — MIRA license**. A licença MIRA permite pesquisa sem custo, inclusive pesquisa para produzir ou fabricar produtos destinados à venda, mas proíbe vender, publicar, redistribuir ou monetizar o dataset. O uso é **Research Use Only** e não pode sustentar diagnóstico ou atendimento de pacientes.
+- Não compartilhar DICOM, relatórios, links de download ou derivados com pessoas que não aceitaram as regras; não tentar reidentificar indivíduos. Para qualquer produto/serviço comercial em produção, obter confirmação escrita da RSNA antes de usar este dataset ou pesos derivados.
+
+Fontes: [regras da competição](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/rules) e [licença MIRA (PDF)](https://www.rsna.org/-/media/files/rsna/RSNAI/RSNA-MIRA-Dataset-License-2025.pdf). Esta é uma leitura operacional, não parecer jurídico.
+
 ## Fonte complementar
 
 - [RSNA Knee MRI AI Challenge (2026)](https://www.rsna.org/artificial-intelligence/ai-image-challenge/knee-mri-ai-challenge)
