@@ -14,7 +14,8 @@ Produzir uma submissão válida, barata e auditável para estabelecer o primeiro
 - [x] Criar `.gitignore` que bloqueia DICOM, CSVs baixados, pesos, credenciais e saídas.
 - [x] Adicionar smoke test sintético.
 - [x] Baixar os metadados pela Kaggle para `data/raw/`.
-- [x] Registrar tamanho, cabeçalhos, número de estudos e cobertura por alvo; DICOM permanece pendente.
+- [x] Registrar tamanho, cabeçalhos, número de estudos e cobertura por alvo.
+- [x] Baixar uma série DICOM técnica (30 fatias, ~6,19 MB) e confirmar leitura com `pydicom`; lote estratificado maior permanece pendente.
 
 ### Fase 1 — v0 report + metadata
 
@@ -36,6 +37,8 @@ Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de
 **Resultado do teste de feature de 08/08/2026:** com `C=32` e duas seeds, a v0.2 atingiu macro-AUC `0,628815` (seed 42) e `0,630918` (seed 2026), média `0,629867`. O ganho sobre a média da v0.1 foi `0,064212`. O léxico permanece apenas como feature derivada do texto; a decisão não promove regras a rótulos.
 
 ### Fase 3 — imagem por série
+
+O smoke DICOM já foi validado em uma série real com `scripts/inspect_dicom_series.py`; o próximo lote deve ser pequeno e estratificado, preservando a separação por estudo.
 
 1. Decodificar DICOM com `pydicom`, normalizar orientação e intensidade sem depender de tags ausentes.
 2. Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.

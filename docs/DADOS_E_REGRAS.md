@@ -49,7 +49,14 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - `train.csv`: 4.407 estudos, todos com relatório preenchido; 58 estudos rotulados por alvo.
 - `train_series.csv`: 24.371 séries, média de 5,53 séries por estudo.
 - Os CSVs passaram por validação de colunas, duplicidades e contrato da submissão.
-- Nenhum DICOM foi versionado ou baixado nesta fase. A estratégia é adquirir primeiro um subconjunto estratificado para validar o pipeline visual e só então avaliar a necessidade de baixar o conjunto integral.
+- Nenhum DICOM foi versionado. A estratégia é adquirir primeiro um subconjunto estratificado para validar o pipeline visual e só então avaliar a necessidade de baixar o conjunto integral.
+
+## Estado da aquisição local — 08/08/2026
+
+- Uma única série técnica de treino foi baixada para o HD externo, sem UID publicado neste repositório.
+- A série contém 30 fatias, cerca de 6,19 MB, resolução `320×320`, `uint16`, `MONOCHROME2` e `PixelSpacing 0,5×0,5`.
+- A leitura com `pydicom 3.0.2` funcionou para todas as fatias; a sequência de instâncias é `1–30` e há um único `SeriesInstanceUID`.
+- O download confirma que a API permite aquisição por arquivo individual. O conjunto integral de aproximadamente 569 GB continua pendente; não iniciar esse download antes de validar seleção de séries, normalização e custo do pipeline.
 
 ## Cronograma
 

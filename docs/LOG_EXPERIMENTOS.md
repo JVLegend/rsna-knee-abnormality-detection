@@ -9,6 +9,7 @@
 | 08/08/2026 | `v0_1_report_metadata_c32` | Mesmo modelo com regularização C=32 | Média de 2 seeds: macro-AUC `0.565655`; ganho de `0.002888` sobre C=2 | A executar | Candidata para primeiro envio, sem DICOM |
 | 08/08/2026 | `weak_lexicon_audit` | Léxico multilíngue com janela simples de negação | Auditoria nos 58 estudos: score-AUC diagnóstico `0.646785`; precisão varia `0.43–0.88` | — | Não criar pseudo-rótulos; testar como feature de confiança |
 | 08/08/2026 | `v0_2_report_metadata_lexicon` | Adicionar ao v0.1 uma feature {-1, 0, 1} por alvo, calculada do laudo e sem rótulos | 5 folds por estudo; seeds 42/2026: macro-AUC `0.628815`/`0.630918`; média `0.629867`; saída local válida e entrypoint Kaggle idêntico | A executar | Candidata principal para primeiro envio; sem DICOM |
+| 08/08/2026 | `dicom_series_smoke` | Confirmar aquisição incremental e decodificação antes de baixar o conjunto integral | 1 série real, 30/30 fatias, `320×320`, `uint16`, `MONOCHROME2`, ~6,19 MB; `pydicom` OK | — | Manter lote integral pendente; implementar seleção/normalização antes de ampliar |
 
 ## Detalhe da candidata v0.2
 

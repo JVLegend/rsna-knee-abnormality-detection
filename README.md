@@ -98,6 +98,13 @@ python scripts/audit_weak_lexicon.py \
   --output reports/weak_lexicon_audit.json
 ```
 
+Para inspecionar uma série DICOM já baixada, sem enviar imagens ao Git:
+
+```bash
+python scripts/inspect_dicom_series.py \
+  data/raw/train_series/<StudyInstanceUID>/<SeriesInstanceUID>
+```
+
 Antes de subir o notebook, valide o contrato do CSV:
 
 ```bash
