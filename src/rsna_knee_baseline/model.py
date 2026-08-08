@@ -31,10 +31,19 @@ class KneeReportBaseline:
     não são tratadas como negativas.
     """
 
-    def __init__(self, c: float = 2.0, max_iter: int = 800, use_lexicon: bool = False) -> None:
+    def __init__(
+        self,
+        c: float = 2.0,
+        max_iter: int = 800,
+        use_lexicon: bool = False,
+        lexicon_weight: float = 1.0,
+    ) -> None:
+        if lexicon_weight <= 0:
+            raise ValueError("lexicon_weight precisa ser positivo.")
         self.c = c
         self.max_iter = max_iter
         self.use_lexicon = use_lexicon
+        self.lexicon_weight = lexicon_weight
         self.word_vectorizer = TfidfVectorizer(
             analyzer="word",
             ngram_range=(1, 2),
@@ -60,7 +69,7 @@ class KneeReportBaseline:
         char = self.char_vectorizer.fit_transform(text)
         metadata = build_metadata_features(frame, series)
         if self.use_lexicon:
-            lexicon = build_lexicon_features(frame).reset_index(drop=True)
+            lexicon = build_lexicon_features(frame).reset_index(drop=True) * self.lexicon_weight
             metadata = metadata.reset_index(drop=True).join(lexicon)
         self.metadata_columns = list(metadata.columns)
         return hstack([word, char, csr_matrix(metadata.to_numpy(dtype=float))], format="csr")
@@ -71,7 +80,7 @@ class KneeReportBaseline:
         char = self.char_vectorizer.transform(text)
         metadata = build_metadata_features(frame, series)
         if self.use_lexicon:
-            lexicon = build_lexicon_features(frame).reset_index(drop=True)
+            lexicon = build_lexicon_features(frame).reset_index(drop=True) * self.lexicon_weight
             metadata = metadata.reset_index(drop=True).join(lexicon)
         metadata = metadata.reindex(columns=self.metadata_columns, fill_value=0)
         return hstack([word, char, csr_matrix(metadata.to_numpy(dtype=float))], format="csr")

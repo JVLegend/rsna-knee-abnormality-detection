@@ -98,6 +98,15 @@ python scripts/audit_weak_lexicon.py \
   --output reports/weak_lexicon_audit.json
 ```
 
+Para testar a escala da feature lexical sem usar o leaderboard:
+
+```bash
+python scripts/evaluate_lexicon_weight_grid.py \
+  --data-dir data/raw \
+  --weights 0.5,1,2,4 \
+  --seeds 42,2026
+```
+
 Para inspecionar uma série DICOM já baixada, sem enviar imagens ao Git:
 
 ```bash

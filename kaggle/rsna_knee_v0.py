@@ -88,7 +88,7 @@ def _lexicon_features(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(result, index=range(len(frame))).astype(float)
 
 
-def _metadata(frame: pd.DataFrame, series: pd.DataFrame, use_lexicon: bool = False) -> pd.DataFrame:
+def _metadata(frame: pd.DataFrame, series: pd.DataFrame, use_lexicon: bool = False, lexicon_weight: float = 1.0) -> pd.DataFrame:
     sex = frame.get("PatientSex", pd.Series("Unknown", index=frame.index))
     sex = sex.fillna("Unknown").astype(str).replace({"": "Unknown"})
     result = pd.get_dummies(sex, prefix="sex", dtype=float)
@@ -96,7 +96,7 @@ def _metadata(frame: pd.DataFrame, series: pd.DataFrame, use_lexicon: bool = Fal
 
     if series.empty or KEY_COLUMN not in series.columns:
         if use_lexicon:
-            result = result.join(_lexicon_features(frame))
+            result = result.join(_lexicon_features(frame) * lexicon_weight)
         return result.fillna(0).astype(float)
 
     work = series.copy()
@@ -118,7 +118,7 @@ def _metadata(frame: pd.DataFrame, series: pd.DataFrame, use_lexicon: bool = Fal
     for column in keyed.columns:
         result[column] = ids.map(keyed[column]).fillna(0).to_numpy()
     if use_lexicon:
-        result = result.join(_lexicon_features(frame))
+        result = result.join(_lexicon_features(frame) * lexicon_weight)
     return result.fillna(0).astype(float)
 
 
@@ -132,7 +132,9 @@ def _validate_submission(submission: pd.DataFrame, test: pd.DataFrame) -> None:
     assert not submission[KEY_COLUMN].duplicated().any(), "A submissão contém UIDs duplicados."
 
 
-def run(data_dir: Path, output: Path, c: float = 2.0, use_lexicon: bool = False) -> pd.DataFrame:
+def run(data_dir: Path, output: Path, c: float = 2.0, use_lexicon: bool = False, lexicon_weight: float = 1.0) -> pd.DataFrame:
+    if lexicon_weight <= 0:
+        raise ValueError("lexicon_weight precisa ser positivo.")
     train = pd.read_csv(data_dir / "train.csv")
     test = pd.read_csv(data_dir / "test.csv")
     train_series = pd.read_csv(data_dir / "train_series.csv") if (data_dir / "train_series.csv").exists() else pd.DataFrame()
@@ -142,8 +144,8 @@ def run(data_dir: Path, output: Path, c: float = 2.0, use_lexicon: bool = False)
     char = TfidfVectorizer(analyzer="char", ngram_range=(3, 5), min_df=1, sublinear_tf=True, max_features=120_000)
     x_word = word.fit_transform(_reports(train))
     x_char = char.fit_transform(_reports(train))
-    train_meta = _metadata(train, train_series, use_lexicon=use_lexicon)
-    test_meta = _metadata(test, test_series, use_lexicon=use_lexicon).reindex(columns=train_meta.columns, fill_value=0)
+    train_meta = _metadata(train, train_series, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight)
+    test_meta = _metadata(test, test_series, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight).reindex(columns=train_meta.columns, fill_value=0)
     x_train = hstack([x_word, x_char, csr_matrix(train_meta.to_numpy())], format="csr")
     x_test = hstack([word.transform(_reports(test)), char.transform(_reports(test)), csr_matrix(test_meta.to_numpy())], format="csr")
 
@@ -173,10 +175,11 @@ def main() -> None:
     parser.add_argument("--data-dir", default=os.environ.get("RSNA_DATA_DIR", "/kaggle/input/rsna-knee-abnormality-detection"))
     parser.add_argument("--c", type=float, default=32.0)
     parser.add_argument("--use-lexicon", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--lexicon-weight", type=float, default=1.0)
     parser.add_argument("--output", default=os.environ.get("RSNA_OUTPUT", "/kaggle/working/submission.csv"))
     args = parser.parse_args()
-    submission = run(Path(args.data_dir), Path(args.output), c=args.c, use_lexicon=args.use_lexicon)
-    print(f"submission gravada em {args.output} com {len(submission)} linhas; C={args.c}; lexicon={args.use_lexicon}")
+    submission = run(Path(args.data_dir), Path(args.output), c=args.c, use_lexicon=args.use_lexicon, lexicon_weight=args.lexicon_weight)
+    print(f"submission gravada em {args.output} com {len(submission)} linhas; C={args.c}; lexicon={args.use_lexicon}; lexicon_weight={args.lexicon_weight}")
 
 
 if __name__ == "__main__":
