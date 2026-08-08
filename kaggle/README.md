@@ -15,7 +15,9 @@ submission = run(
 ```
 
 O entrypoint também aceita `--c 32 --use-lexicon` quando executado como
-script. A checagem de contrato roda antes de gravar o CSV.
+script. Sem argumentos, `rsna_knee_v0.py` já executa a v0.2 (`C=32` e léxico
+ligado); use `--no-use-lexicon` para reproduzir a variante sem léxico. A
+checagem de contrato roda antes de gravar o CSV.
 
 O candidato anterior `v0.1` continua reproduzível com `use_lexicon=False`.
 
@@ -27,3 +29,18 @@ Antes de enviar:
 4. fazer o commit do notebook e somente então usar `Submit`.
 
 Para smoke local com dados em outra pasta, use `RSNA_DATA_DIR=/caminho/dos/dados python kaggle/rsna_knee_v0.py --output /tmp/submission.csv`.
+
+## Kernel privado
+
+`kernel-metadata.json` aponta para `rsna_knee_v0.py`, mantém a internet
+desligada e associa a competição como fonte de dados. Para publicar uma nova
+versão e iniciar a execução:
+
+```bash
+kaggle kernels push -p kaggle -t 3600
+kaggle kernels status jvlegend/rsna-knee-abnormality-detection-v0-2
+```
+
+Se o kernel iniciar sem `train.csv` em `/kaggle/input/rsna-knee-abnormality-detection/`,
+não enviar nada ao leaderboard: aceitar as regras da competição na conta e
+revisar o vínculo da fonte de dados no Kaggle antes de repetir.

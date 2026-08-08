@@ -10,6 +10,8 @@
 | 08/08/2026 | `weak_lexicon_audit` | Léxico multilíngue com janela simples de negação | Auditoria nos 58 estudos: score-AUC diagnóstico `0.646785`; precisão varia `0.43–0.88` | — | Não criar pseudo-rótulos; testar como feature de confiança |
 | 08/08/2026 | `v0_2_report_metadata_lexicon` | Adicionar ao v0.1 uma feature {-1, 0, 1} por alvo, calculada do laudo e sem rótulos | 5 folds por estudo; seeds 42/2026: macro-AUC `0.628815`/`0.630918`; média `0.629867`; saída local válida e entrypoint Kaggle idêntico | A executar | Candidata principal para primeiro envio; sem DICOM |
 | 08/08/2026 | `dicom_series_smoke` | Confirmar aquisição incremental e decodificação antes de baixar o conjunto integral | 1 série real, 30/30 fatias, `320×320`, `uint16`, `MONOCHROME2`, ~6,19 MB; `pydicom` OK | — | Manter lote integral pendente; implementar seleção/normalização antes de ampliar |
+| 08/08/2026 | `dicom_subset_manifest` | Selecionar séries fluido-sensíveis, cobrindo positivo/negativo por alvo | Manifesto local com 10 estudos únicos e 1 série por estudo; ambos os valores presentes nos 12 alvos | — | Pronto para download incremental; API retornou `429` antes da listagem completa |
+| 08/08/2026 | `kaggle_kernel_v0_2` | Executar a candidata v0.2 em kernel privado, sem internet e com a competição anexada | Versão 1: módulo não foi empacotado; versão 2: código autocontido, mas `train.csv` não foi montado em `/kaggle/input/rsna-knee-abnormality-detection/` | — | Corrigir aceite/vínculo da fonte; não enviar leaderboard |
 
 ## Detalhe da candidata v0.2
 

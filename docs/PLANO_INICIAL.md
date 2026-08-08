@@ -40,6 +40,12 @@ Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de
 
 O smoke DICOM já foi validado em uma série real com `scripts/inspect_dicom_series.py`; o próximo lote deve ser pequeno e estratificado, preservando a separação por estudo.
 
+O manifesto `data/processed/dicom_subset_manifest.json` foi gerado com 10
+estudos únicos, cobrindo os dois valores de cada alvo. A primeira enumeração
+automática foi interrompida por `429 Too Many Requests` da API do Kaggle; o
+downloader agora tem retry/backoff e deve ser retomado somente após a janela de
+rate limit.
+
 1. Decodificar DICOM com `pydicom`, normalizar orientação e intensidade sem depender de tags ausentes.
 2. Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.
 3. Amostrar fatias centrais e extremas em uma entrada 2.5D; começar com resolução moderada para caber no limite de 9 horas.
@@ -61,7 +67,11 @@ Concatenar embedding visual com sinal textual/metadados, calibrar probabilidades
 
 ## Próxima ação concreta
 
-Executar a candidata v0.2 no ambiente Kaggle, sem enviar ainda:
+Corrigir primeiro o vínculo da fonte de dados no kernel privado v0.2. A versão
+2 foi publicada, mas terminou sem montar `train.csv` em
+`/kaggle/input/rsna-knee-abnormality-detection/`; não houve submissão ao
+leaderboard. Depois de a conta aceitar as regras e o caminho existir, executar
+a candidata v0.2:
 
 ```bash
 python scripts/run_baseline.py --data-dir data/raw --c 32 --use-lexicon --output submissions/submission_v0_2_report_metadata_lexicon.csv

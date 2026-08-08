@@ -105,6 +105,24 @@ python scripts/inspect_dicom_series.py \
   data/raw/train_series/<StudyInstanceUID>/<SeriesInstanceUID>
 ```
 
+Para selecionar e baixar um lote visual pequeno, sem iniciar os ~569 GB:
+
+```bash
+python scripts/select_dicom_subset.py \
+  --data-dir data/raw \
+  --per-class 1 \
+  --max-studies 24 \
+  --output data/processed/dicom_subset_manifest.json
+
+python scripts/download_dicom_subset.py \
+  data/processed/dicom_subset_manifest.json \
+  --data-dir data/raw \
+  --dry-run
+```
+
+Remova `--dry-run` somente depois de conferir a estimativa; o downloader é
+incremental e pula arquivos já existentes.
+
 Antes de subir o notebook, valide o contrato do CSV:
 
 ```bash
@@ -114,6 +132,11 @@ python scripts/validate_submission.py \
 ```
 
 O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`.
+
+O kernel privado preparado para a v0.2 usa `kaggle/kernel-metadata.json` e pode
+ser atualizado com `kaggle kernels push -p kaggle -t 3600`. Antes de executar,
+confirme que a competição foi aceita na conta e que `train.csv` está montado em
+`/kaggle/input/rsna-knee-abnormality-detection/`.
 
 ## Regras de publicação
 
