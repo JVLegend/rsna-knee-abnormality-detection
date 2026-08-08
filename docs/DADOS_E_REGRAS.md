@@ -71,6 +71,12 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - Os dois manifestos são disjuntos. Juntos, somam 18 estudos, 521 fatias e `362.807.330` bytes; com o smoke técnico, há 551 DICOMs locais no HD externo.
 - A leitura completa dos dois lotes passou com `pydicom`; todas as 521 fatias têm `MONOCHROME2` e pixels presentes. As dimensões observadas variam de `256×256` a `800×800`.
 
+## Artefato visual local — 2.5D — 08/08/2026
+
+- `scripts/build_dicom_25d_features.py` leu as 18 séries dos dois manifestos e criou 18 arrays compactos em `data/processed/dicom_25d_v0/`.
+- Cada array tem três canais grayscale correspondentes às fatias nos quantis `0,25`, `0,50` e `0,75`, redimensionados para `(224, 224)` e armazenados como `uint8`.
+- O `index.json` preserva os UIDs locais, índices, nomes das fatias, dimensões de entrada e limites de intensidade. Nenhum DICOM ou array foi versionado.
+
 ## Cronograma
 
 Todos os horários abaixo são 23:59 UTC, salvo atualização da organização:

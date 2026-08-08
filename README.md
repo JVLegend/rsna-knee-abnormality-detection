@@ -114,6 +114,20 @@ python scripts/inspect_dicom_series.py \
   data/raw/train_series/<StudyInstanceUID>/<SeriesInstanceUID>
 ```
 
+Para materializar o primeiro artefato visual 2.5D, usando três fatias por
+série e sem alterar os DICOMs brutos:
+
+```bash
+python scripts/build_dicom_25d_features.py \
+  --manifest data/processed/dicom_subset_manifest.json \
+  --manifest data/processed/dicom_subset_manifest_v2.json \
+  --data-dir data/raw \
+  --output-dir data/processed/dicom_25d_v0
+```
+
+O resultado local é um `index.json` com 18 estudos e arrays compactos
+`(3, 224, 224) uint8`; `data/processed/` permanece ignorado pelo Git.
+
 Para selecionar e baixar um lote visual pequeno, sem iniciar os ~569 GB:
 
 ```bash

@@ -54,12 +54,12 @@ Os lotes foram baixados incrementalmente para o HD externo e validados:
 `289/289 + 232/232` arquivos esperados, `362.807.330` bytes, `MONOCHROME2`,
 dimensões entre `256×256` e `800×800`, e `uint16`/`int16`.
 
-1. Decodificar DICOM com `pydicom`, normalizar orientação e intensidade sem depender de tags ausentes.
-2. Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.
-3. Amostrar fatias centrais e extremas em uma entrada 2.5D; começar com resolução moderada para caber no limite de 9 horas.
-4. Extrair embedding por fatia com encoder pré-treinado disponível no ambiente Kaggle.
-5. Fazer pooling por série e depois por estudo.
-6. Treinar 12 cabeças de classificação com máscara de perda para rótulos ausentes.
+1. [x] Decodificar DICOM com `pydicom`, normalizar intensidade e tratar `MONOCHROME1` sem depender de tags ausentes.
+2. [x] Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.
+3. [x] Amostrar três fatias por série (25%, 50%, 75%) e materializar entrada 2.5D `224×224` em `uint8`.
+4. [ ] Extrair embedding por fatia com encoder pré-treinado disponível no ambiente Kaggle.
+5. [ ] Fazer pooling por série e depois por estudo.
+6. [ ] Treinar 12 cabeças de classificação com máscara de perda para rótulos ausentes.
 
 ### Fase 4 — fusão e eficiência
 
