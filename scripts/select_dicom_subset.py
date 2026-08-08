@@ -100,7 +100,7 @@ def main() -> None:
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--per-class", type=int, default=1)
     parser.add_argument("--max-studies", type=int, default=24)
-    parser.add_argument("--exclude-manifest", type=Path, default=None)
+    parser.add_argument("--exclude-manifest", type=Path, action="append", default=[])
     parser.add_argument("--output", default="data/processed/dicom_subset_manifest.json")
     args = parser.parse_args()
 
@@ -110,12 +110,12 @@ def main() -> None:
         raise RuntimeError("train.csv e train_series.csv são necessários.")
 
     excluded_studies: set[str] = set()
-    if args.exclude_manifest is not None:
-        exclude_path = args.exclude_manifest.expanduser()
+    for exclude_manifest in args.exclude_manifest:
+        exclude_path = exclude_manifest.expanduser()
         if not exclude_path.is_absolute():
             exclude_path = ROOT / exclude_path
         excluded_manifest = json.loads(exclude_path.read_text(encoding="utf-8"))
-        excluded_studies = {str(entry["study_uid"]) for entry in excluded_manifest.get("studies", [])}
+        excluded_studies.update(str(entry["study_uid"]) for entry in excluded_manifest.get("studies", []))
 
     manifest = select_subset(
         tables["train"],

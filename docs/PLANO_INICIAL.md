@@ -57,9 +57,14 @@ dimensões entre `256×256` e `800×800`, e `uint16`/`int16`.
 1. [x] Decodificar DICOM com `pydicom`, normalizar intensidade e tratar `MONOCHROME1` sem depender de tags ausentes.
 2. [x] Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.
 3. [x] Amostrar três fatias por série (25%, 50%, 75%) e materializar entrada 2.5D `224×224` em `uint8`.
-4. [ ] Extrair embedding por fatia com encoder pré-treinado disponível no ambiente Kaggle.
+4. [x] Extrair embedding visual com EfficientNet-B0 local, sem rede: matriz `(18, 1280)` finita e com pesos identificados por hash.
 5. [ ] Fazer pooling por série e depois por estudo.
 6. [ ] Treinar 12 cabeças de classificação com máscara de perda para rótulos ausentes.
+
+O embedding atual é um gate de pré-processamento no primeiro lote de 18
+estudos. Depois que o lote rotulado restante estiver completo, vamos repetir a
+mesma esteira para os 58 estudos anotados e então comparar um baseline visual
+contra a candidata textual v0.2.
 
 ### Fase 4 — fusão e eficiência
 

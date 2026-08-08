@@ -128,6 +128,20 @@ python scripts/build_dicom_25d_features.py \
 O resultado local é um `index.json` com 18 estudos e arrays compactos
 `(3, 224, 224) uint8`; `data/processed/` permanece ignorado pelo Git.
 
+Para extrair um embedding visual compacto, usando os pesos EfficientNet-B0 já
+disponíveis no cache local e sem rede:
+
+```bash
+python scripts/extract_efficientnet_embeddings.py \
+  --index data/processed/dicom_25d_v0/index.json \
+  --output-dir data/processed/dicom_embeddings_efficientnet_b0 \
+  --device cpu
+```
+
+O primeiro lote validado produziu uma matriz `(18, 1280)` `float32`, finita e
+com 18 linhas distintas. O hash SHA-256 dos pesos usado nessa rodada fica
+registrado no `index.json` local.
+
 Para selecionar e baixar um lote visual pequeno, sem iniciar os ~569 GB:
 
 ```bash
@@ -148,6 +162,11 @@ incremental e pula arquivos já existentes. Com Kaggle CLI `>=2.2.2`, ele usa a
 listagem em árvore para consultar diretamente cada diretório de série, sem
 varrer todos os arquivos da competição; em versões anteriores há um fallback
 para a listagem plana, que pode sofrer rate limit nesse desafio.
+
+Para lotes maiores, `--workers 4` permite downloads paralelos controlados, mas
+a API da competição pode responder `429`; o comportamento padrão é serial e
+qualquer reexecução pula arquivos já completos. Para uma aquisição mais
+conservadora, use `--workers 1 --request-delay 1.5 --retry-attempts 6`.
 
 Para ampliar a amostra sem repetir estudos de um lote anterior, gere outro
 manifesto excluindo o primeiro:
