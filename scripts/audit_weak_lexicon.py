@@ -5,9 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
-import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -18,63 +16,16 @@ from sklearn.metrics import roc_auc_score
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from rsna_knee_baseline.constants import TARGET_COLUMNS
 from rsna_knee_baseline.data import find_data_dir, load_competition_tables
-
-
-LEXICON: dict[str, tuple[str, ...]] = {
-    "ACL": ("acl", "lca", "anterior cruciate", "ligamento cruzado anterior", "ligament croise anterieur"),
-    "MCL": ("mcl", "lcm", "medial collateral", "ligamento colateral medial", "ligament collateral medial"),
-    "Medial Meniscus": ("medial meniscus", "meniscus medialis", "menisco medial", "menisque medial", "menisco interno"),
-    "Lateral Meniscus": ("lateral meniscus", "meniscus lateralis", "menisco lateral", "menisque lateral", "menisco externo"),
-    "Medial OA": ("medial osteoarthritis", "medial arthrosis", "medial osteoarthrosis", "medial compartment", "compartimento medial", "compartiment medial"),
-    "Lateral OA": ("lateral osteoarthritis", "lateral arthrosis", "lateral osteoarthrosis", "lateral compartment", "compartimento lateral", "compartiment lateral"),
-    "PF OA": ("patellofemoral osteoarthritis", "patellofemoral arthrosis", "patellofemoral compartment", "patellofemoral", "femoropatellar", "femoro-patellar"),
-    "Effusion": ("joint effusion", "effusion", "derrame articular", "derrame", "epanchement"),
-    "Synovitis": ("synovitis", "sinovitis", "synovite"),
-    "Baker's": ("baker", "popliteal cyst", "cisto popliteo", "kyste poplite"),
-    "Contusion": ("bone contusion", "bone bruise", "contusion", "contusao ossea", "contusion ossea", "contusion oseuse", "bone marrow edema"),
-    "Fracture": ("fracture", "fractura", "fratura"),
-}
-
-NEGATION_CUES = ("no", "not", "without", "intact", "normal", "preserved", "absent", "sin", "sem", "aucun", "aucune", "sans")
-
-
-def normalize(value: object) -> str:
-    text = "" if value is None else str(value)
-    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
-    return " ".join(text.lower().split())
-
-
-def _patterns(terms: tuple[str, ...]) -> tuple[re.Pattern[str], ...]:
-    return tuple(re.compile(rf"(?<!\w){re.escape(normalize(term))}(?!\w)") for term in terms)
-
-
-def score_report(text: str, patterns: tuple[re.Pattern[str], ...]) -> int:
-    """Retorna 1 para menção não negada, -1 para menção negada e 0 para ausência."""
-
-    normalized = normalize(text)
-    positive = False
-    negative = False
-    for pattern in patterns:
-        for match in pattern.finditer(normalized):
-            context = normalized[max(0, match.start() - 90) : match.start()]
-            if any(re.search(rf"(?<!\w){re.escape(cue)}(?!\w)", context) for cue in NEGATION_CUES):
-                negative = True
-            else:
-                positive = True
-    if positive:
-        return 1
-    if negative:
-        return -1
-    return 0
+from rsna_knee_baseline.constants import TARGET_COLUMNS
+from rsna_knee_baseline.lexicon import LEXICON, compile_patterns, score_report
 
 
 def audit(train: pd.DataFrame) -> dict[str, object]:
     reports = train.get("Report", pd.Series("", index=train.index)).fillna("").astype(str)
     result: list[dict[str, object]] = []
     for target in TARGET_COLUMNS:
-        patterns = _patterns(LEXICON[target])
+        patterns = compile_patterns(LEXICON[target])
         scores = np.asarray([score_report(report, patterns) for report in reports], dtype=int)
         labels = pd.to_numeric(train[target], errors="coerce")
         labeled = labels.notna().to_numpy()

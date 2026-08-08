@@ -18,6 +18,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--c", type=float, default=2.0)
+    parser.add_argument("--use-lexicon", action="store_true")
     parser.add_argument("--output", default="submissions/submission_v0_report_metadata.csv")
     args = parser.parse_args()
 
@@ -26,7 +27,7 @@ def main() -> None:
     if tables["train"].empty or tables["test"].empty:
         raise RuntimeError("train.csv e test.csv são necessários para gerar a submissão.")
 
-    model = KneeReportBaseline(c=args.c)
+    model = KneeReportBaseline(c=args.c, use_lexicon=args.use_lexicon)
     model.fit(tables["train"], tables["train_series"])
     submission = model.predict(tables["test"], tables["test_series"])
 

@@ -25,13 +25,15 @@ Produzir uma submissão válida, barata e auditável para estabelecer o primeiro
 5. Avaliar por validação estratificada dentro dos estudos rotulados, reportando AUC por alvo e média macro.
 6. Treinar em todos os rótulos disponíveis e gerar `submission.csv`.
 
-O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle em `kaggle/rsna_knee_v0.py`. A candidata v0.1 usa `C=32`.
+O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle em `kaggle/rsna_knee_v0.py`. A candidata v0.1 usa `C=32`; a v0.2 acrescenta o léxico auditável como feature.
 
 ### Fase 2 — weak supervision controlada
 
 Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de um léxico multilíngue por alvo. Só promover regras que tenham validação contra os estudos anotados e registrar os falsos positivos mais perigosos. O primeiro uso será como feature ou peso de confiança, não como verdade binária automática.
 
 **Gate de 08/08/2026:** a auditoria encontrou precisão entre `0,43` e `0,88` nos 58 estudos anotados. Baker's, MCL, Fracture e menisco lateral têm sinal inicial; ACL e menisco medial exigem regras melhores. Pseudo-rótulos binários estão proibidos nesta rodada.
+
+**Resultado do teste de feature de 08/08/2026:** com `C=32` e duas seeds, a v0.2 atingiu macro-AUC `0,628815` (seed 42) e `0,630918` (seed 2026), média `0,629867`. O ganho sobre a média da v0.1 foi `0,064212`. O léxico permanece apenas como feature derivada do texto; a decisão não promove regras a rótulos.
 
 ### Fase 3 — imagem por série
 
@@ -56,11 +58,11 @@ Concatenar embedding visual com sinal textual/metadados, calibrar probabilidades
 
 ## Próxima ação concreta
 
-Executar a candidata v0.1 no ambiente Kaggle, sem enviar ainda:
+Executar a candidata v0.2 no ambiente Kaggle, sem enviar ainda:
 
 ```bash
-python scripts/run_baseline.py --data-dir data/raw --c 32 --output submissions/submission_v0_1_report_metadata.csv
-python scripts/validate_submission.py --test data/raw/test.csv --submission submissions/submission_v0_1_report_metadata.csv
+python scripts/run_baseline.py --data-dir data/raw --c 32 --use-lexicon --output submissions/submission_v0_2_report_metadata_lexicon.csv
+python scripts/validate_submission.py --test data/raw/test.csv --submission submissions/submission_v0_2_report_metadata_lexicon.csv
 ```
 
-O primeiro registro de leaderboard será usado apenas para confirmar a esteira e a direção da validação, não como substituto da avaliação local.
+O primeiro registro de leaderboard será usado apenas para confirmar a esteira e a direção da validação, não como substituto da avaliação local. O envio continua manual e depende de confirmação explícita.

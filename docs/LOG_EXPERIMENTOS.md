@@ -8,6 +8,15 @@
 | 07/08/2026 | `v0_report_metadata` | TF-IDF de laudo + sexo + atributos de séries, um classificador por alvo | 5 folds por estudo; macro-AUC `0.556609`; contrato OK | A executar | Benchmark de referência, sem envio |
 | 08/08/2026 | `v0_1_report_metadata_c32` | Mesmo modelo com regularização C=32 | Média de 2 seeds: macro-AUC `0.565655`; ganho de `0.002888` sobre C=2 | A executar | Candidata para primeiro envio, sem DICOM |
 | 08/08/2026 | `weak_lexicon_audit` | Léxico multilíngue com janela simples de negação | Auditoria nos 58 estudos: score-AUC diagnóstico `0.646785`; precisão varia `0.43–0.88` | — | Não criar pseudo-rótulos; testar como feature de confiança |
+| 08/08/2026 | `v0_2_report_metadata_lexicon` | Adicionar ao v0.1 uma feature {-1, 0, 1} por alvo, calculada do laudo e sem rótulos | 5 folds por estudo; seeds 42/2026: macro-AUC `0.628815`/`0.630918`; média `0.629867`; saída local válida e entrypoint Kaggle idêntico | A executar | Candidata principal para primeiro envio; sem DICOM |
+
+## Detalhe da candidata v0.2
+
+- `C=32`, TF-IDF de palavras/caracteres, sexo, metadados de séries e léxico auditável.
+- O léxico é uma feature de entrada; não cria pseudo-rótulos, não transforma ausência de anotação em negativo e não consulta o teste para ajustar regras.
+- A diferença entre os dois seeds foi `0.002103` de macro-AUC; a média superou a v0.1 em `0.064212`.
+- A submissão foi gerada por `scripts/run_baseline.py` e reproduzida exatamente por `kaggle/rsna_knee_v0.py` no conjunto local de smoke.
+- Artefatos ignorados pelo Git: `reports/v0_2_lexicon_seed42.json`, `reports/v0_2_lexicon_seed2026.json` e `submissions/submission_v0_2_report_metadata_lexicon.csv`.
 
 ## Convenção
 

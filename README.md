@@ -68,6 +68,18 @@ python scripts/run_baseline.py \
   --output submissions/submission_v0_1_report_metadata.csv
 ```
 
+Para a candidata v0.2, que adiciona o léxico auditável do laudo:
+
+```bash
+python scripts/run_baseline.py \
+  --data-dir data/raw \
+  --c 32 \
+  --use-lexicon \
+  --output submissions/submission_v0_2_report_metadata_lexicon.csv
+```
+
+A v0.2 atingiu macro-AUC média `0.629867` em dois seeds (`42` e `2026`), contra `0.565655` da v0.1. O léxico é usado como feature, sem criar pseudo-rótulos.
+
 Para medir a v0 sem usar rótulos do fold de validação:
 
 ```bash

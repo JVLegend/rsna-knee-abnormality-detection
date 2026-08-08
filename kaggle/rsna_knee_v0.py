@@ -3,14 +3,17 @@
 O arquivo não importa o pacote do repositório: a execução da competição fica
 sem internet e precisa continuar funcionando quando este código for colado
 como células no notebook. O pacote em ``src/`` continua sendo a fonte de
-desenvolvimento local; este arquivo é o snapshot de submissão da v0. Para a
-candidata v0.1, execute com ``--c 32`` ou chame ``run(..., c=32)``.
+desenvolvimento local; este arquivo é o snapshot de submissão da família v0.
+Para a candidata v0.2, use ``--c 32 --use-lexicon`` ou chame
+``run(..., c=32, use_lexicon=True)``.
 """
 
 from __future__ import annotations
 
 import argparse
 import os
+import re
+import unicodedata
 from pathlib import Path
 
 import numpy as np
@@ -26,6 +29,23 @@ TARGET_COLUMNS = [
     "Baker's", "Contusion", "Fracture",
 ]
 
+LEXICON = {
+    "ACL": ("acl", "lca", "anterior cruciate", "ligamento cruzado anterior", "ligament croise anterieur"),
+    "MCL": ("mcl", "lcm", "medial collateral", "ligamento colateral medial", "ligament collateral medial"),
+    "Medial Meniscus": ("medial meniscus", "meniscus medialis", "menisco medial", "menisque medial", "menisco interno"),
+    "Lateral Meniscus": ("lateral meniscus", "meniscus lateralis", "menisco lateral", "menisque lateral", "menisco externo"),
+    "Medial OA": ("medial osteoarthritis", "medial arthrosis", "medial osteoarthrosis", "medial compartment", "compartimento medial", "compartiment medial"),
+    "Lateral OA": ("lateral osteoarthritis", "lateral arthrosis", "lateral osteoarthrosis", "lateral compartment", "compartimento lateral", "compartiment lateral"),
+    "PF OA": ("patellofemoral osteoarthritis", "patellofemoral arthrosis", "patellofemoral compartment", "patellofemoral", "femoropatellar", "femoro-patellar"),
+    "Effusion": ("joint effusion", "effusion", "derrame articular", "derrame", "epanchement"),
+    "Synovitis": ("synovitis", "sinovitis", "synovite"),
+    "Baker's": ("baker", "popliteal cyst", "cisto popliteo", "kyste poplite"),
+    "Contusion": ("bone contusion", "bone bruise", "contusion", "contusao ossea", "contusion ossea", "contusion oseuse", "bone marrow edema"),
+    "Fracture": ("fracture", "fractura", "fratura"),
+}
+
+NEGATION_CUES = ("no", "not", "without", "intact", "normal", "preserved", "absent", "sin", "sem", "aucun", "aucune", "sans")
+
 
 def _reports(frame: pd.DataFrame) -> pd.Series:
     report = frame.get("Report", pd.Series("", index=frame.index)).fillna("").astype(str)
@@ -35,13 +55,48 @@ def _reports(frame: pd.DataFrame) -> pd.Series:
     return report + " [SEX=" + sex + "]"
 
 
-def _metadata(frame: pd.DataFrame, series: pd.DataFrame) -> pd.DataFrame:
+def _normalize(value: object) -> str:
+    text = "" if value is None else str(value)
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    return " ".join(text.lower().split())
+
+
+def _lexicon_score(text: str, terms: tuple[str, ...]) -> int:
+    normalized = _normalize(text)
+    positive = False
+    negative = False
+    for term in terms:
+        pattern = re.compile(rf"(?<!\w){re.escape(_normalize(term))}(?!\w)")
+        for match in pattern.finditer(normalized):
+            context = normalized[max(0, match.start() - 90) : match.start()]
+            if any(re.search(rf"(?<!\w){re.escape(cue)}(?!\w)", context) for cue in NEGATION_CUES):
+                negative = True
+            else:
+                positive = True
+    if positive:
+        return 1
+    if negative:
+        return -1
+    return 0
+
+
+def _lexicon_features(frame: pd.DataFrame) -> pd.DataFrame:
+    reports = frame.get("Report", pd.Series("", index=frame.index)).fillna("").astype(str)
+    result = {}
+    for target in TARGET_COLUMNS:
+        result[f"lexicon_{target}"] = [_lexicon_score(report, LEXICON[target]) for report in reports]
+    return pd.DataFrame(result, index=range(len(frame))).astype(float)
+
+
+def _metadata(frame: pd.DataFrame, series: pd.DataFrame, use_lexicon: bool = False) -> pd.DataFrame:
     sex = frame.get("PatientSex", pd.Series("Unknown", index=frame.index))
     sex = sex.fillna("Unknown").astype(str).replace({"": "Unknown"})
     result = pd.get_dummies(sex, prefix="sex", dtype=float)
     result.index = range(len(frame))
 
     if series.empty or KEY_COLUMN not in series.columns:
+        if use_lexicon:
+            result = result.join(_lexicon_features(frame))
         return result.fillna(0).astype(float)
 
     work = series.copy()
@@ -62,6 +117,8 @@ def _metadata(frame: pd.DataFrame, series: pd.DataFrame) -> pd.DataFrame:
     ids = frame[KEY_COLUMN].astype(str)
     for column in keyed.columns:
         result[column] = ids.map(keyed[column]).fillna(0).to_numpy()
+    if use_lexicon:
+        result = result.join(_lexicon_features(frame))
     return result.fillna(0).astype(float)
 
 
@@ -75,7 +132,7 @@ def _validate_submission(submission: pd.DataFrame, test: pd.DataFrame) -> None:
     assert not submission[KEY_COLUMN].duplicated().any(), "A submissão contém UIDs duplicados."
 
 
-def run(data_dir: Path, output: Path, c: float = 2.0) -> pd.DataFrame:
+def run(data_dir: Path, output: Path, c: float = 2.0, use_lexicon: bool = False) -> pd.DataFrame:
     train = pd.read_csv(data_dir / "train.csv")
     test = pd.read_csv(data_dir / "test.csv")
     train_series = pd.read_csv(data_dir / "train_series.csv") if (data_dir / "train_series.csv").exists() else pd.DataFrame()
@@ -85,8 +142,8 @@ def run(data_dir: Path, output: Path, c: float = 2.0) -> pd.DataFrame:
     char = TfidfVectorizer(analyzer="char", ngram_range=(3, 5), min_df=1, sublinear_tf=True, max_features=120_000)
     x_word = word.fit_transform(_reports(train))
     x_char = char.fit_transform(_reports(train))
-    train_meta = _metadata(train, train_series)
-    test_meta = _metadata(test, test_series).reindex(columns=train_meta.columns, fill_value=0)
+    train_meta = _metadata(train, train_series, use_lexicon=use_lexicon)
+    test_meta = _metadata(test, test_series, use_lexicon=use_lexicon).reindex(columns=train_meta.columns, fill_value=0)
     x_train = hstack([x_word, x_char, csr_matrix(train_meta.to_numpy())], format="csr")
     x_test = hstack([word.transform(_reports(test)), char.transform(_reports(test)), csr_matrix(test_meta.to_numpy())], format="csr")
 
@@ -115,10 +172,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default=os.environ.get("RSNA_DATA_DIR", "/kaggle/input/rsna-knee-abnormality-detection"))
     parser.add_argument("--c", type=float, default=2.0)
+    parser.add_argument("--use-lexicon", action="store_true")
     parser.add_argument("--output", default="/kaggle/working/submission.csv")
     args = parser.parse_args()
-    submission = run(Path(args.data_dir), Path(args.output), c=args.c)
-    print(f"submission gravada em {args.output} com {len(submission)} linhas; C={args.c}")
+    submission = run(Path(args.data_dir), Path(args.output), c=args.c, use_lexicon=args.use_lexicon)
+    print(f"submission gravada em {args.output} com {len(submission)} linhas; C={args.c}; lexicon={args.use_lexicon}")
 
 
 if __name__ == "__main__":
