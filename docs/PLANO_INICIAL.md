@@ -31,6 +31,8 @@ O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle
 
 Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de um léxico multilíngue por alvo. Só promover regras que tenham validação contra os estudos anotados e registrar os falsos positivos mais perigosos. O primeiro uso será como feature ou peso de confiança, não como verdade binária automática.
 
+**Gate de 08/08/2026:** a auditoria encontrou precisão entre `0,43` e `0,88` nos 58 estudos anotados. Baker's, MCL, Fracture e menisco lateral têm sinal inicial; ACL e menisco medial exigem regras melhores. Pseudo-rótulos binários estão proibidos nesta rodada.
+
 ### Fase 3 — imagem por série
 
 1. Decodificar DICOM com `pydicom`, normalizar orientação e intensidade sem depender de tags ausentes.

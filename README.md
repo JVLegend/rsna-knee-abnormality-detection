@@ -78,6 +78,14 @@ python scripts/evaluate_baseline.py \
   --output reports/v0_report_metadata_cv.json
 ```
 
+Para auditar o léxico multilíngue sem criar pseudo-rótulos:
+
+```bash
+python scripts/audit_weak_lexicon.py \
+  --data-dir data/raw \
+  --output reports/weak_lexicon_audit.json
+```
+
 Antes de subir o notebook, valide o contrato do CSV:
 
 ```bash
