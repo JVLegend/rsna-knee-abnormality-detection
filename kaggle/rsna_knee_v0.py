@@ -3,7 +3,8 @@
 O arquivo não importa o pacote do repositório: a execução da competição fica
 sem internet e precisa continuar funcionando quando este código for colado
 como células no notebook. O pacote em ``src/`` continua sendo a fonte de
-desenvolvimento local; este arquivo é o snapshot de submissão da v0.
+desenvolvimento local; este arquivo é o snapshot de submissão da v0. Para a
+candidata v0.1, execute com ``--c 32`` ou chame ``run(..., c=32)``.
 """
 
 from __future__ import annotations
@@ -64,7 +65,17 @@ def _metadata(frame: pd.DataFrame, series: pd.DataFrame) -> pd.DataFrame:
     return result.fillna(0).astype(float)
 
 
-def run(data_dir: Path, output: Path) -> pd.DataFrame:
+def _validate_submission(submission: pd.DataFrame, test: pd.DataFrame) -> None:
+    expected = [KEY_COLUMN, *TARGET_COLUMNS]
+    assert list(submission.columns) == expected, "Colunas da submissão fora de ordem."
+    assert submission[KEY_COLUMN].astype(str).tolist() == test[KEY_COLUMN].astype(str).tolist(), "UIDs fora de ordem."
+    values = submission[TARGET_COLUMNS].to_numpy(dtype=float)
+    assert np.isfinite(values).all(), "A submissão contém NaN ou infinito."
+    assert ((values >= 0) & (values <= 1)).all(), "A submissão contém valores fora de [0, 1]."
+    assert not submission[KEY_COLUMN].duplicated().any(), "A submissão contém UIDs duplicados."
+
+
+def run(data_dir: Path, output: Path, c: float = 2.0) -> pd.DataFrame:
     train = pd.read_csv(data_dir / "train.csv")
     test = pd.read_csv(data_dir / "test.csv")
     train_series = pd.read_csv(data_dir / "train_series.csv") if (data_dir / "train_series.csv").exists() else pd.DataFrame()
@@ -89,11 +100,12 @@ def run(data_dir: Path, output: Path) -> pd.DataFrame:
         elif np.unique(values).size < 2:
             predictions = np.full(len(test), values.mean())
         else:
-            classifier = LogisticRegression(C=2.0, class_weight="balanced", max_iter=800, solver="liblinear")
+            classifier = LogisticRegression(C=c, class_weight="balanced", max_iter=800, solver="liblinear")
             classifier.fit(x_train[labeled], values)
             predictions = classifier.predict_proba(x_test)[:, 1]
         submission[target] = np.clip(predictions, 1e-6, 1 - 1e-6)
 
+    _validate_submission(submission[[KEY_COLUMN, *TARGET_COLUMNS]], test)
     output.parent.mkdir(parents=True, exist_ok=True)
     submission[[KEY_COLUMN, *TARGET_COLUMNS]].to_csv(output, index=False)
     return submission
@@ -102,10 +114,11 @@ def run(data_dir: Path, output: Path) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", default=os.environ.get("RSNA_DATA_DIR", "/kaggle/input/rsna-knee-abnormality-detection"))
+    parser.add_argument("--c", type=float, default=2.0)
     parser.add_argument("--output", default="/kaggle/working/submission.csv")
     args = parser.parse_args()
-    submission = run(Path(args.data_dir), Path(args.output))
-    print(f"submission gravada em {args.output} com {len(submission)} linhas")
+    submission = run(Path(args.data_dir), Path(args.output), c=args.c)
+    print(f"submission gravada em {args.output} com {len(submission)} linhas; C={args.c}")
 
 
 if __name__ == "__main__":

@@ -13,8 +13,8 @@ Produzir uma submissão válida, barata e auditável para estabelecer o primeiro
 - [x] Criar repositório no HD externo, separado do vault.
 - [x] Criar `.gitignore` que bloqueia DICOM, CSVs baixados, pesos, credenciais e saídas.
 - [x] Adicionar smoke test sintético.
-- [ ] Baixar os dados pela Kaggle para `data/raw/`.
-- [ ] Registrar tamanho, hashes, cabeçalhos, número de estudos, cobertura por alvo e idiomas aparentes dos laudos.
+- [x] Baixar os metadados pela Kaggle para `data/raw/`.
+- [x] Registrar tamanho, cabeçalhos, número de estudos e cobertura por alvo; DICOM permanece pendente.
 
 ### Fase 1 — v0 report + metadata
 
@@ -25,7 +25,7 @@ Produzir uma submissão válida, barata e auditável para estabelecer o primeiro
 5. Avaliar por validação estratificada dentro dos estudos rotulados, reportando AUC por alvo e média macro.
 6. Treinar em todos os rótulos disponíveis e gerar `submission.csv`.
 
-O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle em `kaggle/rsna_knee_v0.py`.
+O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle em `kaggle/rsna_knee_v0.py`. A candidata v0.1 usa `C=32`.
 
 ### Fase 2 — weak supervision controlada
 
@@ -54,11 +54,11 @@ Concatenar embedding visual com sinal textual/metadados, calibrar probabilidades
 
 ## Próxima ação concreta
 
-Baixar os arquivos da competição e executar:
+Executar a candidata v0.1 no ambiente Kaggle, sem enviar ainda:
 
 ```bash
-python scripts/inspect_data.py --data-dir data/raw
-python scripts/run_baseline.py --data-dir data/raw --output submissions/submission_v0_report_metadata.csv
+python scripts/run_baseline.py --data-dir data/raw --c 32 --output submissions/submission_v0_1_report_metadata.csv
+python scripts/validate_submission.py --test data/raw/test.csv --submission submissions/submission_v0_1_report_metadata.csv
 ```
 
 O primeiro registro de leaderboard será usado apenas para confirmar a esteira e a direção da validação, não como substituto da avaliação local.
