@@ -58,6 +58,13 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - A leitura com `pydicom 3.0.2` funcionou para todas as fatias; a sequência de instâncias é `1–30` e há um único `SeriesInstanceUID`.
 - O download confirma que a API permite aquisição por arquivo individual. O conjunto integral de aproximadamente 569 GB continua pendente; não iniciar esse download antes de validar seleção de séries, normalização e custo do pipeline.
 
+## Estado da aquisição local — lote estratificado — 08/08/2026
+
+- O manifesto `data/processed/dicom_subset_manifest.json` seleciona 10 estudos únicos e uma série fluido-sensível/sagital por estudo, cobrindo os valores 0 e 1 dos 12 alvos.
+- O lote selecionado tem 289 fatias e `193.721.314` bytes; somado à série técnica anterior, há 319 DICOMs locais no HD externo.
+- A leitura completa dos 289 arquivos passou com `pydicom`: `MONOCHROME2`, transfer syntax explícita little endian, dimensões `256×256`, `320×320`, `512×512`, `640×640` e `800×800`, com pixels `uint16` ou `int16`.
+- O downloader usa a listagem em árvore do Kaggle CLI `>=2.2.2`, consulta somente os diretórios do manifesto e é incremental. O conjunto integral continua fora de escopo até validar o pipeline visual.
+
 ## Cronograma
 
 Todos os horários abaixo são 23:59 UTC, salvo atualização da organização:

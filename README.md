@@ -130,7 +130,10 @@ python scripts/download_dicom_subset.py \
 ```
 
 Remova `--dry-run` somente depois de conferir a estimativa; o downloader é
-incremental e pula arquivos já existentes.
+incremental e pula arquivos já existentes. Com Kaggle CLI `>=2.2.2`, ele usa a
+listagem em árvore para consultar diretamente cada diretório de série, sem
+varrer todos os arquivos da competição; em versões anteriores há um fallback
+para a listagem plana, que pode sofrer rate limit nesse desafio.
 
 Antes de subir o notebook, valide o contrato do CSV:
 

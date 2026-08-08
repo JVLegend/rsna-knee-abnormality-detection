@@ -13,6 +13,11 @@ from tempfile import TemporaryDirectory
 from kaggle.api.kaggle_api_extended import KaggleApi
 from requests import HTTPError
 
+try:
+    from kagglesdk.competitions.types.competition_api_service import ApiListDataTreeFilesRequest
+except ImportError:  # Kaggle CLI anterior à API de listagem em árvore.
+    ApiListDataTreeFilesRequest = None
+
 
 def _series_prefix(entry: dict[str, object]) -> str:
     return f"train_series/{entry['study_uid']}/{entry['series_uid']}/"
@@ -25,6 +30,64 @@ def _list_series_files(
     page_size: int,
     max_pages: int,
 ) -> dict[str, list[tuple[str, int]]]:
+    if ApiListDataTreeFilesRequest is not None:
+        return _list_series_files_tree(api, competition, prefixes, page_size, max_pages)
+
+    return _list_series_files_flat(api, competition, prefixes, page_size, max_pages)
+
+
+def _list_series_files_tree(
+    api: KaggleApi,
+    competition: str,
+    prefixes: set[str],
+    page_size: int,
+    max_pages: int,
+) -> dict[str, list[tuple[str, int]]]:
+    """Lista diretamente cada diretório de série (Kaggle CLI >= 2.2.2)."""
+
+    found: dict[str, list[tuple[str, int]]] = {prefix: [] for prefix in prefixes}
+    pages = 0
+    with api.build_kaggle_client() as client:
+        for prefix in prefixes:
+            token = None
+            while True:
+                if pages >= max_pages:
+                    raise RuntimeError(f"Limite de {max_pages} páginas atingido antes de localizar todas as séries.")
+                request = ApiListDataTreeFilesRequest()
+                request.competition_name = competition
+                request.path = prefix.rstrip("/")
+                request.page_size = page_size
+                request.page_token = token
+                try:
+                    response = client.competitions.competition_api_client.list_data_tree_files(request)
+                except HTTPError as exc:
+                    status = getattr(exc.response, "status_code", None)
+                    if status not in {429, 500, 502, 503, 504}:
+                        raise
+                    raise RuntimeError(f"API de árvore retornou HTTP {status} ao consultar uma série.") from exc
+                pages += 1
+                for file in response.files:
+                    found[prefix].append((f"{prefix}{file.name}", int(getattr(file, "total_bytes", 0))))
+                token = response.next_page_token
+                if not token:
+                    break
+
+    missing = [prefix for prefix, files in found.items() if not files]
+    if missing:
+        raise RuntimeError(f"Séries não encontradas na API de árvore: {missing}")
+    print(f"api_tree_series={len(found)} api_tree_pages={pages}")
+    return found
+
+
+def _list_series_files_flat(
+    api: KaggleApi,
+    competition: str,
+    prefixes: set[str],
+    page_size: int,
+    max_pages: int,
+) -> dict[str, list[tuple[str, int]]]:
+    """Fallback para versões antigas do Kaggle CLI sem listagem em árvore."""
+
     found: dict[str, list[tuple[str, int]]] = {prefix: [] for prefix in prefixes}
     token = None
     pages = 0
