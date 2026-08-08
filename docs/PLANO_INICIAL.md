@@ -61,6 +61,11 @@ dimensões entre `256×256` e `800×800`, e `uint16`/`int16`.
 5. [ ] Fazer pooling por série e depois por estudo.
 6. [ ] Treinar 12 cabeças de classificação com máscara de perda para rótulos ausentes.
 
+O avaliador `scripts/evaluate_visual_embeddings.py` já está preparado para
+calcular AUC por alvo sobre o índice completo, com regressão logística,
+normalização e validação estratificada; o resultado não será estimado no lote
+parcial de 18 como se fosse desempenho final.
+
 O embedding atual é um gate de pré-processamento no primeiro lote de 18
 estudos. Depois que o lote rotulado restante estiver completo, vamos repetir a
 mesma esteira para os 58 estudos anotados e então comparar um baseline visual

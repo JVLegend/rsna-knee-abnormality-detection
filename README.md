@@ -142,6 +142,22 @@ O primeiro lote validado produziu uma matriz `(18, 1280)` `float32`, finita e
 com 18 linhas distintas. O hash SHA-256 dos pesos usado nessa rodada fica
 registrado no `index.json` local.
 
+Depois de materializar o índice completo dos estudos rotulados, o baseline
+visual pode ser avaliado por alvo com regressão logística e validação
+estratificada:
+
+```bash
+python scripts/evaluate_visual_embeddings.py \
+  --data-dir data/raw \
+  --index data/processed/dicom_embeddings_efficientnet_b0_labeled/index.json \
+  --folds 5 \
+  --output reports/visual_embeddings_cv.json
+```
+
+O relatório só deve ser interpretado quando houver variação suficiente de
+positivos e negativos em cada alvo; o script reduz o número de folds quando
+necessário e falha de forma explícita se um alvo não permitir AUC.
+
 Para selecionar e baixar um lote visual pequeno, sem iniciar os ~569 GB:
 
 ```bash
