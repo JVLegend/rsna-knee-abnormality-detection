@@ -43,6 +43,14 @@ O snapshot da Kaggle informa 819.640 arquivos, 569,76 GB e aproximadamente 1.300
 
 Um ponto central do desafio é que somente uma pequena parte dos estudos de treino tem rótulos por condição. Os laudos estão disponíveis para todos os estudos e podem ser usados para extrair sinal supervisionado adicional, desde que façamos isso sem transformar ausência de rótulo em negativo.
 
+## Estado da aquisição local — 07/08/2026
+
+- Metadados baixados em `data/raw/`: `train.csv`, `test.csv`, `train_series.csv`, `test_series.csv` e `sample_submission.csv`.
+- `train.csv`: 4.407 estudos, todos com relatório preenchido; 58 estudos rotulados por alvo.
+- `train_series.csv`: 24.371 séries, média de 5,53 séries por estudo.
+- Os CSVs passaram por validação de colunas, duplicidades e contrato da submissão.
+- Nenhum DICOM foi versionado ou baixado nesta fase. A estratégia é adquirir primeiro um subconjunto estratificado para validar o pipeline visual e só então avaliar a necessidade de baixar o conjunto integral.
+
 ## Cronograma
 
 Todos os horários abaixo são 23:59 UTC, salvo atualização da organização:
