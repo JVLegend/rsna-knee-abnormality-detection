@@ -5,7 +5,7 @@
 | Data | Versão | Hipótese | Validação local | Leaderboard | Decisão |
 |---|---|---|---:|---:|---|
 | 07/08/2026 | `setup` | Repositório, regras, protocolo e smoke test sintético | N/A | N/A | Infraestrutura pronta |
-| 07/08/2026 | `v0_report_metadata` | TF-IDF de laudo + sexo + atributos de séries, um classificador por alvo | Metadados disponíveis; executar baseline local com 58 rótulos por alvo | A executar | Candidato inicial |
+| 07/08/2026 | `v0_report_metadata` | TF-IDF de laudo + sexo + atributos de séries, um classificador por alvo | Submissão local gerada e contrato OK; CV ainda não calculada | A executar | Candidato inicial, sem envio |
 
 ## Convenção
 
