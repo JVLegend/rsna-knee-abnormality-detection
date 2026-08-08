@@ -59,6 +59,16 @@ python scripts/run_baseline.py \
   --output submissions/submission_v0_report_metadata.csv
 ```
 
+Para medir a v0 sem usar rótulos do fold de validação:
+
+```bash
+python scripts/evaluate_baseline.py \
+  --data-dir data/raw \
+  --folds 5 \
+  --seed 42 \
+  --output reports/v0_report_metadata_cv.json
+```
+
 Antes de subir o notebook, valide o contrato do CSV:
 
 ```bash
