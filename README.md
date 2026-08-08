@@ -59,6 +59,14 @@ python scripts/run_baseline.py \
   --output submissions/submission_v0_report_metadata.csv
 ```
 
+Antes de subir o notebook, valide o contrato do CSV:
+
+```bash
+python scripts/validate_submission.py \
+  --test data/raw/test.csv \
+  --submission submissions/submission_v0_report_metadata.csv
+```
+
 O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`.
 
 ## Regras de publicação

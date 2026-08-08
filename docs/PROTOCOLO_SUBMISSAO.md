@@ -38,9 +38,10 @@ assert not submission["StudyInstanceUID"].duplicated().any()
 
 1. Fazer commit do notebook no Kaggle.
 2. Confirmar que `submission.csv` está no diretório de saída.
-3. Enviar uma única hipótese identificada por versão (`v0_report_metadata`, `v1_weak_supervision`, etc.).
-4. Registrar data, commit, hash do notebook, tempo, memória, score público e observações em `docs/LOG_EXPERIMENTOS.md`.
-5. Preservar o melhor modelo por validação local e o melhor resultado público como referências separadas.
+3. Rodar `scripts/validate_submission.py` localmente, quando houver uma cópia do `test.csv`.
+4. Enviar uma única hipótese identificada por versão (`v0_report_metadata`, `v1_weak_supervision`, etc.).
+5. Registrar data, commit, hash do notebook, tempo, memória, score público e observações em `docs/LOG_EXPERIMENTOS.md`.
+6. Preservar o melhor modelo por validação local e o melhor resultado público como referências separadas.
 
 ## Limites
 
