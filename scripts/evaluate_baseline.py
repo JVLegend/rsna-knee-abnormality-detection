@@ -121,6 +121,7 @@ def _evaluate(
     train_series: pd.DataFrame,
     requested_folds: int,
     seed: int,
+    c: float,
 ) -> dict[str, object]:
     labels = _label_series(train)
     folds = _n_splits(labels, requested_folds)
@@ -140,7 +141,7 @@ def _evaluate(
             train_indices = labeled_sets[0][train_positions]
             val_indices = labeled_sets[0][val_positions]
             fit_frame = _masked_training_frame(train, labels, train_indices)
-            model = KneeReportBaseline().fit(fit_frame, train_series)
+            model = KneeReportBaseline(c=c).fit(fit_frame, train_series)
             validation_frame = train.iloc[val_indices]
             predictions = model.predict(validation_frame, _series_for_studies(train_series, validation_frame))
             for target in TARGET_COLUMNS:
@@ -151,7 +152,7 @@ def _evaluate(
         for target in TARGET_COLUMNS:
             for train_indices, val_indices in _target_specific_splits(labels, target, folds, seed):
                 fit_frame = _masked_training_frame(train, labels, train_indices, target=target)
-                model = KneeReportBaseline().fit(fit_frame, train_series)
+                model = KneeReportBaseline(c=c).fit(fit_frame, train_series)
                 validation_frame = train.iloc[val_indices]
                 predictions = model.predict(validation_frame, _series_for_studies(train_series, validation_frame))
                 oof[target][val_indices] = predictions[target].to_numpy()
@@ -178,6 +179,7 @@ def _evaluate(
 
     return {
         "model": "v0_report_metadata",
+        "c": c,
         "seed": seed,
         "requested_folds": requested_folds,
         "folds_used": folds_used,
@@ -194,6 +196,7 @@ def main() -> None:
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--c", type=float, default=2.0)
     parser.add_argument("--output", default="reports/v0_report_metadata_cv.json")
     args = parser.parse_args()
 
@@ -203,7 +206,7 @@ def main() -> None:
     if train.empty:
         raise RuntimeError("train.csv é necessário para a validação.")
 
-    result = _evaluate(train, tables["train_series"], args.folds, args.seed)
+    result = _evaluate(train, tables["train_series"], args.folds, args.seed, args.c)
     output = Path(args.output)
     if not output.is_absolute():
         output = ROOT / output
@@ -211,7 +214,7 @@ def main() -> None:
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     print(f"data_dir={data_dir}")
-    print(f"split_mode={result['split_mode']} folds={result['folds_used']} seed={result['seed']}")
+    print(f"split_mode={result['split_mode']} folds={result['folds_used']} seed={result['seed']} C={result['c']}")
     for row in result["targets"]:
         print(f"{row['target']}: AUC={row['auc']:.6f} labeled={row['labeled']}")
     print(f"macro_auc={result['macro_auc']:.6f}")

@@ -59,6 +59,15 @@ python scripts/run_baseline.py \
   --output submissions/submission_v0_report_metadata.csv
 ```
 
+Para a candidata v0.1, selecionada por validação cruzada com `C=32`:
+
+```bash
+python scripts/run_baseline.py \
+  --data-dir data/raw \
+  --c 32 \
+  --output submissions/submission_v0_1_report_metadata.csv
+```
+
 Para medir a v0 sem usar rótulos do fold de validação:
 
 ```bash
