@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Candidata visual v1 para o notebook Kaggle.
+"""Candidata visual v1.1 targetwise para o notebook Kaggle.
 
 Combina o baseline de laudos/metadados com embeddings EfficientNet-B0 de uma
 representação 2.5D DICOM. O código é autocontido para o modo Notebook-only:
@@ -62,7 +62,7 @@ IMAGE_MEAN = torch.tensor([0.485, 0.456, 0.406], dtype=torch.float32).view(1, 3,
 IMAGE_STD = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 1, 1)
 SAMPLE_QUANTILES = (0.25, 0.5, 0.75)
 WEIGHTS_FILENAME = "efficientnet_b0_rwightman-7f5810bc.pth"
-TARGETWISE_MODE = False
+TARGETWISE_MODE = True
 TARGETWISE_VISUAL_WEIGHTS = {
     "ACL": 0.5,
     "MCL": 0.5,

@@ -48,6 +48,16 @@ O kernel `jvlegend/rsna-knee-abnormality-detection-v1-visual`, versão 2,
 foi executado com sucesso e a submissão `55364637` marcou score público
 `0,607`, acima do baseline `55364182` (`0,505`).
 
+## Candidata visual v1.1 targetwise
+
+`rsna_knee_v1_targetwise.py` mantém o mesmo modelo visual, mas calibra a
+fração visual por alvo. Os pesos foram congelados antes do próximo envio a
+partir da média de dois seeds no CV local: mais imagem para ACL, MCL e
+Effusion; menos imagem para OA medial, PF OA e Synovitis. No subconjunto de
+52 estudos, a média foi `0,680149` contra `0,657018` do blend global `0,4`.
+Como a seleção foi feita no mesmo conjunto pequeno, a próxima submissão será
+tratada como experimento controlado, não como solução final.
+
 Antes de enviar:
 
 1. confirmar o caminho do dataset montado no notebook;

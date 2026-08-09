@@ -40,6 +40,28 @@ def _parse_alphas(value: str) -> tuple[float, ...]:
     return alphas
 
 
+def _parse_target_alphas(value: str) -> dict[str, float]:
+    """Lê pesos por alvo no formato ``ACL=0.5,Effusion=0.5``."""
+
+    result: dict[str, float] = {}
+    for item in (part.strip() for part in value.split(",")):
+        if not item:
+            continue
+        if "=" not in item:
+            raise ValueError(f"Peso por alvo inválido: {item!r}; use Alvo=0.4.")
+        target, raw_alpha = (part.strip() for part in item.split("=", 1))
+        if target not in TARGET_COLUMNS:
+            raise ValueError(f"Alvo desconhecido em --target-alphas: {target!r}.")
+        alpha = float(raw_alpha)
+        if not 0 <= alpha <= 1:
+            raise ValueError(f"Peso visual fora de [0, 1] para {target!r}: {alpha}.")
+        result[target] = alpha
+    if set(result) != set(TARGET_COLUMNS):
+        missing = sorted(set(TARGET_COLUMNS) - set(result))
+        raise ValueError(f"--target-alphas precisa definir os 12 alvos; faltam: {missing}.")
+    return result
+
+
 def evaluate_fusion(
     matrix: np.ndarray,
     frame: pd.DataFrame,
@@ -49,11 +71,14 @@ def evaluate_fusion(
     text_c: float = 32.0,
     visual_c: float = 1.0,
     alphas: tuple[float, ...] = (0.0, 0.25, 0.5, 0.75, 1.0),
+    target_alphas: dict[str, float] | None = None,
 ) -> dict[str, object]:
     if matrix.shape[0] != len(frame):
         raise ValueError("Número de embeddings e estudos não coincide.")
     if text_c <= 0 or visual_c <= 0:
         raise ValueError("As regularizações precisam ser positivas.")
+    if target_alphas is not None and set(target_alphas) != set(TARGET_COLUMNS):
+        raise ValueError("target_alphas precisa definir exatamente os 12 alvos.")
 
     oof_text: dict[str, np.ndarray] = {}
     oof_visual: dict[str, np.ndarray] = {}
@@ -113,6 +138,23 @@ def evaluate_fusion(
         key = f"alpha_{alpha:g}"
         models[key] = {"visual_weight": alpha, "text_weight": 1 - alpha, "macro_auc": float(np.mean(aucs)), "targets": rows}
 
+    if target_alphas is not None:
+        rows = []
+        aucs = []
+        for target in TARGET_COLUMNS:
+            labels = pd.to_numeric(frame[target], errors="coerce")
+            y = labels.dropna().to_numpy(dtype=float)
+            alpha = target_alphas[target]
+            score = (1 - alpha) * oof_text[target] + alpha * oof_visual[target]
+            auc = float(roc_auc_score(y, score))
+            aucs.append(auc)
+            rows.append({"target": target, **target_meta[target], "visual_weight": alpha, "auc": auc})
+        models["targetwise"] = {
+            "visual_weights": target_alphas,
+            "macro_auc": float(np.mean(aucs)),
+            "targets": rows,
+        }
+
     return {
         "model": "text_visual_probability_blend",
         "embedding_shape": list(matrix.shape),
@@ -134,6 +176,7 @@ def main() -> None:
     parser.add_argument("--text-c", type=float, default=32.0)
     parser.add_argument("--visual-c", type=float, default=1.0)
     parser.add_argument("--alphas", default="0,0.25,0.5,0.75,1")
+    parser.add_argument("--target-alphas", default="")
     parser.add_argument("--output", type=Path, default=Path("reports/fusion_embeddings_cv.json"))
     args = parser.parse_args()
 
@@ -150,6 +193,7 @@ def main() -> None:
         text_c=args.text_c,
         visual_c=args.visual_c,
         alphas=_parse_alphas(args.alphas),
+        target_alphas=_parse_target_alphas(args.target_alphas) if args.target_alphas else None,
     )
     result["source_index"] = str(_resolve(args.index))
     result["weights_sha256"] = index.get("weights_sha256")
