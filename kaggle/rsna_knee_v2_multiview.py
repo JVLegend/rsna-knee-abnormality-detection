@@ -63,6 +63,9 @@ IMAGE_STD = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 
 SAMPLE_QUANTILES = (0.25, 0.5, 0.75)
 WEIGHTS_FILENAME = "efficientnet_b0_rwightman-7f5810bc.pth"
 TARGETWISE_MODE = False
+WEAK_VISUAL_MODE = False
+WEAK_VISUAL_THRESHOLD = 0.85
+WEAK_VISUAL_SAMPLE_WEIGHT = 0.10
 TARGETWISE_VISUAL_WEIGHTS = {
     "ACL": 0.5,
     "MCL": 0.5,
@@ -222,6 +225,28 @@ def _number(value: object) -> float | None:
         return None
 
 
+def _series_index(series: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    if series.empty or KEY_COLUMN not in series.columns:
+        return {}
+    work = series.copy()
+    work[KEY_COLUMN] = work[KEY_COLUMN].astype(str)
+    return {
+        str(study_uid): group.reset_index(drop=True)
+        for study_uid, group in work.groupby(KEY_COLUMN, sort=False)
+    }
+
+
+def _series_for_study(
+    series: pd.DataFrame | dict[str, pd.DataFrame],
+    study_uid: str,
+) -> pd.DataFrame:
+    if isinstance(series, dict):
+        return series.get(study_uid, pd.DataFrame())
+    if series.empty or KEY_COLUMN not in series.columns:
+        return pd.DataFrame()
+    return series[series[KEY_COLUMN].astype(str).eq(study_uid)].copy()
+
+
 def _sort_key(item: tuple[Path, object]) -> tuple[object, ...]:
     path, dataset = item
     instance = _number(getattr(dataset, "InstanceNumber", None))
@@ -234,11 +259,12 @@ def _sort_key(item: tuple[Path, object]) -> tuple[object, ...]:
     return (2, path.name)
 
 
-def _preferred_series(series: pd.DataFrame, study_uid: str) -> str | None:
-    if series.empty or KEY_COLUMN not in series.columns or "SeriesInstanceUID" not in series.columns:
-        return None
-    candidates = series[series[KEY_COLUMN].astype(str).eq(study_uid)].copy()
-    if candidates.empty:
+def _preferred_series(series: pd.DataFrame | dict[str, pd.DataFrame], study_uid: str) -> str | None:
+    if isinstance(series, dict):
+        candidates = series.get(study_uid, pd.DataFrame()).copy()
+    else:
+        candidates = _series_for_study(series, study_uid)
+    if candidates.empty or "SeriesInstanceUID" not in candidates.columns:
         return None
     fluid = candidates["Fluid_Sensitive"] if "Fluid_Sensitive" in candidates.columns else pd.Series(0, index=candidates.index)
     fat = candidates["Fat_Suppression"] if "Fat_Suppression" in candidates.columns else pd.Series(0, index=candidates.index)
@@ -251,13 +277,14 @@ def _preferred_series(series: pd.DataFrame, study_uid: str) -> str | None:
     return str(candidates.iloc[0]["SeriesInstanceUID"])
 
 
-def _preferred_series_uids(series: pd.DataFrame, study_uid: str) -> list[str]:
+def _preferred_series_uids(series: pd.DataFrame | dict[str, pd.DataFrame], study_uid: str) -> list[str]:
     """Escolhe até uma série fluido-sensível por plano anatômico."""
 
-    if series.empty or KEY_COLUMN not in series.columns or "SeriesInstanceUID" not in series.columns:
-        return []
-    candidates = series[series[KEY_COLUMN].astype(str).eq(study_uid)].copy()
-    if candidates.empty:
+    if isinstance(series, dict):
+        candidates = series.get(study_uid, pd.DataFrame()).copy()
+    else:
+        candidates = _series_for_study(series, study_uid)
+    if candidates.empty or "SeriesInstanceUID" not in candidates.columns:
         return []
     fluid = candidates["Fluid_Sensitive"] if "Fluid_Sensitive" in candidates.columns else pd.Series(0, index=candidates.index)
     fat = candidates["Fat_Suppression"] if "Fat_Suppression" in candidates.columns else pd.Series(0, index=candidates.index)
@@ -338,14 +365,26 @@ def _series_image(data_dir: Path, split: str, study_uid: str, series_uid: str, s
     return np.stack(channels, axis=0), True
 
 
-def study_image(data_dir: Path, split: str, study_uid: str, series: pd.DataFrame, size: int = 224) -> tuple[np.ndarray, bool]:
+def study_image(
+    data_dir: Path,
+    split: str,
+    study_uid: str,
+    series: pd.DataFrame | dict[str, pd.DataFrame],
+    size: int = 224,
+) -> tuple[np.ndarray, bool]:
     series_uid = _preferred_series(series, study_uid)
     if series_uid is None:
         return np.zeros((3, size, size), dtype=np.uint8), False
     return _series_image(data_dir, split, study_uid, series_uid, size)
 
 
-def study_images(data_dir: Path, split: str, study_uid: str, series: pd.DataFrame, size: int = 224) -> tuple[list[np.ndarray], bool]:
+def study_images(
+    data_dir: Path,
+    split: str,
+    study_uid: str,
+    series: pd.DataFrame | dict[str, pd.DataFrame],
+    size: int = 224,
+) -> tuple[list[np.ndarray], bool]:
     images: list[np.ndarray] = []
     for series_uid in _preferred_series_uids(series, study_uid):
         image, valid = _series_image(data_dir, split, study_uid, series_uid, size)
@@ -382,8 +421,9 @@ def visual_embeddings(
     device: str = "auto",
 ) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
     encoder, device, weights_path = _load_encoder(device)
-    records = [("train", row, train_series) for _, row in train_labeled.iterrows()]
-    records.extend(("test", row, test_series) for _, row in test.iterrows())
+    series_indexes = {"train": _series_index(train_series), "test": _series_index(test_series)}
+    records = [("train", row, series_indexes["train"]) for _, row in train_labeled.iterrows()]
+    records.extend(("test", row, series_indexes["test"]) for _, row in test.iterrows())
     images: list[np.ndarray] = []
     image_owners: list[int] = []
     valid_flags: list[bool] = []
@@ -431,10 +471,48 @@ def visual_embeddings(
         "views_total": int(sum(len(values) for values in study_embeddings)),
         "views_mean_valid_study": float(np.mean([len(values) for values in study_embeddings if values])) if any(study_embeddings) else 0.0,
         "max_views_study": int(max((len(values) for values in study_embeddings), default=0)),
+        "valid_train_mask": valid[:train_count].tolist(),
         "series_selection": "one_best_fluid_fat_series_per_anatomical_plane",
         "embedding_shape": list(matrix.shape),
     }
     return matrix[:train_count], matrix[train_count:], meta
+
+
+def _weak_target_arrays(
+    train: pd.DataFrame,
+    teacher: pd.DataFrame,
+    threshold: float = WEAK_VISUAL_THRESHOLD,
+    sample_weight: float = WEAK_VISUAL_SAMPLE_WEIGHT,
+) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    """Constrói alvos weak supervision sem transformar incerteza em negativo.
+
+    As linhas gold usam o rótulo oficial e peso 1. As demais só entram quando o
+    relatório contém uma menção explícita ao alvo e o professor textual está
+    suficientemente distante de 0,5; ausência de menção nunca vira negativo.
+    """
+
+    if not 0.5 < threshold < 1:
+        raise ValueError("threshold precisa estar entre 0,5 e 1.")
+    if sample_weight <= 0:
+        raise ValueError("sample_weight precisa ser positivo.")
+    lexicon_frame = _lexicon_features(train)
+    result: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+    for target in TARGET_COLUMNS:
+        gold_values = pd.to_numeric(train[target], errors="coerce").to_numpy(dtype=float)
+        gold = np.isfinite(gold_values)
+        probabilities = pd.to_numeric(teacher[target], errors="coerce").to_numpy(dtype=float)
+        if len(probabilities) != len(train) or not np.isfinite(probabilities).all():
+            raise ValueError(f"Professor textual inválido para {target!r}.")
+        explicit_signal = lexicon_frame[f"lexicon_{target}"].to_numpy(dtype=float) != 0
+        weak = (~gold) & explicit_signal & ((probabilities >= threshold) | (probabilities <= 1 - threshold))
+        included = gold | weak
+        labels = np.where(gold, gold_values, (probabilities >= 0.5).astype(float))
+        weights = np.zeros(len(train), dtype=float)
+        weights[gold] = 1.0
+        confidence = np.clip(2.0 * np.abs(probabilities - 0.5), 0.0, 1.0)
+        weights[weak] = sample_weight * confidence[weak]
+        result[target] = labels, weights, included
+    return result
 
 
 def validate_submission(submission: pd.DataFrame, test: pd.DataFrame) -> None:
@@ -454,6 +532,9 @@ def run(
     batch_size: int = 16,
     device: str = "auto",
     targetwise: bool = False,
+    weak_visual: bool = WEAK_VISUAL_MODE,
+    weak_threshold: float = WEAK_VISUAL_THRESHOLD,
+    weak_sample_weight: float = WEAK_VISUAL_SAMPLE_WEIGHT,
 ) -> pd.DataFrame:
     if not 0 <= visual_weight <= 1:
         raise ValueError("visual_weight precisa estar entre 0 e 1.")
@@ -471,31 +552,66 @@ def run(
         raise ValueError("train.csv não contém estudos rotulados.")
 
     text = text_predictions(train, test, train_series, test_series)
+    visual_train_frame = train.reset_index(drop=True) if weak_visual else train_labeled
     train_visual, test_visual, visual_meta = visual_embeddings(
         data_dir,
-        train_labeled,
+        visual_train_frame,
         test,
         train_series,
         test_series,
         batch_size=batch_size,
         device=device,
     )
+    valid_train = np.asarray(
+        visual_meta.get("valid_train_mask", [True] * len(visual_train_frame)),
+        dtype=bool,
+    )
+    if len(valid_train) != len(visual_train_frame):
+        raise ValueError("A máscara de validade visual não coincide com o treino.")
+    weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] | None = None
+    if weak_visual:
+        teacher = text_predictions(train, train, train_series, train_series)
+        weak_targets = _weak_target_arrays(
+            train,
+            teacher,
+            threshold=weak_threshold,
+            sample_weight=weak_sample_weight,
+        )
     visual = pd.DataFrame({KEY_COLUMN: test[KEY_COLUMN].astype(str).to_numpy()})
+    weak_meta: dict[str, dict[str, int]] = {}
     for target in TARGET_COLUMNS:
-        labels = train_labeled[target]
+        if weak_visual:
+            assert weak_targets is not None
+            labels_array, sample_weights, included = weak_targets[target]
+            fit_mask = included & valid_train
+            y = labels_array[fit_mask]
+            weak_meta[target] = {
+                "gold": int(np.isfinite(pd.to_numeric(train[target], errors="coerce")).sum()),
+                "weak": int((included & ~train[target].notna().to_numpy()).sum()),
+                "fit": int(fit_mask.sum()),
+            }
+        else:
+            labels = pd.to_numeric(train_labeled[target], errors="coerce")
+            fit_mask = labels.notna().to_numpy() & valid_train
+            y = labels.to_numpy(dtype=float)[fit_mask]
+            sample_weights = None
         model = make_pipeline(
             StandardScaler(),
             LogisticRegression(C=0.1, class_weight="balanced", max_iter=1500, solver="liblinear"),
         )
-        values = pd.to_numeric(labels, errors="coerce")
-        mask = values.notna().to_numpy()
-        y = values.loc[mask].to_numpy(dtype=float)
         if y.size == 0:
             visual[target] = 0.5
         elif np.unique(y).size < 2:
             visual[target] = float(y.mean())
         else:
-            model.fit(train_visual[mask], y)
+            if sample_weights is None:
+                model.fit(train_visual[fit_mask], y)
+            else:
+                model.fit(
+                    train_visual[fit_mask],
+                    y,
+                    logisticregression__sample_weight=sample_weights[fit_mask],
+                )
             visual[target] = np.clip(model.predict_proba(test_visual)[:, 1], 1e-6, 1 - 1e-6)
 
     submission = text.copy()
@@ -511,10 +627,18 @@ def run(
     output.parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(output, index=False)
     print(f"data_dir={data_dir}")
-    print(f"labeled_train={len(train_labeled)} test={len(test)} visual_weight={visual_weight} targetwise={targetwise}")
+    print(
+        f"labeled_train={len(train_labeled)} visual_train={len(visual_train_frame)} "
+        f"test={len(test)} visual_weight={visual_weight} targetwise={targetwise} "
+        f"weak_visual={weak_visual}"
+    )
     if targetwise:
         print(f"targetwise_visual_weights={TARGETWISE_VISUAL_WEIGHTS}")
-    print(f"visual_meta={visual_meta}")
+    if weak_visual:
+        print(f"weak_meta={weak_meta}")
+    visual_meta_log = dict(visual_meta)
+    visual_meta_log.pop("valid_train_mask", None)
+    print(f"visual_meta={visual_meta_log}")
     print(f"submission gravada em {output} com {len(submission)} linhas; elapsed={time.perf_counter() - started:.1f}s")
     return submission
 
@@ -526,6 +650,9 @@ def main() -> None:
     parser.add_argument("--targetwise", action="store_true", default=TARGETWISE_MODE)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--weak-visual", action="store_true", default=WEAK_VISUAL_MODE)
+    parser.add_argument("--weak-threshold", type=float, default=WEAK_VISUAL_THRESHOLD)
+    parser.add_argument("--weak-sample-weight", type=float, default=WEAK_VISUAL_SAMPLE_WEIGHT)
     parser.add_argument("--output", default=os.environ.get("RSNA_OUTPUT", "/kaggle/working/submission.csv"))
     args = parser.parse_args()
     run(
@@ -535,6 +662,9 @@ def main() -> None:
         batch_size=args.batch_size,
         device=args.device,
         targetwise=args.targetwise,
+        weak_visual=args.weak_visual,
+        weak_threshold=args.weak_threshold,
+        weak_sample_weight=args.weak_sample_weight,
     )
 
 

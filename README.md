@@ -6,7 +6,7 @@ Baseline reprodutível para a competição [RSNA Knee Abnormality Detection](htt
 
 Prever, para cada estudo de MRI do joelho, a probabilidade de 12 anormalidades. A métrica é a média macro de ROC-AUC nos 12 alvos.
 
-O primeiro marco é uma submissão v0 baseada em laudo radiológico e metadados de séries. Depois acrescentaremos a informação visual dos DICOM em uma arquitetura 2.5D por estudo.
+O primeiro marco foi uma submissão textual; a referência atual é a candidata multi-view texto–imagem, com score público `0,635`. A próxima hipótese amplia o treino visual com supervisão fraca controlada dos 4.407 laudos, sem depender de `Report` no teste.
 
 ## Estrutura
 
@@ -79,6 +79,12 @@ python scripts/run_baseline.py \
 ```
 
 A v0.2 atingiu macro-AUC média `0.629867` em dois seeds (`42` e `2026`), contra `0.565655` da v0.1. O léxico é usado como feature, sem criar pseudo-rótulos.
+
+## Candidata atual: v2 multi-view e v3 weak visual
+
+O kernel `jvlegend/rsna-knee-abnormality-detection-v2-multiview` seleciona uma série fluido-sensível por plano anatômico, agrega as vistas com EfficientNet-B0 e mistura o visual com o texto. A submissão `55365537` marcou `0,635` no público e é a referência congelada.
+
+A v3 mantém essa arquitetura e treina o componente visual nos 4.407 estudos disponíveis. Os 58 rótulos oficiais recebem peso `1,0`; linhas sem rótulo só entram quando há menção lexical explícita e o professor textual está em `p≥0,85` ou `p≤0,15`, com peso máximo `0,10`. Não mencionar um achado nunca é tratado como normalidade. O worker privado está em execução; ainda não há score da v3.
 
 Para medir a v0 sem usar rótulos do fold de validação:
 
@@ -218,12 +224,14 @@ python scripts/validate_submission.py \
   --submission submissions/submission_v0_report_metadata.csv
 ```
 
-O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`.
+O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`. Para o smoke local da v3: `python kaggle/rsna_knee_v2_multiview.py --data-dir data/raw --weak-visual --device cpu --output /tmp/submission_v3_weak_local.csv`.
 
-O kernel privado preparado para a v0.2 usa `kaggle/kernel-metadata.json` e pode
-ser atualizado com `kaggle kernels push -p kaggle -t 3600`. Antes de executar,
-confirme que a competição foi aceita na conta e que `train.csv` está montado em
-`/kaggle/input/rsna-knee-abnormality-detection/`.
+O kernel privado v3 foi publicado por um pacote temporário autocontido, com
+GPU solicitada, pesos EfficientNet-B0 públicos e internet desligada. Como o
+Kaggle Script executa apenas o arquivo indicado em `code_file`, a versão enviada
+contém toda a implementação em um único entrypoint. Hoje o limite de cinco
+submissões já foi atingido; o worker serve primeiro para validar tempo, dados e
+CSV, não para enviar automaticamente ao leaderboard.
 
 ## Regras de publicação
 

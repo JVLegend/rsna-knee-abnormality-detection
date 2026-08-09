@@ -34,7 +34,9 @@ O entrypoint está em `scripts/run_baseline.py` e a cópia para a esteira Kaggle
 
 Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de um léxico multilíngue por alvo. Só promover regras que tenham validação contra os estudos anotados e registrar os falsos positivos mais perigosos. O primeiro uso será como feature ou peso de confiança, não como verdade binária automática.
 
-**Gate de 08/08/2026:** a auditoria encontrou precisão entre `0,43` e `0,88` nos 58 estudos anotados. Baker's, MCL, Fracture e menisco lateral têm sinal inicial; ACL e menisco medial exigem regras melhores. Pseudo-rótulos binários estão proibidos nesta rodada.
+**Gate de 08/08/2026:** a auditoria encontrou precisão entre `0,43` e `0,88` nos 58 estudos anotados. Baker's, MCL, Fracture e menisco lateral têm sinal inicial; ACL e menisco medial exigem regras melhores. Pseudo-rótulos binários continuam proibidos.
+
+**Implementação v3 de 09/08/2026:** os 58 rótulos oficiais permanecem com peso `1,0`. Um estudo sem rótulo oficial só entra no treino visual se o laudo tiver menção explícita ao alvo e o professor textual estiver em `p≥0,85` ou `p≤0,15`; o peso máximo é `0,10`, escalado pela confiança. Ausência de menção, laudo vazio e incerteza ficam fora do ajuste. O alvo final continua sendo visual/DICOM-only, porque o teste não tem `Report`.
 
 **Resultado do teste de feature de 08/08/2026:** com `C=32` e duas seeds, a v0.2 atingiu macro-AUC `0,628815` (seed 42) e `0,630918` (seed 2026), média `0,629867`. O ganho sobre a média da v0.1 foi `0,064212`. O léxico permanece apenas como feature derivada do texto; a decisão não promove regras a rótulos.
 
@@ -72,11 +74,11 @@ validação e comparar a fusão com a candidata textual v0.2.
 Começamos com uma fusão conservadora de probabilidades: `0,75` do modelo
 textual v0.2 e `0,25` do modelo visual. Nos 52 estudos completos, a média de
 duas seeds foi macro-AUC `0,651854`, contra `0,638499` do texto sozinho no
-mesmo subconjunto. O script `scripts/evaluate_fusion_baseline.py` mantém os
-folds por estudo e testa pesos `0/0,25/0,5/0,75/1`. Depois dos 58 estudos,
-vamos repetir a comparação e só então considerar concatenação treinada ou
-calibração por alvo. Tempo de inferência e tamanho de pesos serão métricas de
-projeto desde o início.
+mesmo subconjunto. O worker multi-view v2 produziu `183 views` e marcou
+`0,635` no público (`55365537`), tornando-se a referência. A v3 agora amplia o
+treino visual para os 4.407 estudos com DICOM e usa os relatórios apenas como
+weak supervision controlada. Tempo de inferência e tamanho de pesos serão
+métricas de projeto desde o início.
 
 ## Validação e gates
 
@@ -88,16 +90,17 @@ projeto desde o início.
 
 ## Próxima ação concreta
 
-Corrigir primeiro o vínculo da fonte de dados no kernel privado v0.2. A versão
-2 foi publicada, mas terminou sem montar `train.csv` em
-`/kaggle/input/rsna-knee-abnormality-detection/`; não houve submissão ao
-leaderboard. Em paralelo, usar o lote local para implementar e validar a leitura
-visual 2.5D antes de ampliar a aquisição. Depois de a conta aceitar as regras e
-o caminho existir, executar a candidata v0.2:
+A candidata atual é a v3 weak visual. Ela está em execução como versão 6 do
+kernel privado `jvlegend/rsna-knee-abnormality-detection-v2-multiview`, que já
+possui o anexo de pesos EfficientNet-B0 validado offline. Hoje já foram usadas
+as cinco submissões permitidas; mesmo que o worker termine corretamente, o
+próximo envio será reservado para depois da renovação do limite diário e só
+ocorrerá após validar o CSV e comparar a versão contra `55365537` (`0,635`).
 
 ```bash
 python scripts/run_baseline.py --data-dir data/raw --c 32 --use-lexicon --output submissions/submission_v0_2_report_metadata_lexicon.csv
 python scripts/validate_submission.py --test data/raw/test.csv --submission submissions/submission_v0_2_report_metadata_lexicon.csv
+python kaggle/rsna_knee_v2_multiview.py --data-dir data/raw --weak-visual --device cpu --output /tmp/submission_v3_weak_local.csv
 ```
 
-O primeiro registro de leaderboard será usado apenas para confirmar a esteira e a direção da validação, não como substituto da avaliação local. O envio continua manual e depende de confirmação explícita.
+O envio continua manual e só deve ocorrer após um gate de execução Kaggle e uma decisão explícita de promoção.
