@@ -62,6 +62,19 @@ Após o score targetwise completo (`0,582`), a candidata `v1.2` aplica apenas
 `λ=0,25` da correção por alvo sobre o blend global `0,4`. No CV local, essa
 versão marcou `0,654588`/`0,669523` nos seeds 42/2026, média `0,662055`.
 
+## Candidata visual v2 multi-view
+
+`rsna_knee_v2_multiview.py` abandona a hipótese de que uma única série
+representa o estudo. Para cada estudo, seleciona até uma série fluido-sensível
+por plano (sagital, coronal e axial), extrai o embedding 2.5D de cada uma e
+faz a média dos vetores antes da regressão logística e do blend global `0,4`.
+O `train_series.csv` tem média de `5,8` séries por estudo e os três planos
+estão presentes nos 58 estudos rotulados; portanto, este experimento só pode
+ser validado adequadamente no worker Kaggle, que possui o conjunto completo.
+O smoke local confirmou o fallback para os DICOMs já baixados, mas não é uma
+validação de ganho porque o HD ainda contém essencialmente uma série por
+estudo.
+
 Antes de enviar:
 
 1. confirmar o caminho do dataset montado no notebook;
