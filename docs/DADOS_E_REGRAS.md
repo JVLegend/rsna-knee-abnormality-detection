@@ -77,6 +77,13 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - Cada array tem três canais grayscale correspondentes às fatias nos quantis `0,25`, `0,50` e `0,75`, redimensionados para `(224, 224)` e armazenados como `uint8`.
 - O `index.json` preserva os UIDs locais, índices, nomes das fatias, dimensões de entrada e limites de intensidade. Nenhum DICOM ou array foi versionado.
 
+## Ampliação para o universo rotulado — 08/08/2026
+
+- O manifesto adicional contém 40 estudos, 1.428 fatias e `945.572.590` bytes segundo a listagem em árvore do Kaggle CLI.
+- Uma auditoria encontrou 34 séries completas e 6 séries incompletas, com 132 arquivos ainda faltantes. A aquisição foi reduzida a esse residual para não repetir os 1.296 arquivos já presentes.
+- Os 34 estudos completos foram processados junto dos 18 estudos anteriores: `data/processed/dicom_25d_labeled_v0/` contém 52 arrays `(3, 224, 224) uint8`, e `data/processed/dicom_embeddings_efficientnet_b0_labeled/` contém embeddings `(52, 1280)` `float32`.
+- O baseline visual linear, avaliado por estudo em 5 folds e duas seeds, alcançou macro-AUC `0,593222`/`0,584142`, média `0,588682`. É um gate preliminar, pois seis estudos ainda não entraram e não há comparação pareada definitiva com o texto.
+
 ## Cronograma
 
 Todos os horários abaixo são 23:59 UTC, salvo atualização da organização:

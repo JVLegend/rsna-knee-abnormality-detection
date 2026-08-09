@@ -40,11 +40,12 @@ Antes de usar o restante dos laudos como rótulo, medir cobertura e precisão de
 
 ### Fase 3 — imagem por série
 
-O smoke DICOM e o primeiro lote estratificado já foram validados com
-`scripts/inspect_dicom_series.py` e `pydicom`. Os dois lotes contêm 18 estudos,
-uma série fluido-sensível por estudo e 521 fatias; a soma local inclui ainda os
-30 slices técnicos baixados anteriormente. A aquisição integral continua fora
-de escopo até medirmos ganho visual e custo de armazenamento.
+O smoke DICOM e os lotes estratificados foram validados com
+`scripts/inspect_dicom_series.py` e `pydicom`. Os dois primeiros lotes contêm
+18 estudos e 521 fatias; a ampliação adicionou 34 séries completas. Assim, 52
+estudos já têm entrada 2.5D e embedding visual; seis séries, com 132 arquivos,
+continuam em aquisição incremental. A aquisição integral segue fora de
+escopo.
 
 O manifesto `data/processed/dicom_subset_manifest.json` foi gerado com 10
 estudos únicos, cobrindo os dois valores de cada alvo. A listagem plana sofreu
@@ -57,19 +58,14 @@ dimensões entre `256×256` e `800×800`, e `uint16`/`int16`.
 1. [x] Decodificar DICOM com `pydicom`, normalizar intensidade e tratar `MONOCHROME1` sem depender de tags ausentes.
 2. [x] Selecionar séries por plano e por `Fluid_Sensitive`/`Fat_Suppression`.
 3. [x] Amostrar três fatias por série (25%, 50%, 75%) e materializar entrada 2.5D `224×224` em `uint8`.
-4. [x] Extrair embedding visual com EfficientNet-B0 local, sem rede: matriz `(18, 1280)` finita e com pesos identificados por hash.
+4. [x] Extrair embedding visual com EfficientNet-B0 local, sem rede: matriz `(52, 1280)` finita e com pesos identificados por hash.
 5. [ ] Fazer pooling por série e depois por estudo.
 6. [ ] Treinar 12 cabeças de classificação com máscara de perda para rótulos ausentes.
 
-O avaliador `scripts/evaluate_visual_embeddings.py` já está preparado para
-calcular AUC por alvo sobre o índice completo, com regressão logística,
-normalização e validação estratificada; o resultado não será estimado no lote
-parcial de 18 como se fosse desempenho final.
-
-O embedding atual é um gate de pré-processamento no primeiro lote de 18
-estudos. Depois que o lote rotulado restante estiver completo, vamos repetir a
-mesma esteira para os 58 estudos anotados e então comparar um baseline visual
-contra a candidata textual v0.2.
+O avaliador `scripts/evaluate_visual_embeddings.py` calculou macro-AUC
+`0,593222` (seed 42) e `0,584142` (seed 2026) nos 52 estudos completos. Esse
+resultado é preliminar; após os seis estudos restantes, vamos repetir a
+validação e comparar a fusão com a candidata textual v0.2.
 
 ### Fase 4 — fusão e eficiência
 

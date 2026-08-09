@@ -142,6 +142,13 @@ O primeiro lote validado produziu uma matriz `(18, 1280)` `float32`, finita e
 com 18 linhas distintas. O hash SHA-256 dos pesos usado nessa rodada fica
 registrado no `index.json` local.
 
+Na ampliação para os estudos rotulados, 34 das 40 séries adicionais já estão
+completas. Somadas aos dois lotes anteriores, elas permitiram processar 52
+estudos em 2.5D e gerar embeddings `(52, 1280)`. O baseline visual linear teve
+macro-AUC `0,593222` (seed 42) e `0,584142` (seed 2026), média `0,588682`.
+Esse resultado é preliminar: seis séries ainda têm 132 arquivos faltantes e a
+seleção visual não deve ser tratada como comparação final com a v0.2 textual.
+
 Depois de materializar o índice completo dos estudos rotulados, o baseline
 visual pode ser avaliado por alvo com regressão logística e validação
 estratificada:
