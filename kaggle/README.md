@@ -58,6 +58,10 @@ Effusion; menos imagem para OA medial, PF OA e Synovitis. No subconjunto de
 Como a seleção foi feita no mesmo conjunto pequeno, a próxima submissão será
 tratada como experimento controlado, não como solução final.
 
+Após o score targetwise completo (`0,582`), a candidata `v1.2` aplica apenas
+`λ=0,25` da correção por alvo sobre o blend global `0,4`. No CV local, essa
+versão marcou `0,654588`/`0,669523` nos seeds 42/2026, média `0,662055`.
+
 Antes de enviar:
 
 1. confirmar o caminho do dataset montado no notebook;
