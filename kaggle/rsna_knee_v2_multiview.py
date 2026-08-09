@@ -393,9 +393,31 @@ def study_images(
     return images, bool(images)
 
 
+def _resolve_device(requested: str) -> str:
+    if requested not in {"auto", "cpu", "cuda"}:
+        raise ValueError(f"device inválido: {requested!r}")
+    if requested == "cpu":
+        return "cpu"
+    if not torch.cuda.is_available():
+        if requested == "cuda":
+            print("CUDA solicitado, mas indisponível; usando CPU.")
+        return "cpu"
+    try:
+        major, minor = torch.cuda.get_device_capability()
+    except Exception as exc:  # pragma: no cover - depende do runtime CUDA
+        print(f"Não foi possível ler a capacidade CUDA ({exc}); usando CPU.")
+        return "cpu"
+    if major < 7:
+        print(
+            f"GPU sm_{major}{minor} não é compatível com este PyTorch; "
+            "usando CPU."
+        )
+        return "cpu"
+    return "cuda"
+
+
 def _load_encoder(device: str) -> tuple[torch.nn.Module, str, Path]:
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = _resolve_device(device)
     weights_path = _find_weights()
     model = efficientnet_b0(weights=None)
     try:

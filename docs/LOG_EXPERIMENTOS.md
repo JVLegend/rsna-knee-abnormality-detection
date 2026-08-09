@@ -32,6 +32,7 @@
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v6` | Rodar a v3 no kernel multi-view histórico, preservando o anexo de pesos offline; limiar `0,85` e peso weak máximo `0,10` | Versão 6 ficou `RUNNING` sem logs/artefato por mais de 15 min e foi supersedida | — | Não promover; preservar como tentativa CPU sem saída |
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v7` | Acelerar a mesma candidata com GPU genérica | Worker recebeu Tesla P100, incompatível com o PyTorch instalado (`sm_60`; suporte `sm_70+`); terminou `ERROR` antes do modelo | — | Diagnóstico confirmado; não usar P100 neste ambiente |
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v8` | Executar a candidata com GPU explicitamente `NvidiaTeslaT4`, internet desligada e pesos anexados | Kernel histórico multi-view, versão 8, status atual `RUNNING`; aguardando primeiros logs | — | Aguardar CSV; promover somente após saída íntegra e score futuro superior a `0,635` |
+| 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v9` | Repetir a v8 com fallback automático de GPU antiga para CPU | Código atualizado e validado com `15 passed`; kernel histórico multi-view, versão 9, T4 solicitado, status inicial `RUNNING` | — | Aguardar CSV; esta é a candidata operacional após o diagnóstico P100 |
 
 ## Detalhe da candidata v0.2
 

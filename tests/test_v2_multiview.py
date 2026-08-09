@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "kaggle"))
 sys.path.insert(0, str(ROOT / "src"))
 
-from rsna_knee_v2_multiview import _series_index, _weak_target_arrays
+from rsna_knee_v2_multiview import _resolve_device, _series_index, _weak_target_arrays
 from rsna_knee_baseline.constants import KEY_COLUMN, TARGET_COLUMNS
 
 
@@ -50,3 +50,12 @@ def test_series_index_groups_by_study_without_losing_series() -> None:
 
     assert set(indexed) == {"a", "b"}
     assert indexed["a"]["SeriesInstanceUID"].tolist() == ["a-1", "a-2"]
+
+
+def test_device_auto_falls_back_from_legacy_cuda(monkeypatch) -> None:
+    import rsna_knee_v2_multiview as module
+
+    monkeypatch.setattr(module.torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(module.torch.cuda, "get_device_capability", lambda: (6, 0))
+
+    assert _resolve_device("auto") == "cpu"
