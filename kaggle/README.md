@@ -61,6 +61,8 @@ tratada como experimento controlado, não como solução final.
 Após o score targetwise completo (`0,582`), a candidata `v1.2` aplica apenas
 `λ=0,25` da correção por alvo sobre o blend global `0,4`. No CV local, essa
 versão marcou `0,654588`/`0,669523` nos seeds 42/2026, média `0,662055`.
+No leaderboard, a `v1.2` marcou `0,605`, portanto não supera a referência
+global `0,607`.
 
 ## Candidata visual v2 multi-view
 
@@ -74,6 +76,10 @@ ser validado adequadamente no worker Kaggle, que possui o conjunto completo.
 O smoke local confirmou o fallback para os DICOMs já baixados, mas não é uma
 validação de ganho porque o HD ainda contém essencialmente uma série por
 estudo.
+
+O kernel multi-view foi executado como versão 5 do fluxo Kaggle, com 183
+views válidas e sem internet. A submissão correspondente é `55365537` e está
+aguardando o score público.
 
 Antes de enviar:
 
