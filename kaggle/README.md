@@ -44,6 +44,10 @@ Smoke local:
 python kaggle/rsna_knee_v1_visual.py --data-dir data/raw --output /tmp/submission_visual.csv --device cpu
 ```
 
+O kernel `jvlegend/rsna-knee-abnormality-detection-v1-visual`, versão 2,
+foi executado com sucesso e a submissão `55364637` marcou score público
+`0,607`, acima do baseline `55364182` (`0,505`).
+
 Antes de enviar:
 
 1. confirmar o caminho do dataset montado no notebook;
