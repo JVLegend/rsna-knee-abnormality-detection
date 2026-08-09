@@ -24,6 +24,26 @@ camadas de `/kaggle/input` e imprime o caminho efetivamente usado.
 
 O candidato anterior `v0.1` continua reproduzível com `use_lexicon=False`.
 
+## Candidata visual v1
+
+`rsna_knee_v1_visual.py` preserva o baseline textual e acrescenta uma fusão
+com embeddings EfficientNet-B0 ImageNet extraídos de uma representação 2.5D
+(fatias em 25%, 50% e 75% da série DICOM preferida). A validação local com 58
+estudos rotulados foi preliminar; o melhor ponto explorado até aqui usa
+`visual_weight=0.4` e regularização visual `C=0.1`.
+
+O código não baixa pesos nem instala dependências durante a execução. No
+Kaggle, os pesos devem ser montados pelo dataset privado
+`jvlegend/efficientnet-b0-imagenet-weights`, criado a partir do arquivo
+oficial/cache local do torchvision. A fonte é mantida separada do repositório
+para que o GitHub não receba um binário de modelo.
+
+Smoke local:
+
+```bash
+python kaggle/rsna_knee_v1_visual.py --data-dir data/raw --output /tmp/submission_visual.csv --device cpu
+```
+
 Antes de enviar:
 
 1. confirmar o caminho do dataset montado no notebook;
