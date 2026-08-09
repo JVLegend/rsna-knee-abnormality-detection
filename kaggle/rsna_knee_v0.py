@@ -132,9 +132,41 @@ def _validate_submission(submission: pd.DataFrame, test: pd.DataFrame) -> None:
     assert not submission[KEY_COLUMN].duplicated().any(), "A submissão contém UIDs duplicados."
 
 
+def _resolve_data_dir(data_dir: Path) -> Path:
+    required = ("train.csv", "test.csv")
+    if all((data_dir / filename).is_file() for filename in required):
+        print(f"data_dir={data_dir}")
+        return data_dir
+
+    input_root = Path("/kaggle/input")
+    candidates: set[Path] = set()
+    if input_root.is_dir():
+        search_patterns = ("train.csv", "*/train.csv", "*/*/train.csv")
+        for pattern in search_patterns:
+            for train_path in input_root.glob(pattern):
+                candidate = train_path.parent
+                if (candidate / "test.csv").is_file():
+                    candidates.add(candidate)
+
+    if len(candidates) == 1:
+        resolved = next(iter(candidates))
+        print(f"data_dir solicitado={data_dir}; usando fonte montada={resolved}")
+        return resolved
+
+    available = []
+    if input_root.is_dir():
+        available = sorted(path.name for path in input_root.iterdir())[:50]
+    raise FileNotFoundError(
+        "Dados da competição não encontrados. "
+        f"data_dir solicitado={data_dir}; candidatos={sorted(map(str, candidates))}; "
+        f"entradas em /kaggle/input={available}"
+    )
+
+
 def run(data_dir: Path, output: Path, c: float = 2.0, use_lexicon: bool = False, lexicon_weight: float = 1.0) -> pd.DataFrame:
     if lexicon_weight <= 0:
         raise ValueError("lexicon_weight precisa ser positivo.")
+    data_dir = _resolve_data_dir(data_dir)
     train = pd.read_csv(data_dir / "train.csv")
     test = pd.read_csv(data_dir / "test.csv")
     train_series = pd.read_csv(data_dir / "train_series.csv") if (data_dir / "train_series.csv").exists() else pd.DataFrame()

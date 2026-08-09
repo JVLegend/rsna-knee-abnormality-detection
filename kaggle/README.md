@@ -17,7 +17,10 @@ submission = run(
 O entrypoint também aceita `--c 32 --use-lexicon` quando executado como
 script. Sem argumentos, `rsna_knee_v0.py` já executa a v0.2 (`C=32` e léxico
 ligado); use `--no-use-lexicon` para reproduzir a variante sem léxico. A
-checagem de contrato roda antes de gravar o CSV.
+checagem de contrato roda antes de gravar o CSV. O caminho solicitado é
+`/kaggle/input/rsna-knee-abnormality-detection`; se o Kaggle montar a fonte
+com outro nome, o script procura `train.csv` e `test.csv` nas primeiras
+camadas de `/kaggle/input` e imprime o caminho efetivamente usado.
 
 O candidato anterior `v0.1` continua reproduzível com `use_lexicon=False`.
 
@@ -41,6 +44,9 @@ kaggle kernels push -p kaggle -t 3600
 kaggle kernels status jvlegend/rsna-knee-abnormality-detection-v0-2
 ```
 
-Se o kernel iniciar sem `train.csv` em `/kaggle/input/rsna-knee-abnormality-detection/`,
-não enviar nada ao leaderboard: aceitar as regras da competição na conta e
-revisar o vínculo da fonte de dados no Kaggle antes de repetir.
+Se o editor mostrar a competição no painel `Input`, mas o worker ainda falhar
+sem `train.csv`, abrir `Edit` → `Add Input`, pesquisar a competição, remover e
+adicionar novamente a fonte e usar `Save Version` com `Save & Run All (Commit)`.
+O código agora reporta as entradas disponíveis em `/kaggle/input` quando a
+autodetecção também falha. Não enviar nada ao leaderboard enquanto esse gate
+não passar.
