@@ -33,8 +33,8 @@ estudos rotulados foi preliminar; o melhor ponto explorado até aqui usa
 `visual_weight=0.4` e regularização visual `C=0.1`.
 
 O código não baixa pesos nem instala dependências durante a execução. No
-Kaggle, os pesos devem ser montados pelo dataset privado
-`jvlegend/efficientnet-b0-imagenet-weights`, criado a partir do arquivo
+Kaggle, os pesos devem ser montados pelo dataset público
+`jvlegend/efficientnet-b0-imagenet-weights-public`, criado a partir do arquivo
 oficial/cache local do torchvision. A fonte é mantida separada do repositório
 para que o GitHub não receba um binário de modelo.
 
