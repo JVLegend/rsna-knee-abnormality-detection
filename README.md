@@ -149,6 +149,13 @@ macro-AUC `0,593222` (seed 42) e `0,584142` (seed 2026), média `0,588682`.
 Esse resultado é preliminar: seis séries ainda têm 132 arquivos faltantes e a
 seleção visual não deve ser tratada como comparação final com a v0.2 textual.
 
+Como primeira fusão, combinamos as probabilidades do texto v0.2 com as do
+classificador visual, usando peso visual `0,25` e textual `0,75`. No mesmo
+subconjunto de 52 estudos, a fusão marcou macro-AUC `0,643647` (seed 42) e
+`0,660061` (seed 2026), média `0,651854`, contra `0,638499` do texto sozinho.
+Esse é o candidato multimodal atual; o peso só será congelado após completar
+os 58 estudos.
+
 Depois de materializar o índice completo dos estudos rotulados, o baseline
 visual pode ser avaliado por alvo com regressão logística e validação
 estratificada:

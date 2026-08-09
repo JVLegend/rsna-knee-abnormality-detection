@@ -69,7 +69,14 @@ validação e comparar a fusão com a candidata textual v0.2.
 
 ### Fase 4 — fusão e eficiência
 
-Concatenar embedding visual com sinal textual/metadados, calibrar probabilidades por alvo e testar um ensemble pequeno. A competição tem um trilho de eficiência; portanto, tempo de inferência e tamanho de pesos serão métricas de projeto desde o início.
+Começamos com uma fusão conservadora de probabilidades: `0,75` do modelo
+textual v0.2 e `0,25` do modelo visual. Nos 52 estudos completos, a média de
+duas seeds foi macro-AUC `0,651854`, contra `0,638499` do texto sozinho no
+mesmo subconjunto. O script `scripts/evaluate_fusion_baseline.py` mantém os
+folds por estudo e testa pesos `0/0,25/0,5/0,75/1`. Depois dos 58 estudos,
+vamos repetir a comparação e só então considerar concatenação treinada ou
+calibração por alvo. Tempo de inferência e tamanho de pesos serão métricas de
+projeto desde o início.
 
 ## Validação e gates
 

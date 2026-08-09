@@ -20,6 +20,7 @@
 | 08/08/2026 | `dicom_25d_labeled_v0` | Ampliar a representação 2.5D para o universo visual já completo | 52/52 estudos processados; arrays `(3, 224, 224) uint8`; índice íntegro | — | Gate de pré-processamento ampliado; aguardar 6 séries restantes |
 | 08/08/2026 | `efficientnet_b0_embedding_52` | Extrair embeddings EfficientNet-B0 para os 52 estudos completos | Matriz `(52, 1280)` `float32`, finita; SHA-256 dos pesos registrado | — | Dados prontos para baseline visual e futura fusão |
 | 08/08/2026 | `visual_embedding_logistic_52` | Medir o sinal visual com regressão logística e split por estudo | Macro-AUC `0,593222` (seed 42) e `0,584142` (seed 2026); média `0,588682` | — | Resultado preliminar; não substituir a v0.2 textual até completar os 58 |
+| 08/08/2026 | `fusion_probability_blend_52` | Misturar probabilidades textuais e visuais sem aumentar a arquitetura | Peso visual `0,25`/textual `0,75`: macro-AUC `0,643647` (seed 42) e `0,660061` (seed 2026), média `0,651854`; texto sozinho no mesmo subconjunto: `0,638499` | — | Candidato multimodal atual; repetir nos 58 antes de congelar o peso |
 | 08/08/2026 | `kaggle_kernel_v0_2` | Executar a candidata v0.2 em kernel privado, sem internet e com a competição anexada | Versão 1: módulo não foi empacotado; versão 2: código autocontido, mas `train.csv` não foi montado em `/kaggle/input/rsna-knee-abnormality-detection/` | — | Corrigir aceite/vínculo da fonte; não enviar leaderboard |
 
 ## Detalhe da candidata v0.2
