@@ -155,9 +155,9 @@ def _find_weights() -> Path:
         candidates.append(Path(explicit).expanduser())
     root = Path("/kaggle/input")
     if root.is_dir():
-        candidates.extend(root.glob("*.pth"))
-        candidates.extend(root.glob("*/*.pth"))
-        candidates.extend(root.glob("*/*/*.pth"))
+        # Public/private dataset mounts can include a version directory or a
+        # nested artifact folder; do not assume a fixed input depth.
+        candidates.extend(root.rglob(WEIGHTS_FILENAME))
     candidates.append(Path(torch.hub.get_dir()) / "checkpoints" / WEIGHTS_FILENAME)
     for candidate in candidates:
         if candidate.is_file() and candidate.name == WEIGHTS_FILENAME:
