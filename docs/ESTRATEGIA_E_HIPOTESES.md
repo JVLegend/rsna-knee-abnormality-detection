@@ -365,6 +365,15 @@ excluindo `competition(s)`, porque uma busca global também atravessava o
 volume DICOM e atrasava o primeiro log. O gate dos labels agora roda antes do
 TF-IDF e da leitura visual.
 
+O kernel v6 completou a execução após essa correção e gerou `submission.csv`.
+Ele processou `4.410/4.410` estudos válidos e `79.380` views em `6.779,9 s`,
+usando CUDA e a configuração real `dense6`, `view_pooling=target`,
+`teacher_profile=targetwise` e `fast_preprocess=False`. A submissão de origem
+Notebook foi aceita com o ref `55413852` e permanece `PENDING`. Isso é uma
+execução válida da candidata densa, mas não deve ser chamada de teste
+`adjacent3_fast`: essa ablação ainda precisa ser empacotada explicitamente
+como versão do kernel antes de compararmos seu custo e seu score.
+
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
 - A submissão `55392604` saiu de `PENDING` para `COMPLETE` com public score `0,655`, superando `55365537` (`0,635`) em `+0,020`.
