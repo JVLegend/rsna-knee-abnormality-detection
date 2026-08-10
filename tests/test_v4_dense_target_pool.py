@@ -66,6 +66,12 @@ def test_probability_pooling_is_target_aware_and_bounded() -> None:
     assert MODULE._pool_probabilities(np.asarray([]), "max") == 0.5
 
 
+def test_target_pooling_override_supports_article_max_pooling() -> None:
+    assert MODULE._resolve_target_pooling("Effusion") == "mean"
+    assert MODULE._resolve_target_pooling("Effusion", "max") == "max"
+    assert MODULE._pool_probabilities(np.asarray([0.1, 0.4, 0.9]), "max") == 0.9
+
+
 def test_target_view_model_trains_and_pools_views() -> None:
     train_views = [
         [np.asarray([0.0, 0.0]), np.asarray([0.1, 0.0])],

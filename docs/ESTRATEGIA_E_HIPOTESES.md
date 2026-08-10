@@ -374,6 +374,50 @@ execução válida da candidata densa, mas não deve ser chamada de teste
 `adjacent3_fast`: essa ablação ainda precisa ser empacotada explicitamente
 como versão do kernel antes de compararmos seu custo e seu score.
 
+### 2026-08-10 — auditoria do pipeline Yash Bishnoi
+
+O artigo [Inside the pipeline that placed 18th in a $77,000 Kaggle knee MRI
+competition](https://huggingface.co/blog/bishnoiyash/rsna-competetion) descreve
+um score público `0,903`, posição 18 de 792 no snapshot de 09/08/2026. A
+consulta atual do leaderboard já deslocou esse score para aproximadamente a
+posição 55; portanto, a colocação é temporal e não uma propriedade fixa do
+modelo. O notebook associado é
+[rsna-knee-infer-v1](https://www.kaggle.com/code/yashbishnoi98/rsna-knee-infer-v1).
+
+Os mecanismos transferíveis, separados do claim de score, são:
+
+- **Labels:** extrator local Qwen, regras clínicas por alvo, fusão suave e
+  pesos de confiabilidade por alvo; a execução publicada usou também
+  `Pilkwang` como terceira opinião.
+- **Representação:** até três séries fluido-sensíveis, uma por plano, janela
+  de intensidade `1–99%` por série, cache de volumes e mais fatias adjacentes.
+- **Modelo:** EfficientNet-B3 fine-tunada, MIL por slice, `max pooling` e
+  ensemble de folds; não é apenas uma troca de backbone.
+- **Robustez operacional:** não aplicar flip horizontal por causa de
+  medial/lateral, fallback de decodificação, checkpoint periódico e redução
+  adaptativa de views/modelos sob limite de tempo.
+
+Diferenças críticas para o nosso código: a v4 atual usa B0 congelada,
+normalização por slice, regressão logística sobre embeddings e um único ajuste;
+ela ainda não reproduz fine-tuning, janela por série, ensemble ou labels suaves
+simétricos. O artigo também informa que o próprio `0,9357` interno estava
+vazado nos 58 estudos e caiu para `0,8568` após cross-fitting. O `0,903` público
+é evidência de direção, não uma validação local limpa.
+
+Hipóteses abertas a partir dessa auditoria:
+
+| ID | Hipótese | Teste decisivo | Estado |
+|---|---|---|---|
+| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Mesmo teacher, views e blend; trocar somente a agregação para `max` | ativa |
+| H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | ativa |
+| H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
+| H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
+| H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
+
+Decisão imediata: implementar H-20 e H-21 juntos como uma ablação de engenharia
+de baixo risco, mantendo B0, teacher e blend constantes. H-22 a H-24 ficam
+separadas para não atribuir um eventual ganho ao componente errado.
+
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
 - A submissão `55392604` saiu de `PENDING` para `COMPLETE` com public score `0,655`, superando `55365537` (`0,635`) em `+0,020`.

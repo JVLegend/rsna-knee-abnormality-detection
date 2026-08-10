@@ -147,6 +147,12 @@ python kaggle/rsna_knee_v4_dense_target_pool.py \
   --output /kaggle/working/submission.csv
 ```
 
+A ablação `kaggle/rsna_knee_v4_yash_lite.py` fixa esse comando em
+`adjacent3 + fast_preprocess + max pooling` por view. Ela mantém B0, teacher e
+blend constantes para testar somente a hipótese de MIL destacada no pipeline
+de 18º lugar. O entrypoint aceita `--target-pooling max` quando executado
+diretamente; o wrapper já passa esse valor ao `run()`.
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD

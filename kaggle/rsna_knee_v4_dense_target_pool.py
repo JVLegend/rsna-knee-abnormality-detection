@@ -819,6 +819,13 @@ def _pool_probabilities(probabilities: np.ndarray, pooling: str) -> float:
     raise ValueError(f"Pooling de probabilidade desconhecido: {pooling}")
 
 
+def _resolve_target_pooling(target: str, override: str | None = None) -> str:
+    pooling = override or TARGET_VIEW_POOLING[target]
+    if pooling not in {"mean", "max", "topk"}:
+        raise ValueError(f"Pooling de probabilidade desconhecido: {pooling}")
+    return pooling
+
+
 def _fit_target_view_model(
     target: str,
     train_views: list[list[np.ndarray]],
@@ -826,6 +833,7 @@ def _fit_target_view_model(
     labels: np.ndarray,
     fit_mask: np.ndarray,
     sample_weights: np.ndarray | None,
+    target_pooling: str | None = None,
 ) -> np.ndarray:
     """Treina em views repetidas e agrega probabilidades por alvo.
 
@@ -867,7 +875,7 @@ def _fit_target_view_model(
             logisticregression__sample_weight=np.concatenate(weight_parts),
         )
 
-    pooling = TARGET_VIEW_POOLING[target]
+    pooling = _resolve_target_pooling(target, target_pooling)
     predictions: list[float] = []
     for values in test_views:
         if not values:
@@ -903,6 +911,7 @@ def run(
     view_pooling: str = VIEW_POOLING,
     teacher_profile: str = TEACHER_PROFILE,
     fast_preprocess: bool = False,
+    target_pooling: str | None = None,
 ) -> pd.DataFrame:
     if not 0 <= visual_weight <= 1:
         raise ValueError("visual_weight precisa estar entre 0 e 1.")
@@ -914,6 +923,8 @@ def run(
         raise ValueError(f"Pooling visual desconhecido: {view_pooling}")
     if teacher_profile not in {"steven_v4", "targetwise"}:
         raise ValueError(f"Perfil de teacher desconhecido: {teacher_profile}")
+    if target_pooling is not None and target_pooling not in {"mean", "max", "topk"}:
+        raise ValueError(f"Pooling de alvo desconhecido: {target_pooling}")
     started = time.perf_counter()
     data_dir = _resolve_data_dir(data_dir)
     train = pd.read_csv(data_dir / "train.csv")
@@ -984,6 +995,7 @@ def run(
                 labels_for_views,
                 fit_mask,
                 sample_weights,
+                target_pooling=target_pooling,
             )
         else:
             y = labels_for_views[fit_mask]
@@ -1023,7 +1035,8 @@ def run(
         f"labeled_train={len(train_labeled)} visual_train={len(visual_train_frame)} "
         f"test={len(test)} visual_weight={visual_weight} targetwise={targetwise} "
         f"weak_visual={weak_visual} external_labels={label_dir} "
-        f"slice_profile={slice_profile} view_pooling={view_pooling} teacher_profile={teacher_profile}"
+        f"slice_profile={slice_profile} view_pooling={view_pooling} "
+        f"target_pooling={target_pooling or 'per-target'} teacher_profile={teacher_profile}"
     )
     if targetwise:
         print(f"targetwise_visual_weights={TARGETWISE_VISUAL_WEIGHTS}")
@@ -1050,6 +1063,7 @@ def main() -> None:
     parser.add_argument("--slice-profile", choices=tuple(SLICE_PROFILES), default=SLICE_PROFILE)
     parser.add_argument("--view-pooling", choices=("mean", "max", "topk", "target"), default=VIEW_POOLING)
     parser.add_argument("--teacher-profile", choices=("steven_v4", "targetwise"), default=TEACHER_PROFILE)
+    parser.add_argument("--target-pooling", choices=("default", "mean", "max", "topk"), default="default")
     parser.add_argument("--fast-preprocess", action="store_true")
     parser.add_argument("--output", default=os.environ.get("RSNA_OUTPUT", "/kaggle/working/submission.csv"))
     args = parser.parse_args()
@@ -1068,6 +1082,7 @@ def main() -> None:
         view_pooling=args.view_pooling,
         teacher_profile=args.teacher_profile,
         fast_preprocess=args.fast_preprocess,
+        target_pooling=None if args.target_pooling == "default" else args.target_pooling,
     )
 
 
