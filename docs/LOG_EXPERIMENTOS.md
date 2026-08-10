@@ -48,6 +48,8 @@
 | 10/08/2026 | `kaggle_v4_dense6_target_pool_v6` | Executar a v4 com pooling por alvo, teacher target-wise e labels públicos no worker T4 | `COMPLETE` em `6.779,9 s`; `4.410/4.410` estudos válidos, `79.380` views, CUDA; labels encontrados no mount aninhado; CSV válido | `55413852` pendente | A execução usou os defaults reais do entrypoint (`dense6`, `fast_preprocess=False`), não o override temporário `adjacent3_fast`; aguardar score antes da próxima ablação |
 | 10/08/2026 | `yash_pipeline_audit` | Extrair mecanismos reproduzíveis do pipeline publicado por Yash Bishnoi | Artigo reporta `0,903` e 18º/792 no snapshot de 09/08; descreve labels Qwen + Pilkwang, EfficientNet-B3 fine-tunada, MIL/max, janela por série, 5 folds e fallback de runtime; notebook pull via CLI retornou `403` | — | Usar como evidência de direção; não tratar score nem CV vazado como prova; H-20/H-21 são a próxima ablação |
 | 10/08/2026 | `v4_yash_lite_max_mil` | Manter teacher/B0/blend e trocar para `adjacent3 + fast_preprocess + max pooling` | A executar | — | Primeiro teste article-inspired controlado; fine-tuning, janela por série e fusão contínua ficam para experimentos separados |
+| 10/08/2026 | `kaggle_v4_yash_lite_v7` | Executar a ablação article-inspired pelo kernel | `ERROR` antes do modelo: o script principal não encontrou o módulo auxiliar enviado como segundo arquivo | — | Kaggle executa somente o `code_file`; montar um arquivo standalone antes de repetir |
+| 10/08/2026 | `kaggle_v4_yash_lite_v8` | Reexecutar a mesma ablação com o código standalone | Worker `RUNNING` no T4; ainda sem CSV/score no momento do registro | — | Aguardar conclusão; não alterar teacher, blend ou views durante esta execução |
 
 ## Detalhe da candidata v0.2
 
