@@ -340,6 +340,19 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 
 ## Histórico de atualização
 
+### 2026-08-10 — ablação rápida da v4
+
+A v4 `dense6` foi cancelada pelo timeout depois de chegar a aproximadamente
+1.425/4.410 estudos, porque três planos × seis centros geraram 18 views por
+estudo. A nova ablação `adjacent3` conserva os três planos e troca os seis
+centros por três slabs 2.5D adjacentes, reduzindo o volume para 9 views por
+estudo. O modo `fast_preprocess` restringe os tags de header, estima os
+percentis em subamostragem 4× e reutiliza fatias repetidas. No smoke local de
+10 estudos, a diferença média foi `0,34` níveis de uint8 e a máxima `5`,
+enquanto o tempo de uma série caiu de `1,173 s` para `0,012 s`. A decisão é
+executar essa variante no T4 antes de alterar o teacher, o pooling ou os pesos
+de fusão.
+
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
 - A submissão `55392604` saiu de `PENDING` para `COMPLETE` com public score `0,655`, superando `55365537` (`0,635`) em `+0,020`.

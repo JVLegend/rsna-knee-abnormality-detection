@@ -127,6 +127,26 @@ abordados e mantendo o peso dos pseudo-rótulos em `0,10`. Ainda não há score
 Kaggle dessa variante: a execução real requer DICOM no kernel e o limite atual
 de sessões GPU continua ativo.
 
+### Ablação rápida da v4 para o worker Kaggle
+
+O perfil `adjacent3` mantém os três planos, mas usa três centros por série e
+transforma cada centro em um slab com fatias vizinhas. Assim são processadas
+9 views por estudo, contra 18 em `dense6`. O flag `--fast-preprocess` também
+limita a leitura de headers aos tags usados na ordenação, estima os percentis
+em uma grade 4× mais esparsa e reutiliza slices repetidas. Essa é a primeira
+tentativa para obter um CSV dentro do orçamento do worker sem abandonar a
+hipótese 2.5D. O comando do kernel é:
+
+```bash
+python kaggle/rsna_knee_v4_dense_target_pool.py \
+  --slice-profile adjacent3 \
+  --view-pooling target \
+  --teacher-profile targetwise \
+  --weak-visual \
+  --fast-preprocess \
+  --output /kaggle/working/submission.csv
+```
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD

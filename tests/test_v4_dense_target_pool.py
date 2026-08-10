@@ -17,6 +17,7 @@ SPEC.loader.exec_module(MODULE)
 
 def test_slice_profiles_have_expected_density() -> None:
     assert len(MODULE._sample_indices(100, "quantile3")) == 3
+    assert len(MODULE._sample_indices(100, "adjacent3")) == 3
     assert len(MODULE._sample_indices(100, "dense6")) == 6
     assert len(MODULE._sample_indices(100, "dense9")) == 9
 
@@ -27,7 +28,7 @@ def test_dense_profiles_make_three_channel_adjacent_slabs(tmp_path, monkeypatch)
     for index in range(12):
         (series_dir / f"{index:03d}.dcm").touch()
 
-    def fake_dcmread(path, stop_before_pixels=False, force=False):
+    def fake_dcmread(path, stop_before_pixels=False, force=False, **kwargs):
         index = int(Path(path).stem)
         if stop_before_pixels:
             return SimpleNamespace(InstanceNumber=index)
@@ -40,10 +41,21 @@ def test_dense_profiles_make_three_channel_adjacent_slabs(tmp_path, monkeypatch)
 
     monkeypatch.setattr(MODULE.pydicom, "dcmread", fake_dcmread)
     dense, dense_valid = MODULE._series_image(tmp_path, "train", "study", "series", size=8, slice_profile="dense6")
+    adjacent, adjacent_valid = MODULE._series_image(
+        tmp_path,
+        "train",
+        "study",
+        "series",
+        size=8,
+        slice_profile="adjacent3",
+        fast_preprocess=True,
+    )
     legacy, legacy_valid = MODULE._series_image(tmp_path, "train", "study", "series", size=8, slice_profile="quantile3")
 
     assert dense_valid and len(dense) == 6
     assert all(image.shape == (3, 8, 8) for image in dense)
+    assert adjacent_valid and len(adjacent) == 3
+    assert all(image.shape == (3, 8, 8) for image in adjacent)
     assert legacy_valid and len(legacy) == 1 and legacy[0].shape == (3, 8, 8)
 
 

@@ -42,6 +42,7 @@
 | 10/08/2026 | `v4_dense6_target_pool_unit` | Testar janelas densas 2.5D, pooling por alvo e teacher por alvo | Código compilou; seis testes unitários passaram; `dense6/dense9` geram slabs de três canais e `targetwise` preserva `UNK=0,5` | — | Variante ousada pronta para T4; sem score ainda e sem DICOM bruto local |
 | 10/08/2026 | `kaggle_v4_dense_target_pool_v1` | Executar a v4 ousada no T4 | Worker `ERROR` antes do modelo: o peso EfficientNet não foi encontrado nos níveis rasos de `/kaggle/input` | — | Corrigir busca para `rglob`; não é falha da hipótese |
 | 10/08/2026 | `kaggle_v4_dense_target_pool_v2` | Repetir a v4 após corrigir o mount recursivo de pesos | Worker `RUNNING`, cota GPU subiu para `10,55 h`, ainda sem logs/CSV no momento do registro | — | Aguardar conclusão; manter `0,655` como fallback |
+| 10/08/2026 | `v4_adjacent3_fast_unit` | Reduzir a v4 para 3 slabs adjacentes por plano e acelerar I/O/normalização | 5 testes v4 passaram; smoke real em 1 série: 3 views `(3,224,224)` válidas; processamento rápido `0,012 s` contra `1,173 s` no modo integral; diferença média `0,34` níveis e máxima `5` em uint8 nos 10 estudos auditados | — | Promover ao T4; medir primeiro se o CSV termina e só então avaliar leaderboard |
 
 ## Detalhe da candidata v0.2
 

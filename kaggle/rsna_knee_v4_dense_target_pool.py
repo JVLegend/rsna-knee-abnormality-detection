@@ -70,6 +70,10 @@ IMAGE_STD = torch.tensor([0.229, 0.224, 0.225], dtype=torch.float32).view(1, 3, 
 SAMPLE_QUANTILES = (0.25, 0.5, 0.75)
 SLICE_PROFILES = {
     "quantile3": (0.25, 0.5, 0.75),
+    # Mesmo número de centros do controle, mas cada centro vira um slab 2.5D
+    # com vizinhas imediatas. Esta é a ablação rápida da v4: mantém os três
+    # planos e reduz o custo de 18 para 9 views por estudo.
+    "adjacent3": (0.25, 0.5, 0.75),
     "dense6": (0.10, 0.25, 0.40, 0.60, 0.75, 0.90),
     "dense9": (0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.80, 0.95),
 }
@@ -360,9 +364,14 @@ def _sample_indices(n_slices: int, slice_profile: str = SLICE_PROFILE) -> tuple[
     return tuple(dict.fromkeys(indices))
 
 
-def _normalize_slice(pixels: np.ndarray) -> np.ndarray:
+def _normalize_slice(pixels: np.ndarray, percentile_stride: int = 1) -> np.ndarray:
     values = np.asarray(pixels, dtype=np.float32)
-    finite = values[np.isfinite(values)]
+    if percentile_stride < 1:
+        raise ValueError("percentile_stride precisa ser >= 1.")
+    sampled = values
+    if percentile_stride > 1:
+        sampled = values[::percentile_stride, ::percentile_stride] if values.ndim >= 2 else values[::percentile_stride]
+    finite = sampled[np.isfinite(sampled)]
     if finite.size == 0:
         return np.zeros(values.shape, dtype=np.float32)
     low = float(np.percentile(finite, 1.0))
@@ -395,6 +404,7 @@ def _series_image(
     series_uid: str,
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
+    fast_preprocess: bool = False,
 ) -> tuple[list[np.ndarray], bool]:
     series_dir = data_dir / f"{split}_series" / study_uid / series_uid
     paths = sorted(series_dir.glob("*.dcm"))
@@ -403,7 +413,15 @@ def _series_image(
     records: list[tuple[Path, object]] = []
     for path in paths:
         try:
-            header = pydicom.dcmread(path, stop_before_pixels=True, force=True)
+            if fast_preprocess:
+                header = pydicom.dcmread(
+                    path,
+                    stop_before_pixels=True,
+                    force=True,
+                    specific_tags=["InstanceNumber", "ImagePositionPatient"],
+                )
+            else:
+                header = pydicom.dcmread(path, stop_before_pixels=True, force=True)
             records.append((path, header))
         except Exception:
             continue
@@ -411,13 +429,15 @@ def _series_image(
         return [], False
     records.sort(key=_sort_key)
     centers = _sample_indices(len(records), slice_profile)
+    percentile_stride = 4 if fast_preprocess else 1
+
     if slice_profile == "quantile3":
         slabs: list[np.ndarray] = []
         try:
             channels = []
             for index in centers:
-                normalized = _normalize_slice(_read_pixels(records[index][0]))
-                image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8), mode="L")
+                normalized = _normalize_slice(_read_pixels(records[index][0]), percentile_stride)
+                image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8))
                 channels.append(np.asarray(image.resize((size, size), resample=Image.Resampling.BILINEAR), dtype=np.uint8))
             slabs.append(np.stack(channels, axis=0))
         except Exception:
@@ -425,15 +445,22 @@ def _series_image(
         return slabs, True
 
     slabs = []
+    resized_cache: dict[int, np.ndarray] = {}
+
+    def resized_slice(index: int) -> np.ndarray:
+        if index not in resized_cache:
+            normalized = _normalize_slice(_read_pixels(records[index][0]), percentile_stride)
+            image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8))
+            resized_cache[index] = np.asarray(
+                image.resize((size, size), resample=Image.Resampling.BILINEAR),
+                dtype=np.uint8,
+            )
+        return resized_cache[index]
+
     for center in centers:
         indices = (max(0, center - 1), center, min(len(records) - 1, center + 1))
         try:
-            channels = []
-            for index in indices:
-                normalized = _normalize_slice(_read_pixels(records[index][0]))
-                image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8), mode="L")
-                channels.append(np.asarray(image.resize((size, size), resample=Image.Resampling.BILINEAR), dtype=np.uint8))
-            slabs.append(np.stack(channels, axis=0))
+            slabs.append(np.stack([resized_slice(index) for index in indices], axis=0))
         except Exception:
             continue
     return slabs, bool(slabs)
@@ -446,11 +473,12 @@ def study_image(
     series: pd.DataFrame | dict[str, pd.DataFrame],
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
+    fast_preprocess: bool = False,
 ) -> tuple[list[np.ndarray], bool]:
     series_uid = _preferred_series(series, study_uid)
     if series_uid is None:
         return [], False
-    return _series_image(data_dir, split, study_uid, series_uid, size, slice_profile)
+    return _series_image(data_dir, split, study_uid, series_uid, size, slice_profile, fast_preprocess)
 
 
 def study_images(
@@ -460,10 +488,19 @@ def study_images(
     series: pd.DataFrame | dict[str, pd.DataFrame],
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
+    fast_preprocess: bool = False,
 ) -> tuple[list[np.ndarray], bool]:
     images: list[np.ndarray] = []
     for series_uid in _preferred_series_uids(series, study_uid):
-        series_images, valid = _series_image(data_dir, split, study_uid, series_uid, size, slice_profile)
+        series_images, valid = _series_image(
+            data_dir,
+            split,
+            study_uid,
+            series_uid,
+            size,
+            slice_profile,
+            fast_preprocess,
+        )
         if valid:
             images.extend(series_images)
     return images, bool(images)
@@ -513,6 +550,7 @@ def visual_embeddings(
     device: str = "auto",
     slice_profile: str = SLICE_PROFILE,
     pooling: str = "mean",
+    fast_preprocess: bool = False,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, object], list[list[np.ndarray]], list[list[np.ndarray]]]:
     if slice_profile not in SLICE_PROFILES:
         raise ValueError(f"Perfil de fatias desconhecido: {slice_profile}")
@@ -548,6 +586,7 @@ def visual_embeddings(
             str(row[KEY_COLUMN]),
             series,
             slice_profile=slice_profile,
+            fast_preprocess=fast_preprocess,
         )
         for image in study_images_for_row:
             images.append(image)
@@ -574,6 +613,8 @@ def visual_embeddings(
         "views_mean_valid_study": float(np.mean([len(values) for values in study_embeddings if values])) if any(study_embeddings) else 0.0,
         "max_views_study": int(max((len(values) for values in study_embeddings), default=0)),
         "slice_profile": slice_profile,
+        "fast_preprocess": fast_preprocess,
+        "percentile_stride": 4 if fast_preprocess else 1,
         "embedding_pooling": pooling,
         "valid_train_mask": valid[:train_count].tolist(),
         "series_selection": "one_best_fluid_fat_series_per_anatomical_plane",
@@ -843,6 +884,7 @@ def run(
     slice_profile: str = SLICE_PROFILE,
     view_pooling: str = VIEW_POOLING,
     teacher_profile: str = TEACHER_PROFILE,
+    fast_preprocess: bool = False,
 ) -> pd.DataFrame:
     if not 0 <= visual_weight <= 1:
         raise ValueError("visual_weight precisa estar entre 0 e 1.")
@@ -878,6 +920,7 @@ def run(
         device=device,
         slice_profile=slice_profile,
         pooling=embedding_pooling,
+        fast_preprocess=fast_preprocess,
     )
     valid_train = np.asarray(
         visual_meta.get("valid_train_mask", [True] * len(visual_train_frame)),
@@ -987,6 +1030,7 @@ def main() -> None:
     parser.add_argument("--slice-profile", choices=tuple(SLICE_PROFILES), default=SLICE_PROFILE)
     parser.add_argument("--view-pooling", choices=("mean", "max", "topk", "target"), default=VIEW_POOLING)
     parser.add_argument("--teacher-profile", choices=("steven_v4", "targetwise"), default=TEACHER_PROFILE)
+    parser.add_argument("--fast-preprocess", action="store_true")
     parser.add_argument("--output", default=os.environ.get("RSNA_OUTPUT", "/kaggle/working/submission.csv"))
     args = parser.parse_args()
     run(
@@ -1003,6 +1047,7 @@ def main() -> None:
         slice_profile=args.slice_profile,
         view_pooling=args.view_pooling,
         teacher_profile=args.teacher_profile,
+        fast_preprocess=args.fast_preprocess,
     )
 
 
