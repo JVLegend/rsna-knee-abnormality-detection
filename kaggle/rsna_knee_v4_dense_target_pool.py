@@ -676,6 +676,15 @@ def _find_label_file(filename: str, requested: Path | None = None) -> Path:
         candidate = directory / filename
         if candidate.is_file():
             return candidate
+    # Kaggle can mount dataset versions below /kaggle/input/datasets/<slug>/
+    # rather than exposing the CSV at the first directory level. Resolve the
+    # exact filename recursively, while keeping the shallow lookup above for
+    # the common case and for local smoke paths.
+    root = Path("/kaggle/input")
+    if root.is_dir():
+        matches = sorted(path for path in root.rglob(filename) if path.is_file())
+        if matches:
+            return matches[0]
     checked = ", ".join(str(path) for path in _label_search_dirs(requested)[:30])
     raise FileNotFoundError(f"Arquivo de labels não encontrado: {filename}; pastas={checked}")
 
@@ -908,6 +917,18 @@ def run(
         raise ValueError("train.csv não contém estudos rotulados.")
 
     text = text_predictions(train, test, train_series, test_series)
+    weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] | None = None
+    label_dir: Path | None = None
+    if weak_visual:
+        # Validate all external inputs before the expensive DICOM pass. This
+        # prevents a missing Kaggle attachment from wasting a full worker run.
+        teacher, label_dir = _external_teacher(train, external_labels_dir, teacher_profile)
+        weak_targets = _weak_target_arrays(
+            train,
+            teacher,
+            threshold=weak_threshold,
+            sample_weight=weak_sample_weight,
+        )
     visual_train_frame = train.reset_index(drop=True) if weak_visual else train_labeled
     embedding_pooling = "mean" if view_pooling == "target" else view_pooling
     train_visual, test_visual, visual_meta, train_views, test_views = visual_embeddings(
@@ -928,16 +949,6 @@ def run(
     )
     if len(valid_train) != len(visual_train_frame):
         raise ValueError("A máscara de validade visual não coincide com o treino.")
-    weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] | None = None
-    label_dir: Path | None = None
-    if weak_visual:
-        teacher, label_dir = _external_teacher(train, external_labels_dir, teacher_profile)
-        weak_targets = _weak_target_arrays(
-            train,
-            teacher,
-            threshold=weak_threshold,
-            sample_weight=weak_sample_weight,
-        )
     visual = pd.DataFrame({KEY_COLUMN: test[KEY_COLUMN].astype(str).to_numpy()})
     weak_meta: dict[str, dict[str, int]] = {}
     for target in TARGET_COLUMNS:

@@ -353,6 +353,13 @@ enquanto o tempo de uma série caiu de `1,173 s` para `0,012 s`. A decisão é
 executar essa variante no T4 antes de alterar o teacher, o pooling ou os pesos
 de fusão.
 
+Na execução Kaggle da ablação, o worker terminou a parte visual em `4.897 s`
+com 4.410 estudos válidos e 39.672 views, mas falhou ao procurar
+`llm_labels_v2.csv`: os datasets estavam montados sob
+`/kaggle/input/datasets`, um nível abaixo do buscador original. A correção
+passa a procurar o filename recursivamente e valida os três arquivos externos
+antes de iniciar o loop DICOM.
+
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
 - A submissão `55392604` saiu de `PENDING` para `COMPLETE` com public score `0,655`, superando `55365537` (`0,635`) em `+0,020`.

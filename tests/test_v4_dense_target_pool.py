@@ -127,3 +127,14 @@ def test_targetwise_teacher_uses_source_map_and_preserves_unknown(tmp_path) -> N
     assert teacher.loc[0, "Lateral Meniscus"] == 0.8
     assert teacher.loc[0, "ACL__confidence"] == 0.95
     assert teacher.loc[1, "ACL"] == 0.5
+
+
+def test_label_file_search_finds_nested_kaggle_mount(monkeypatch, tmp_path) -> None:
+    nested = tmp_path / "datasets" / "source" / "versions" / "1"
+    nested.mkdir(parents=True)
+    expected = nested / MODULE.EXTERNAL_LABEL_V2_FILENAME
+    expected.write_text("StudyInstanceUID,ACL\nstudy,0.5\n", encoding="utf-8")
+
+    monkeypatch.setattr(MODULE, "Path", lambda value: tmp_path if value == "/kaggle/input" else __import__("pathlib").Path(value))
+
+    assert MODULE._find_label_file(MODULE.EXTERNAL_LABEL_V2_FILENAME) == expected
