@@ -254,7 +254,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | E-002a | labels | mapa target-wise de fontes, com cobertura mínima | baixo | AUC/coverage por alvo | — | — | preparar somente depois do score de E-002; evitar seleção circular |
 | E-004 | representação | DINOv2 frozen + MIL offline | médio | OOF agrupado | — | — | código/auditoria prontos; bloqueado por licença e execução DICOM |
 | E-004a | engenharia | Loader local de pesos + inferência unitária | baixo | shape, finitude, hash | local | passou | caminho offline validado; não é score de competição |
-| E-009 | representação/pooling/labels | v4 `dense6 + target pooling + teacher targetwise` | alto | macro OOF + LB | — | — | seis testes locais passaram; promover somente em T4 e comparar com v3 |
+| E-009 | representação/pooling/labels | v4 `dense6 + target pooling + teacher targetwise` | alto | macro OOF + LB | v4 v2 em execução | — | v1 falhou só no mount do peso; v2 corrigida está sem logs ainda |
 | E-005 | geometria | ordem física + seis slots | médio | OOF + auditoria | — | — | planejado |
 | E-006 | resolução | 224 vs 336 | médio/alto | menisco/focal + macro | — | — | planejado |
 | E-007 | pooling | target-specific max/top-k | médio | focal vs difuso | — | — | planejado |

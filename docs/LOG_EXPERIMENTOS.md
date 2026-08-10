@@ -40,6 +40,8 @@
 | 10/08/2026 | `dinov2_bundle_audit` | Auditar o bundle público pequeno antes de anexá-lo a um kernel | Backbone `88.283.115` bytes, 175 tensores, embedding 384; quatro heads com macro-AUC de fold entre `0,567850` e `0,661374`; Kaggle reportou licença `other` | — | Manter em auditoria; não usar os heads até esclarecer a licença |
 | 10/08/2026 | `dinov2_offline_loader` | Corrigir a dependência de URL do `predict.py` e carregar o peso local | Construção offline e inferência unitária `224×224 → (1,384)` finita passaram; smoke completo não ocorreu porque o checkout local não contém `test_series/` DICOM | — | Código `kaggle/rsna_knee_dinov2_offline.py` pronto para kernel, condicionado à licença e aos DICOMs |
 | 10/08/2026 | `v4_dense6_target_pool_unit` | Testar janelas densas 2.5D, pooling por alvo e teacher por alvo | Código compilou; seis testes unitários passaram; `dense6/dense9` geram slabs de três canais e `targetwise` preserva `UNK=0,5` | — | Variante ousada pronta para T4; sem score ainda e sem DICOM bruto local |
+| 10/08/2026 | `kaggle_v4_dense_target_pool_v1` | Executar a v4 ousada no T4 | Worker `ERROR` antes do modelo: o peso EfficientNet não foi encontrado nos níveis rasos de `/kaggle/input` | — | Corrigir busca para `rglob`; não é falha da hipótese |
+| 10/08/2026 | `kaggle_v4_dense_target_pool_v2` | Repetir a v4 após corrigir o mount recursivo de pesos | Worker `RUNNING`, cota GPU subiu para `10,55 h`, ainda sem logs/CSV no momento do registro | — | Aguardar conclusão; manter `0,655` como fallback |
 
 ## Detalhe da candidata v0.2
 
