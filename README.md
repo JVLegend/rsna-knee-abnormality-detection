@@ -112,6 +112,21 @@ python kaggle/rsna_knee_v3_external_labels.py \
 O auditor independente `scripts/audit_external_labels.py` produz
 `reports/external_label_audit.json` e não usa o teste para calibrar as fontes.
 
+### Candidata v4 agressiva: dense 2.5D, pooling por alvo e teacher por alvo
+
+`kaggle/rsna_knee_v4_dense_target_pool.py` combina três hipóteses do documento
+vivo: seis janelas adjacentes por série (`dense6`), treino em views repetidas
+com agregação `top-k` para achados focais e `mean` para achados difusos, e
+seleção do teacher por alvo (`targetwise`). A configuração conservadora fica
+disponível pelos flags `--slice-profile quantile3 --view-pooling mean
+--teacher-profile steven_v4`; a configuração padrão é a tentativa ousada.
+
+O teacher por alvo usa Pilkwang para ACL/MCL/Fracture, Steven v2 para menisco
+medial e Steven v4 nos demais alvos, sempre neutralizando estados não
+abordados e mantendo o peso dos pseudo-rótulos em `0,10`. Ainda não há score
+Kaggle dessa variante: a execução real requer DICOM no kernel e o limite atual
+de sessões GPU continua ativo.
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD

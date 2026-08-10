@@ -51,6 +51,7 @@ Aprendizado:
 - Os CSVs estão no HD, fora do Git: `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/labels/`. A variante `kaggle/rsna_knee_v3_external_labels.py` neutraliza o `0,5` do Steven v2 antes de usar o v4 e aplica confiança mínima `0,85`.
 - O bundle `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/bundles/ericwang-dinov2-mil`. O backbone local tem `88.283.115` bytes, SHA-256 `b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9`, 175 tensores e embedding 384. O Kaggle CLI reportou licença `other`; o bundle fica em auditoria e não deve ser usado no leaderboard até a licença dos heads e dos pesos ser esclarecida.
 - O `predict.py` original tentava carregar o backbone via URL. `kaggle/rsna_knee_dinov2_offline.py` corrige o caminho com `weights=<arquivo local>` e uma trava `RSNA_DINOV2_LICENSE_ACK=1`. A construção do modelo e uma inferência `224×224 → (1,384)` passaram localmente; o smoke DICOM completo não foi possível porque o checkout incremental mantém CSVs, não `test_series/` bruto.
+- A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. Os testes são unitários; ainda não há evidência de leaderboard.
 - Limitação de inferência: os relatórios existem no treino, mas não no teste. O relatório deve servir para gerar supervisão auxiliar; o modelo final precisa inferir somente de imagem e metadados disponíveis no teste.
 - Ponto crítico do fórum: o host informou que os rótulos oficiais são derivados das imagens e que os relatórios podem ser ambíguos ou inconsistentes. O texto não é ground truth.
 
@@ -253,6 +254,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | E-002a | labels | mapa target-wise de fontes, com cobertura mínima | baixo | AUC/coverage por alvo | — | — | preparar somente depois do score de E-002; evitar seleção circular |
 | E-004 | representação | DINOv2 frozen + MIL offline | médio | OOF agrupado | — | — | código/auditoria prontos; bloqueado por licença e execução DICOM |
 | E-004a | engenharia | Loader local de pesos + inferência unitária | baixo | shape, finitude, hash | local | passou | caminho offline validado; não é score de competição |
+| E-009 | representação/pooling/labels | v4 `dense6 + target pooling + teacher targetwise` | alto | macro OOF + LB | — | — | seis testes locais passaram; promover somente em T4 e comparar com v3 |
 | E-005 | geometria | ordem física + seis slots | médio | OOF + auditoria | — | — | planejado |
 | E-006 | resolução | 224 vs 336 | médio/alto | menisco/focal + macro | — | — | planejado |
 | E-007 | pooling | target-specific max/top-k | médio | focal vs difuso | — | — | planejado |
@@ -345,6 +347,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 - O novo auditor `scripts/audit_external_labels.py` comparou as fontes contra os 58 estudos oficiais, sem alterar o modelo visual.
 - Steven v4, mascarado pelo `v2` quando o caso não é abordado, foi escolhido para a próxima variante visual. O smoke local passou, mas o push T4 foi temporariamente bloqueado pelo limite de duas sessões GPU do Kaggle.
 - O bundle DINOv2-MIL foi auditado: backbone local carregou sem rede e gerou embedding finito `(1,384)`. A variante offline corrigida está no repositório, mas não foi submetida porque o Kaggle reportou licença `other` e o checkout local não contém DICOM de teste completo.
+- A v4 agressiva foi implementada e auditada contra erros de canais, views vazias, pooling e `UNK`. Ela combina `dense6`, MIL aproximado por views e teacher target-wise; ainda precisa de execução T4 para qualquer conclusão de score.
 
 ### 2026-08-09 — pesquisa Kaggle e consolidação
 
@@ -356,4 +359,4 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 
 ### Próxima atualização
 
-Adicionar o resultado T4 de `E-002`, a decisão de licença do bundle DINOv2 e a primeira comparação DINOv2 vs EfficientNet-B0 em DICOM real.
+Adicionar o resultado T4 de `E-009`, a decisão de licença do bundle DINOv2 e a primeira comparação DINOv2 vs EfficientNet-B0 em DICOM real.
