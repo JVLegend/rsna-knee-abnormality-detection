@@ -682,9 +682,18 @@ def _find_label_file(filename: str, requested: Path | None = None) -> Path:
     # the common case and for local smoke paths.
     root = Path("/kaggle/input")
     if root.is_dir():
-        matches = sorted(path for path in root.rglob(filename) if path.is_file())
-        if matches:
-            return matches[0]
+        # Never recurse through the competition mount: it contains hundreds
+        # of thousands of DICOMs. External datasets are mounted below a
+        # non-competition input folder, commonly /kaggle/input/datasets.
+        search_roots = [
+            child
+            for child in root.iterdir()
+            if child.is_dir() and child.name.lower() not in {"competition", "competitions"}
+        ]
+        for search_root in search_roots:
+            matches = sorted(path for path in search_root.rglob(filename) if path.is_file())
+            if matches:
+                return matches[0]
     checked = ", ".join(str(path) for path in _label_search_dirs(requested)[:30])
     raise FileNotFoundError(f"Arquivo de labels não encontrado: {filename}; pastas={checked}")
 
@@ -916,7 +925,6 @@ def run(
     if train_labeled.empty:
         raise ValueError("train.csv não contém estudos rotulados.")
 
-    text = text_predictions(train, test, train_series, test_series)
     weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] | None = None
     label_dir: Path | None = None
     if weak_visual:
@@ -929,6 +937,7 @@ def run(
             threshold=weak_threshold,
             sample_weight=weak_sample_weight,
         )
+    text = text_predictions(train, test, train_series, test_series)
     visual_train_frame = train.reset_index(drop=True) if weak_visual else train_labeled
     embedding_pooling = "mean" if view_pooling == "target" else view_pooling
     train_visual, test_visual, visual_meta, train_views, test_views = visual_embeddings(

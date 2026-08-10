@@ -360,6 +360,11 @@ com 4.410 estudos válidos e 39.672 views, mas falhou ao procurar
 passa a procurar o filename recursivamente e valida os três arquivos externos
 antes de iniciar o loop DICOM.
 
+Na versão seguinte, a recursão foi limitada às pastas de inputs externos,
+excluindo `competition(s)`, porque uma busca global também atravessava o
+volume DICOM e atrasava o primeiro log. O gate dos labels agora roda antes do
+TF-IDF e da leitura visual.
+
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
 - A submissão `55392604` saiu de `PENDING` para `COMPLETE` com public score `0,655`, superando `55365537` (`0,635`) em `+0,020`.
