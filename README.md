@@ -6,7 +6,10 @@ Baseline reprodutível para a competição [RSNA Knee Abnormality Detection](htt
 
 Prever, para cada estudo de MRI do joelho, a probabilidade de 12 anormalidades. A métrica é a média macro de ROC-AUC nos 12 alvos.
 
-O primeiro marco foi uma submissão textual; a referência atual é a candidata multi-view texto–imagem, com score público `0,635`. A próxima hipótese amplia o treino visual com supervisão fraca controlada dos 4.407 laudos, sem depender de `Report` no teste.
+O primeiro marco foi uma submissão textual; a referência atual é a candidata
+multi-view texto–imagem com supervisão fraca, com score público `0,655`. A
+próxima hipótese troca somente a fonte da supervisão fraca por labels públicos
+auditados contra os 58 rótulos oficiais.
 
 ## Estrutura
 
@@ -84,7 +87,53 @@ A v0.2 atingiu macro-AUC média `0.629867` em dois seeds (`42` e `2026`), contra
 
 O kernel `jvlegend/rsna-knee-abnormality-detection-v2-multiview` seleciona uma série fluido-sensível por plano anatômico, agrega as vistas com EfficientNet-B0 e mistura o visual com o texto. A submissão `55365537` marcou `0,635` no público e é a referência congelada.
 
-A v3 mantém essa arquitetura e treina o componente visual nos 4.407 estudos disponíveis. Os 58 rótulos oficiais recebem peso `1,0`; linhas sem rótulo só entram quando há menção lexical explícita e o professor textual está em `p≥0,85` ou `p≤0,15`, com peso máximo `0,10`. Não mencionar um achado nunca é tratado como normalidade. O worker privado está em execução; ainda não há score da v3.
+A v3 mantém essa arquitetura e treina o componente visual nos 4.407 estudos disponíveis. Os 58 rótulos oficiais recebem peso `1,0`; linhas sem rótulo só entram quando há menção lexical explícita e o professor textual está em `p≥0,85` ou `p≤0,15`, com peso máximo `0,10`. Não mencionar um achado nunca é tratado como normalidade. A submissão `55392604` marcou `0,655` e virou a nova referência.
+
+### Candidata v3 com labels externos
+
+`kaggle/rsna_knee_v3_external_labels.py` mantém o visual da v3, mas troca o
+professor lexical pelos CSVs públicos Steven v2/v4. O v4 é neutralizado para
+os UIDs e alvos que o v2 marcou como não abordados (`0,5`), e só entram estudos
+sem rótulo oficial com confiança `>=0,85`; os 58 labels oficiais continuam com
+peso `1,0`. O dataset `stevenleehans/rsna-knee-llm-report-labels` deve ser
+anexado ao notebook, junto do bundle de pesos EfficientNet-B0. Os CSVs locais
+ficam fora do Git em `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/labels/steven`.
+
+Smoke local:
+
+```bash
+python kaggle/rsna_knee_v3_external_labels.py \
+  --data-dir data/raw \
+  --external-labels-dir "/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/labels/steven" \
+  --device cpu \
+  --output /tmp/submission_v3_external_labels.csv
+```
+
+O auditor independente `scripts/audit_external_labels.py` produz
+`reports/external_label_audit.json` e não usa o teste para calibrar as fontes.
+
+### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
+
+O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD
+externo e auditado. Ele contém o código DINOv2, o backbone ViT-S/14 de 384
+dimensões e quatro heads MIL. O Kaggle CLI reportou licença `other` para o
+bundle; por isso os checkpoints não entram em uma submissão até a licença e as
+regras da competição serem confirmadas.
+
+O entrypoint `kaggle/rsna_knee_dinov2_offline.py` corrige o `predict.py`
+original: passa explicitamente `weights=<arquivo local>` ao `torch.hub.load`,
+eliminando a dependência de rede. A auditoria reprodutível é:
+
+```bash
+python scripts/audit_dinov2_bundle.py \
+  --bundle "/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/bundles/ericwang-dinov2-mil" \
+  --output reports/dinov2_bundle_audit.json
+```
+
+O carregamento e uma inferência unitária em `224×224` passaram localmente. A
+execução DICOM completa deve ocorrer em kernel Kaggle ou após baixar um lote
+de DICOM compatível; o checkout local atual mantém somente os CSVs da
+competição para não duplicar o volume bruto.
 
 Para medir a v0 sem usar rótulos do fold de validação:
 
@@ -224,7 +273,7 @@ python scripts/validate_submission.py \
   --submission submissions/submission_v0_report_metadata.csv
 ```
 
-O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`. Para o smoke local da v3: `python kaggle/rsna_knee_v2_multiview.py --data-dir data/raw --weak-visual --device cpu --output /tmp/submission_v3_weak_local.csv`.
+O mesmo entrypoint pode ser usado dentro do notebook Kaggle, apontando `--data-dir` para `/kaggle/input/rsna-knee-abnormality-detection` e gravando `submission.csv` em `/kaggle/working/`. Para o smoke local da v3 antiga: `python kaggle/rsna_knee_v2_multiview.py --data-dir data/raw --weak-visual --device cpu --output /tmp/submission_v3_weak_local.csv`. A variante atual com labels públicos usa `kaggle/rsna_knee_v3_external_labels.py` e o diretório Steven descrito acima.
 
 O kernel privado v3 foi publicado por um pacote temporário autocontido, com
 GPU solicitada, pesos EfficientNet-B0 públicos e internet desligada. Como o
