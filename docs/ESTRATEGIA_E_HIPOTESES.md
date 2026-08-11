@@ -407,25 +407,28 @@ Hipóteses abertas a partir dessa auditoria:
 
 | ID | Hipótese | Teste decisivo | Estado |
 |---|---|---|---|
-| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Mesmo teacher, views e blend; trocar somente a agregação para `max` | ativa |
-| H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | ativa |
+| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | ativa |
+| H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
 
-Decisão imediata: implementar H-20 e H-21 juntos como uma ablação de engenharia
-de baixo risco, mantendo B0, teacher e blend constantes. H-22 a H-24 ficam
-separadas para não atribuir um eventual ganho ao componente errado.
+Decisão imediata: a v8 já executou H-20 e H-21 juntas como uma ablação de
+engenharia de baixo risco, mantendo B0, teacher e blend constantes. Como ela
+ficou abaixo da v6, o próximo passo é repetir somente H-20 em `dense6` integral;
+H-22 a H-24 ficam separadas para não atribuir um eventual ganho ao componente
+errado.
 
 ### Resultado H-20/H-21 — v8
 
 O kernel standalone executou a ablação sem alterar teacher, B0 ou blend:
 `adjacent3`, `fast_preprocess=True`, `target_pooling=max`, 9 views por estudo,
 `39.690` views totais e `4.416,4 s`. O CSV de 3 linhas foi validado e enviado
-via Notebook com ref `55418681`, ainda `PENDING`. Até o score chegar, a única
-conclusão permitida é operacional: o custo caiu de `6.779,9 s`/`79.380 views`
-na v6 para `4.416,4 s`/`39.690 views` na v8; qualquer conclusão de qualidade
-visual aguarda o leaderboard.
+via Notebook com ref `55418681`, que marcou público `0,673`. O custo caiu de
+`6.779,9 s`/`79.380 views` na v6 para `4.416,4 s`/`39.690 views` na v8, mas o
+score ficou `-0,033` abaixo de `0,706` e `+0,018` acima da v3 (`0,655`). Como
+H-20 e H-21 foram confundidas nessa rodada, a próxima execução isola max
+pooling com `dense6` integral antes de descartar a hipótese.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 

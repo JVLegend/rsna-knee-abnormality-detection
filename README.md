@@ -152,6 +152,13 @@ blend constantes para testar somente a hipótese de MIL destacada no pipeline
 de 18º lugar. O entrypoint aceita `--target-pooling max` quando executado
 diretamente; o wrapper já passa esse valor ao `run()`.
 
+A ablação `kaggle/rsna_knee_v4_dense6_max_mil.py` mantém a configuração da v6
+(`dense6`, preprocessamento integral, teacher `targetwise`, B0 e blend) e troca
+somente o pooling por alvo para `max`. Ela é a execução controlada de H-20;
+para publicação como Notebook, o módulo e o wrapper devem ser montados em um
+único `code_file`, porque o Kaggle não empacota automaticamente imports locais
+adicionais.
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD
