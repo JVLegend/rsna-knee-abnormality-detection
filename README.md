@@ -123,9 +123,8 @@ disponível pelos flags `--slice-profile quantile3 --view-pooling mean
 
 O teacher por alvo usa Pilkwang para ACL/MCL/Fracture, Steven v2 para menisco
 medial e Steven v4 nos demais alvos, sempre neutralizando estados não
-abordados e mantendo o peso dos pseudo-rótulos em `0,10`. Ainda não há score
-Kaggle dessa variante: a execução real requer DICOM no kernel e o limite atual
-de sessões GPU continua ativo.
+abordados e mantendo o peso dos pseudo-rótulos em `0,10`. A execução v6 marcou
+`0,706`; a variante `v4_yash_lite` testa a ablação rápida/max-MIL separadamente.
 
 ### Ablação rápida da v4 para o worker Kaggle
 
