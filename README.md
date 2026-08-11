@@ -159,6 +159,11 @@ para publicação como Notebook, o módulo e o wrapper devem ser montados em um
 único `code_file`, porque o Kaggle não empacota automaticamente imports locais
 adicionais.
 
+A ablação `kaggle/rsna_knee_v4_dense6_soft_labels.py` mantém o pooling original
+da v6 e troca somente o tratamento dos weak labels: estudos pseudo-rotulados
+entram como duas observações ponderadas por `p` e `1-p`, preservando a incerteza
+do teacher. Os 58 rótulos oficiais continuam binários e com peso `1,0`.
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD

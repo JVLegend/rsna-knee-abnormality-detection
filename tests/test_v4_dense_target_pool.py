@@ -99,6 +99,28 @@ def test_target_view_model_trains_and_pools_views() -> None:
     assert predictions[2] == 0.5
 
 
+def test_target_view_model_accepts_soft_weak_probabilities() -> None:
+    train_views = [
+        [np.asarray([0.0, 0.0]), np.asarray([0.1, 0.0])],
+        [np.asarray([0.0, 0.1]), np.asarray([0.1, 0.1])],
+        [np.asarray([1.0, 1.0]), np.asarray([0.9, 1.0])],
+        [np.asarray([1.0, 0.9]), np.asarray([0.9, 0.9])],
+    ]
+    test_views = [[np.asarray([0.05, 0.05])], [np.asarray([0.95, 0.95])]]
+    predictions = MODULE._fit_target_view_model(
+        "Effusion",
+        train_views,
+        test_views,
+        labels=np.asarray([0.0, 1.0, 1.0, 0.0]),
+        fit_mask=np.asarray([True, True, True, True]),
+        sample_weights=np.asarray([1.0, 0.1, 0.1, 1.0]),
+        soft_probabilities=np.asarray([np.nan, 0.8, 0.2, np.nan]),
+    )
+    assert predictions.shape == (2,)
+    assert np.isfinite(predictions).all()
+    assert np.all((predictions >= 0.0) & (predictions <= 1.0))
+
+
 def test_targetwise_teacher_uses_source_map_and_preserves_unknown(tmp_path) -> None:
     ids = ["a", "b"]
 

@@ -398,8 +398,9 @@ Os mecanismos transferíveis, separados do claim de score, são:
 
 Diferenças críticas para o nosso código: a v4 atual usa B0 congelada,
 normalização por slice, regressão logística sobre embeddings e um único ajuste;
-ela ainda não reproduz fine-tuning, janela por série, ensemble ou labels suaves
-simétricos. O artigo também informa que o próprio `0,9357` interno estava
+ela ainda não reproduz fine-tuning, janela por série ou ensemble. A hipótese de
+labels suaves foi implementada no wrapper `v4_dense6_soft_labels`, mas ainda
+não tem score. O artigo também informa que o próprio `0,9357` interno estava
 vazado nos 58 estudos e caiu para `0,8568` após cross-fitting. O `0,903` público
 é evidência de direção, não uma validação local limpa.
 
@@ -412,6 +413,7 @@ Hipóteses abertas a partir dessa auditoria:
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
+| H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | preparada |
 
 Decisão imediata: a v8 já executou H-20 e H-21 juntas como uma ablação de
 engenharia de baixo risco, mantendo B0, teacher e blend constantes. Como ela
@@ -429,6 +431,16 @@ via Notebook com ref `55418681`, que marcou público `0,673`. O custo caiu de
 score ficou `-0,033` abaixo de `0,706` e `+0,018` acima da v3 (`0,655`). Como
 H-20 e H-21 foram confundidas nessa rodada, a próxima execução isola max
 pooling com `dense6` integral antes de descartar a hipótese.
+
+### Implementação H-25 — labels weak suaves
+
+O wrapper `kaggle/rsna_knee_v4_dense6_soft_labels.py` mantém `dense6`,
+preprocessamento integral, teacher target-wise, pooling original por alvo,
+B0 e blend global. A única mudança é no treino visual: cada estudo weak com
+probabilidade `p` gera duas cópias das mesmas views, com pesos `p` para a classe
+1 e `1-p` para a classe 0; os 58 estudos gold continuam com rótulo binário e
+peso `1,0`. A implementação passou os 8 testes específicos da v4, mas ainda
+aguarda execução T4 e deve ser comparada apenas depois do resultado de H-20.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 

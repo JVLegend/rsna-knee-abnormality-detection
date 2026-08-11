@@ -114,6 +114,7 @@ TARGETWISE_MODE = False
 WEAK_VISUAL_MODE = True
 WEAK_VISUAL_THRESHOLD = 0.85
 WEAK_VISUAL_SAMPLE_WEIGHT = 0.10
+WEAK_LABEL_MODE = "hard"
 EXTERNAL_LABEL_V2_FILENAME = "llm_labels_v2.csv"
 EXTERNAL_LABEL_V4_FILENAME = "llm_labels_v4_blend.csv"
 TARGETWISE_VISUAL_WEIGHTS = {
@@ -774,19 +775,21 @@ def _weak_target_arrays(
     teacher: pd.DataFrame,
     threshold: float = WEAK_VISUAL_THRESHOLD,
     sample_weight: float = WEAK_VISUAL_SAMPLE_WEIGHT,
-) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]]:
+) -> dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
     """Usa scores externos somente quando a confiança supera o limiar.
 
     As linhas gold usam o rótulo oficial e peso 1. Os demais estudos entram
     apenas quando o labeler externo está suficientemente distante de 0,5;
-    ausência de menção foi previamente convertida em 0,5 pelo adaptador.
+    ausência de menção foi previamente convertida em 0,5 pelo adaptador. O
+    quarto vetor preserva a probabilidade do teacher apenas para as linhas
+    weak, permitindo testar labels suaves sem alterar o conjunto incluído.
     """
 
     if not 0.5 < threshold < 1:
         raise ValueError("threshold precisa estar entre 0,5 e 1.")
     if sample_weight <= 0:
         raise ValueError("sample_weight precisa ser positivo.")
-    result: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+    result: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]] = {}
     for target in TARGET_COLUMNS:
         gold_values = pd.to_numeric(train[target], errors="coerce").to_numpy(dtype=float)
         gold = np.isfinite(gold_values)
@@ -802,7 +805,9 @@ def _weak_target_arrays(
         weights = np.zeros(len(train), dtype=float)
         weights[gold] = 1.0
         weights[weak] = sample_weight * np.clip(confidence[weak], 0.0, 1.0)
-        result[target] = labels, weights, included
+        soft_probabilities = np.full(len(train), np.nan, dtype=float)
+        soft_probabilities[weak] = np.clip(probabilities[weak], 1e-6, 1.0 - 1e-6)
+        result[target] = labels, weights, included, soft_probabilities
     return result
 
 
@@ -834,14 +839,25 @@ def _fit_target_view_model(
     fit_mask: np.ndarray,
     sample_weights: np.ndarray | None,
     target_pooling: str | None = None,
+    soft_probabilities: np.ndarray | None = None,
 ) -> np.ndarray:
     """Treina em views repetidas e agrega probabilidades por alvo.
 
     O rótulo continua sendo de estudo; repetir o rótulo nas views é uma
     aproximação MIL deliberadamente agressiva. A agregação top-k reduz o risco
-    de uma única fatia espúria dominar achados focais.
+    de uma única fatia espúria dominar achados focais. Quando
+    ``soft_probabilities`` é fornecido, cada estudo weak vira duas cópias
+    ponderadas (classe 1 com peso ``p`` e classe 0 com peso ``1-p``),
+    preservando a incerteza do teacher sem tocar nos 58 labels gold.
     """
 
+    if len(fit_mask) != len(train_views) or len(labels) != len(train_views):
+        raise ValueError("labels/fit_mask precisam coincidir com train_views.")
+    if sample_weights is not None and len(sample_weights) != len(train_views):
+        raise ValueError("sample_weights precisam coincidir com train_views.")
+    if soft_probabilities is not None and len(soft_probabilities) != len(train_views):
+        raise ValueError("soft_probabilities precisam coincidir com train_views.")
+    uses_weights = sample_weights is not None or soft_probabilities is not None
     x_parts: list[np.ndarray] = []
     y_parts: list[np.ndarray] = []
     weight_parts: list[np.ndarray] = []
@@ -849,10 +865,27 @@ def _fit_target_view_model(
         if not fit_mask[index] or not values:
             continue
         block = np.stack(values).astype(np.float32)
-        x_parts.append(block)
-        y_parts.append(np.full(block.shape[0], labels[index], dtype=float))
-        if sample_weights is not None:
-            weight_parts.append(np.full(block.shape[0], sample_weights[index], dtype=float))
+        base_weight = 1.0 if sample_weights is None else float(sample_weights[index])
+        soft = None if soft_probabilities is None else float(soft_probabilities[index])
+        if soft is not None and np.isfinite(soft):
+            x_parts.extend([block, block])
+            y_parts.extend(
+                [
+                    np.ones(block.shape[0], dtype=float),
+                    np.zeros(block.shape[0], dtype=float),
+                ]
+            )
+            weight_parts.extend(
+                [
+                    np.full(block.shape[0], base_weight * soft, dtype=float),
+                    np.full(block.shape[0], base_weight * (1.0 - soft), dtype=float),
+                ]
+            )
+        else:
+            x_parts.append(block)
+            y_parts.append(np.full(block.shape[0], labels[index], dtype=float))
+            if uses_weights:
+                weight_parts.append(np.full(block.shape[0], base_weight, dtype=float))
 
     if not x_parts:
         return np.full(len(test_views), 0.5, dtype=float)
@@ -906,6 +939,7 @@ def run(
     weak_visual: bool = WEAK_VISUAL_MODE,
     weak_threshold: float = WEAK_VISUAL_THRESHOLD,
     weak_sample_weight: float = WEAK_VISUAL_SAMPLE_WEIGHT,
+    weak_label_mode: str = WEAK_LABEL_MODE,
     external_labels_dir: Path | None = None,
     slice_profile: str = SLICE_PROFILE,
     view_pooling: str = VIEW_POOLING,
@@ -923,6 +957,10 @@ def run(
         raise ValueError(f"Pooling visual desconhecido: {view_pooling}")
     if teacher_profile not in {"steven_v4", "targetwise"}:
         raise ValueError(f"Perfil de teacher desconhecido: {teacher_profile}")
+    if weak_label_mode not in {"hard", "soft"}:
+        raise ValueError(f"Modo de weak label desconhecido: {weak_label_mode}")
+    if weak_label_mode == "soft" and not weak_visual:
+        raise ValueError("weak_label_mode='soft' exige weak_visual=True.")
     if target_pooling is not None and target_pooling not in {"mean", "max", "topk"}:
         raise ValueError(f"Pooling de alvo desconhecido: {target_pooling}")
     started = time.perf_counter()
@@ -936,7 +974,7 @@ def run(
     if train_labeled.empty:
         raise ValueError("train.csv não contém estudos rotulados.")
 
-    weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray]] | None = None
+    weak_targets: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]] | None = None
     label_dir: Path | None = None
     if weak_visual:
         # Validate all external inputs before the expensive DICOM pass. This
@@ -974,7 +1012,7 @@ def run(
     for target in TARGET_COLUMNS:
         if weak_visual:
             assert weak_targets is not None
-            labels_array, sample_weights, included = weak_targets[target]
+            labels_array, sample_weights, included, soft_probabilities = weak_targets[target]
             fit_mask = included & valid_train
             labels_for_views = labels_array
             weak_meta[target] = {
@@ -996,6 +1034,7 @@ def run(
                 fit_mask,
                 sample_weights,
                 target_pooling=target_pooling,
+                soft_probabilities=soft_probabilities if weak_label_mode == "soft" else None,
             )
         else:
             y = labels_for_views[fit_mask]
@@ -1034,7 +1073,7 @@ def run(
     print(
         f"labeled_train={len(train_labeled)} visual_train={len(visual_train_frame)} "
         f"test={len(test)} visual_weight={visual_weight} targetwise={targetwise} "
-        f"weak_visual={weak_visual} external_labels={label_dir} "
+        f"weak_visual={weak_visual} weak_label_mode={weak_label_mode} external_labels={label_dir} "
         f"slice_profile={slice_profile} view_pooling={view_pooling} "
         f"target_pooling={target_pooling or 'per-target'} teacher_profile={teacher_profile}"
     )
@@ -1059,6 +1098,7 @@ def main() -> None:
     parser.add_argument("--weak-visual", action="store_true", default=WEAK_VISUAL_MODE)
     parser.add_argument("--weak-threshold", type=float, default=WEAK_VISUAL_THRESHOLD)
     parser.add_argument("--weak-sample-weight", type=float, default=WEAK_VISUAL_SAMPLE_WEIGHT)
+    parser.add_argument("--weak-label-mode", choices=("hard", "soft"), default=WEAK_LABEL_MODE)
     parser.add_argument("--external-labels-dir", default=os.environ.get("RSNA_EXTERNAL_LABELS_DIR"))
     parser.add_argument("--slice-profile", choices=tuple(SLICE_PROFILES), default=SLICE_PROFILE)
     parser.add_argument("--view-pooling", choices=("mean", "max", "topk", "target"), default=VIEW_POOLING)
@@ -1077,6 +1117,7 @@ def main() -> None:
         weak_visual=args.weak_visual,
         weak_threshold=args.weak_threshold,
         weak_sample_weight=args.weak_sample_weight,
+        weak_label_mode=args.weak_label_mode,
         external_labels_dir=Path(args.external_labels_dir) if args.external_labels_dir else None,
         slice_profile=args.slice_profile,
         view_pooling=args.view_pooling,
