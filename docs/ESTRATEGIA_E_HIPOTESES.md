@@ -407,7 +407,7 @@ Hipóteses abertas a partir dessa auditoria:
 
 | ID | Hipótese | Teste decisivo | Estado |
 |---|---|---|---|
-| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | ativa |
+| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | em execução — kernel v9 |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |

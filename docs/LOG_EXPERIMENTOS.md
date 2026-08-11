@@ -50,7 +50,7 @@
 | 10/08/2026 | `v4_yash_lite_max_mil` | Manter teacher/B0/blend e trocar para `adjacent3 + fast_preprocess + max pooling` | `COMPLETE` em `4.416,4 s`; `4.410/4.410` estudos, `39.690` views, 9 views/estudo, CUDA; CSV válido | `55418681` → público `0,673` | Abaixo da v6 em `-0,033`, mas acima da v3 em `+0,018`; não promover como substituta; custo menor confirmado |
 | 10/08/2026 | `kaggle_v4_yash_lite_v7` | Executar a ablação article-inspired pelo kernel | `ERROR` antes do modelo: o script principal não encontrou o módulo auxiliar enviado como segundo arquivo | — | Kaggle executa somente o `code_file`; montar um arquivo standalone antes de repetir |
 | 10/08/2026 | `kaggle_v4_yash_lite_v8` | Reexecutar a mesma ablação com o código standalone | `COMPLETE` no T4; `adjacent3`, `fast_preprocess=True`, `target_pooling=max`; `submission.csv` gerado | `55418681` → público `0,673` | H-20/H-21 combinadas não superaram a v6; testar max isoladamente antes de descartar a ideia |
-| 11/08/2026 | `v4_dense6_max_mil` | Isolar H-20: trocar somente o pooling target por `max`, preservando a configuração integral da v6 | A executar | — | Próxima candidata; se ficar abaixo de `0,706`, manter o pooling targetwise original |
+| 11/08/2026 | `v4_dense6_max_mil` | Isolar H-20: trocar somente o pooling target por `max`, preservando a configuração integral da v6 | `RUNNING` no T4, kernel v9; `dense6`, `fast_preprocess=False`, teacher `targetwise`; aguardando CSV | — | Comparação direta com a v6; se ficar abaixo de `0,706`, manter o pooling targetwise original |
 
 ## Detalhe da candidata v0.2
 
