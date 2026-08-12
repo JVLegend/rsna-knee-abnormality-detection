@@ -52,7 +52,15 @@
 | 10/08/2026 | `kaggle_v4_yash_lite_v8` | Reexecutar a mesma ablação com o código standalone | `COMPLETE` no T4; `adjacent3`, `fast_preprocess=True`, `target_pooling=max`; `submission.csv` gerado | `55418681` → público `0,673` | H-20/H-21 combinadas não superaram a v6; testar max isoladamente antes de descartar a ideia |
 | 11/08/2026 | `v4_dense6_max_mil` | Isolar H-20: trocar somente o pooling target por `max`, preservando a configuração integral da v6 | `COMPLETE` no T4, kernel v9; `4.410/4.410` estudos, `79.380` views, `8.125,9 s`; CSV válido | `55442653` → público `0,663` | Refutada contra a v6: queda de `-0,043`; manter o pooling targetwise original |
 | 11/08/2026 | `v4_dense6_soft_labels` | Implementar H-25: preservar a probabilidade dos weak labels com cópias ponderadas `p`/`1-p` | `COMPLETE` no T4, kernel v10; `4.410/4.410` estudos, `79.380` views, `6.882,9 s`; CSV válido | `55446808` → `PENDING` | Aguardar score; manter dense6, pooling, teacher e blend da v6 constantes |
-| 12/08/2026 | `v4_dense6_series_window` | Implementar H-22: trocar somente a normalização por slice por janela comum `1–99%` por série | Código e wrapper passaram `py_compile`; smoke sintético da v4 passou; suíte específica `9 passed`; push T4 bloqueado por cota semanal GPU (`30,00 h`) | — | Pronta para executar após reset da cota; não trocar para CPU sem benchmark de viabilidade |
+| 12/08/2026 | `v4_dense6_series_window` | Implementar H-22: trocar somente a normalização por slice por janela comum `1–99%` por série | Código e wrapper passaram `py_compile`; smoke sintético e suíte específica `11 passed`; push T4 bloqueado por cota semanal GPU (`30,00 h`); Mac MPS processou 1 estudo/6 views em `2,96 s`, embedding `(6, 1280)` finito | — | MPS é útil para CV/smoke local, mas não substitui o T4: o HD não contém DICOM de teste; executar após reset da cota |
+
+## Runtime alternativo — 12/08/2026
+
+- O Mac local detecta `mps=True` no PyTorch e agora aceita `--device mps`/`RSNA_DEVICE=mps`; `auto` prioriza CUDA, depois MPS e por fim CPU.
+- O peso público EfficientNet-B0 foi baixado somente para `models/efficientnet_b0_rwightman-7f5810bc.pth`, diretório ignorado pelo Git.
+- Smoke real: estudo `1.2.826.0.1.3680043.8.498.18392509497170616983977319528036573378`, 6 views `dense6`, embedding `(6, 1280)`, todos os valores finitos, `2,96 s` no MPS.
+- O HD local tem DICOM de treino parcial, mas `test_series/` contém zero DICOM; portanto a execução local não pode produzir um leaderboard válido. Docker/Colima também não acrescenta GPU Apple e não há host DGX/túnel SSH configurado nesta máquina.
+- Plano operacional: usar MPS para testes de pré-processamento, CV e regressões; reservar o próximo worker T4 para a execução completa de H-22 e a geração da submissão via Notebook Kaggle.
 
 ## Detalhe da candidata v0.2
 

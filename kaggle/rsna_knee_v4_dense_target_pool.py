@@ -583,9 +583,29 @@ def study_images(
     return images, bool(images)
 
 
+def _mps_available() -> bool:
+    backend = getattr(torch.backends, "mps", None)
+    return bool(backend is not None and backend.is_available())
+
+
+def _resolve_device(requested: str) -> str:
+    if requested not in {"auto", "cpu", "cuda", "mps"}:
+        raise ValueError(f"device inválido: {requested!r}")
+    if requested == "auto":
+        if torch.cuda.is_available():
+            return "cuda"
+        if _mps_available():
+            return "mps"
+        return "cpu"
+    if requested == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("device='cuda' solicitado, mas CUDA não está disponível.")
+    if requested == "mps" and not _mps_available():
+        raise RuntimeError("device='mps' solicitado, mas MPS não está disponível.")
+    return requested
+
+
 def _load_encoder(device: str) -> tuple[torch.nn.Module, str, Path]:
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = _resolve_device(device)
     weights_path = _find_weights()
     model = efficientnet_b0(weights=None)
     try:
@@ -1180,7 +1200,7 @@ def main() -> None:
     parser.add_argument("--visual-weight", type=float, default=0.4)
     parser.add_argument("--targetwise", action="store_true", default=TARGETWISE_MODE)
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda", "mps"), default="auto")
     parser.add_argument("--weak-visual", action="store_true", default=WEAK_VISUAL_MODE)
     parser.add_argument("--weak-threshold", type=float, default=WEAK_VISUAL_THRESHOLD)
     parser.add_argument("--weak-sample-weight", type=float, default=WEAK_VISUAL_SAMPLE_WEIGHT)

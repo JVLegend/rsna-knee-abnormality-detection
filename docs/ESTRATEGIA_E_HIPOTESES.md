@@ -1,7 +1,7 @@
 ---
 titulo: Estratégia, evidências e hipóteses — RSNA Knee Abnormality Detection
 projeto: RSNA Knee Abnormality Detection
-updated: 2026-08-10
+updated: 2026-08-11
 status: living-document
 tags: [Kaggle, RSNA, Medicina, Tecnologia]
 ---
@@ -53,6 +53,8 @@ Aprendizado:
 - O `predict.py` original tentava carregar o backbone via URL. `kaggle/rsna_knee_dinov2_offline.py` corrige o caminho com `weights=<arquivo local>` e uma trava `RSNA_DINOV2_LICENSE_ACK=1`. A construção do modelo e uma inferência `224×224 → (1,384)` passaram localmente; o smoke DICOM completo não foi possível porque o checkout incremental mantém CSVs, não `test_series/` bruto.
 - A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. Os testes são unitários; ainda não há evidência de leaderboard.
 - Limitação de inferência: os relatórios existem no treino, mas não no teste. O relatório deve servir para gerar supervisão auxiliar; o modelo final precisa inferir somente de imagem e metadados disponíveis no teste.
+- Runtime alternativo confirmado: o Mac local tem PyTorch `2.11.0` com MPS funcional. H-22 processou um estudo real com `dense6`/6 views em `2,96 s`, gerando embedding `(6, 1280)` finito. O HD, porém, não contém DICOM de `test_series`; esse ambiente é adequado para smoke/CV e não para uma submissão oficial.
+- O código aceita `--device mps` e `auto` seleciona CUDA, MPS ou CPU nessa ordem. Não há host DGX/túnel SSH configurado nesta máquina; Docker/Colima não fornece uma GPU alternativa no Mac.
 - Ponto crítico do fórum: o host informou que os rótulos oficiais são derivados das imagens e que os relatórios podem ser ambíguos ou inconsistentes. O texto não é ground truth.
 
 ### Insight novo: a melhor fonte varia por alvo

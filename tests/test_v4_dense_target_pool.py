@@ -22,6 +22,22 @@ def test_slice_profiles_have_expected_density() -> None:
     assert len(MODULE._sample_indices(100, "dense9")) == 9
 
 
+def test_auto_device_prefers_mps_when_cuda_is_unavailable(monkeypatch) -> None:
+    monkeypatch.setattr(MODULE.torch.cuda, "is_available", lambda: False)
+    monkeypatch.setattr(MODULE.torch.backends.mps, "is_available", lambda: True)
+    assert MODULE._resolve_device("auto") == "mps"
+
+
+def test_explicit_mps_requires_mps(monkeypatch) -> None:
+    monkeypatch.setattr(MODULE.torch.backends.mps, "is_available", lambda: False)
+    try:
+        MODULE._resolve_device("mps")
+    except RuntimeError as exc:
+        assert "MPS" in str(exc)
+    else:
+        raise AssertionError("device='mps' deveria falhar sem MPS")
+
+
 def test_dense_profiles_make_three_channel_adjacent_slabs(tmp_path, monkeypatch) -> None:
     series_dir = tmp_path / "train_series" / "study" / "series"
     series_dir.mkdir(parents=True)
