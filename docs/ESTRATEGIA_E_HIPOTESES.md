@@ -408,18 +408,16 @@ Hipóteses abertas a partir dessa auditoria:
 
 | ID | Hipótese | Teste decisivo | Estado |
 |---|---|---|---|
-| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | submetida — ref `55442653`, score pendente |
+| H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
-| H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | em execução — kernel v10 |
+| H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | submetida — ref `55446808`, score pendente |
 
-Decisão imediata: a v8 já executou H-20 e H-21 juntas como uma ablação de
-engenharia de baixo risco, mantendo B0, teacher e blend constantes. Como ela
-ficou abaixo da v6, o próximo passo é repetir somente H-20 em `dense6` integral;
-H-22 a H-24 ficam separadas para não atribuir um eventual ganho ao componente
-errado.
+Decisão imediata: H-20 foi isolada na v9 e refutada (`0,663` contra `0,706`).
+H-25 foi executada na v10 e aguarda score. H-22 a H-24 continuam separadas
+para não atribuir um eventual ganho ao componente errado.
 
 ### Resultado H-20/H-21 — v8
 
@@ -439,8 +437,8 @@ preprocessamento integral, teacher target-wise, pooling original por alvo,
 B0 e blend global. A única mudança é no treino visual: cada estudo weak com
 probabilidade `p` gera duas cópias das mesmas views, com pesos `p` para a classe
 1 e `1-p` para a classe 0; os 58 estudos gold continuam com rótulo binário e
-peso `1,0`. A implementação passou os 8 testes específicos da v4, mas ainda
-aguarda execução T4 e deve ser comparada apenas depois do resultado de H-20.
+peso `1,0`. A implementação passou os 24 testes do projeto, completou no T4
+em `6.882,9 s` e gerou CSV válido; a submissão `55446808` aguarda score.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
