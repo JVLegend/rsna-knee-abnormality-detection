@@ -410,7 +410,7 @@ Hipóteses abertas a partir dessa auditoria:
 |---|---|---|---|
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
-| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da v6, janela comum `1–99%` nas fatias usadas por série | preparada |
+| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da v6, janela comum `1–99%` nas fatias usadas por série | bloqueada pela cota GPU semanal |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | submetida — ref `55446808`, score pendente |
@@ -446,7 +446,10 @@ O wrapper `kaggle/rsna_knee_v4_dense6_series_window.py` mantém teacher,
 pooling, weak labels, B0, blend e `dense6` da v6. A única mudança é calcular
 uma janela `1–99%` comum às fatias que entram nos slabs da série, preservando
 contraste relativo entre cortes. O modo padrão `slice` permanece inalterado;
-o novo modo é opt-in e está pronto para smoke/T4.
+o novo modo é opt-in; `py_compile` e smoke sintético passaram, mas o push T4
+foi bloqueado pelo Kaggle com `Maximum weekly GPU quota of 30.00 hours reached`.
+O script standalone está pronto para o reset da cota; não será forçado em CPU
+sem medir antes a viabilidade do tempo.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
