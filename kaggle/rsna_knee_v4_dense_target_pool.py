@@ -80,6 +80,7 @@ SLICE_PROFILES = {
 SLICE_PROFILE = os.environ.get("RSNA_SLICE_PROFILE", "dense6")
 VIEW_POOLING = os.environ.get("RSNA_VIEW_POOLING", "target")
 TEACHER_PROFILE = os.environ.get("RSNA_TEACHER_PROFILE", "targetwise")
+INTENSITY_WINDOW = os.environ.get("RSNA_INTENSITY_WINDOW", "slice")
 PILKWANG_LABEL_FILENAME = "report_labels_v2.csv"
 TEACHER_BY_TARGET = {
     "ACL": "pilkwang",
@@ -365,26 +366,70 @@ def _sample_indices(n_slices: int, slice_profile: str = SLICE_PROFILE) -> tuple[
     return tuple(dict.fromkeys(indices))
 
 
-def _normalize_slice(pixels: np.ndarray, percentile_stride: int = 1) -> np.ndarray:
+def _normalize_slice(
+    pixels: np.ndarray,
+    percentile_stride: int = 1,
+    bounds: tuple[float, float] | None = None,
+) -> np.ndarray:
     values = np.asarray(pixels, dtype=np.float32)
     if percentile_stride < 1:
         raise ValueError("percentile_stride precisa ser >= 1.")
-    sampled = values
-    if percentile_stride > 1:
-        sampled = values[::percentile_stride, ::percentile_stride] if values.ndim >= 2 else values[::percentile_stride]
-    finite = sampled[np.isfinite(sampled)]
-    if finite.size == 0:
+    if bounds is None:
+        sampled = values
+        if percentile_stride > 1:
+            sampled = values[::percentile_stride, ::percentile_stride] if values.ndim >= 2 else values[::percentile_stride]
+        finite = sampled[np.isfinite(sampled)]
+        if finite.size == 0:
+            return np.zeros(values.shape, dtype=np.float32)
+        low = float(np.percentile(finite, 1.0))
+        high = float(np.percentile(finite, 99.0))
+        if high <= low:
+            low = float(np.min(finite))
+            high = float(np.max(finite))
+    else:
+        low, high = bounds
+    if high <= low:
         return np.zeros(values.shape, dtype=np.float32)
+    result = np.clip((values - low) / (high - low), 0.0, 1.0)
+    result[~np.isfinite(result)] = 0.0
+    return result.astype(np.float32)
+
+
+def _series_window_bounds(
+    pixel_values: list[np.ndarray],
+    percentile_stride: int = 1,
+) -> tuple[float, float] | None:
+    """Calcula uma janela 1–99% comum às fatias usadas naquela série.
+
+    A implementação usa as fatias que realmente entram nos slabs 2.5D, em
+    vez de varrer pixels de todos os DICOMs da série. Isso preserva a ideia de
+    janela por série sem multiplicar o custo de I/O do kernel; o modo padrão
+    continua calculando percentis independentemente por slice.
+    """
+
+    if not pixel_values:
+        return None
+    if percentile_stride < 1:
+        raise ValueError("percentile_stride precisa ser >= 1.")
+    sampled: list[np.ndarray] = []
+    for values in pixel_values:
+        array = np.asarray(values, dtype=np.float32)
+        if percentile_stride > 1:
+            array = array[::percentile_stride, ::percentile_stride] if array.ndim >= 2 else array[::percentile_stride]
+        finite = array[np.isfinite(array)]
+        if finite.size:
+            sampled.append(finite.ravel())
+    if not sampled:
+        return None
+    finite = np.concatenate(sampled)
     low = float(np.percentile(finite, 1.0))
     high = float(np.percentile(finite, 99.0))
     if high <= low:
         low = float(np.min(finite))
         high = float(np.max(finite))
     if high <= low:
-        return np.zeros(values.shape, dtype=np.float32)
-    result = np.clip((values - low) / (high - low), 0.0, 1.0)
-    result[~np.isfinite(result)] = 0.0
-    return result.astype(np.float32)
+        return None
+    return low, high
 
 
 def _read_pixels(path: Path) -> np.ndarray:
@@ -406,7 +451,10 @@ def _series_image(
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
     fast_preprocess: bool = False,
+    intensity_window: str = "slice",
 ) -> tuple[list[np.ndarray], bool]:
+    if intensity_window not in {"slice", "series"}:
+        raise ValueError(f"Janela de intensidade desconhecida: {intensity_window}")
     series_dir = data_dir / f"{split}_series" / study_uid / series_uid
     paths = sorted(series_dir.glob("*.dcm"))
     if not paths:
@@ -433,24 +481,32 @@ def _series_image(
     percentile_stride = 4 if fast_preprocess else 1
 
     if slice_profile == "quantile3":
-        slabs: list[np.ndarray] = []
+        used_indices = tuple(dict.fromkeys(centers))
+    else:
+        used_indices = tuple(
+            dict.fromkeys(
+                index
+                for center in centers
+                for index in (max(0, center - 1), center, min(len(records) - 1, center + 1))
+            )
+        )
+    raw_cache: dict[int, np.ndarray] = {}
+    series_bounds: tuple[float, float] | None = None
+    if intensity_window == "series":
         try:
-            channels = []
-            for index in centers:
-                normalized = _normalize_slice(_read_pixels(records[index][0]), percentile_stride)
-                image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8))
-                channels.append(np.asarray(image.resize((size, size), resample=Image.Resampling.BILINEAR), dtype=np.uint8))
-            slabs.append(np.stack(channels, axis=0))
+            raw_cache = {index: _read_pixels(records[index][0]) for index in used_indices}
+            series_bounds = _series_window_bounds(list(raw_cache.values()), percentile_stride)
         except Exception:
             return [], False
-        return slabs, True
 
-    slabs = []
     resized_cache: dict[int, np.ndarray] = {}
 
     def resized_slice(index: int) -> np.ndarray:
         if index not in resized_cache:
-            normalized = _normalize_slice(_read_pixels(records[index][0]), percentile_stride)
+            pixels = raw_cache.get(index)
+            if pixels is None:
+                pixels = _read_pixels(records[index][0])
+            normalized = _normalize_slice(pixels, percentile_stride, bounds=series_bounds)
             image = Image.fromarray(np.rint(normalized * 255).astype(np.uint8))
             resized_cache[index] = np.asarray(
                 image.resize((size, size), resample=Image.Resampling.BILINEAR),
@@ -458,6 +514,14 @@ def _series_image(
             )
         return resized_cache[index]
 
+    if slice_profile == "quantile3":
+        try:
+            channels = [resized_slice(index) for index in centers]
+            return [np.stack(channels, axis=0)], True
+        except Exception:
+            return [], False
+
+    slabs: list[np.ndarray] = []
     for center in centers:
         indices = (max(0, center - 1), center, min(len(records) - 1, center + 1))
         try:
@@ -475,11 +539,21 @@ def study_image(
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
     fast_preprocess: bool = False,
+    intensity_window: str = "slice",
 ) -> tuple[list[np.ndarray], bool]:
     series_uid = _preferred_series(series, study_uid)
     if series_uid is None:
         return [], False
-    return _series_image(data_dir, split, study_uid, series_uid, size, slice_profile, fast_preprocess)
+    return _series_image(
+        data_dir,
+        split,
+        study_uid,
+        series_uid,
+        size,
+        slice_profile,
+        fast_preprocess,
+        intensity_window,
+    )
 
 
 def study_images(
@@ -490,6 +564,7 @@ def study_images(
     size: int = 224,
     slice_profile: str = SLICE_PROFILE,
     fast_preprocess: bool = False,
+    intensity_window: str = "slice",
 ) -> tuple[list[np.ndarray], bool]:
     images: list[np.ndarray] = []
     for series_uid in _preferred_series_uids(series, study_uid):
@@ -501,6 +576,7 @@ def study_images(
             size,
             slice_profile,
             fast_preprocess,
+            intensity_window,
         )
         if valid:
             images.extend(series_images)
@@ -552,11 +628,14 @@ def visual_embeddings(
     slice_profile: str = SLICE_PROFILE,
     pooling: str = "mean",
     fast_preprocess: bool = False,
+    intensity_window: str = "slice",
 ) -> tuple[np.ndarray, np.ndarray, dict[str, object], list[list[np.ndarray]], list[list[np.ndarray]]]:
     if slice_profile not in SLICE_PROFILES:
         raise ValueError(f"Perfil de fatias desconhecido: {slice_profile}")
     if pooling not in {"mean", "max", "topk"}:
         raise ValueError(f"Pooling de embedding desconhecido: {pooling}")
+    if intensity_window not in {"slice", "series"}:
+        raise ValueError(f"Janela de intensidade desconhecida: {intensity_window}")
     encoder, device, weights_path = _load_encoder(device)
     series_indexes = {"train": _series_index(train_series), "test": _series_index(test_series)}
     records = [("train", row, series_indexes["train"]) for _, row in train_labeled.iterrows()]
@@ -588,6 +667,7 @@ def visual_embeddings(
             series,
             slice_profile=slice_profile,
             fast_preprocess=fast_preprocess,
+            intensity_window=intensity_window,
         )
         for image in study_images_for_row:
             images.append(image)
@@ -615,6 +695,7 @@ def visual_embeddings(
         "max_views_study": int(max((len(values) for values in study_embeddings), default=0)),
         "slice_profile": slice_profile,
         "fast_preprocess": fast_preprocess,
+        "intensity_window": intensity_window,
         "percentile_stride": 4 if fast_preprocess else 1,
         "embedding_pooling": pooling,
         "valid_train_mask": valid[:train_count].tolist(),
@@ -945,6 +1026,7 @@ def run(
     view_pooling: str = VIEW_POOLING,
     teacher_profile: str = TEACHER_PROFILE,
     fast_preprocess: bool = False,
+    intensity_window: str = INTENSITY_WINDOW,
     target_pooling: str | None = None,
 ) -> pd.DataFrame:
     if not 0 <= visual_weight <= 1:
@@ -961,6 +1043,8 @@ def run(
         raise ValueError(f"Modo de weak label desconhecido: {weak_label_mode}")
     if weak_label_mode == "soft" and not weak_visual:
         raise ValueError("weak_label_mode='soft' exige weak_visual=True.")
+    if intensity_window not in {"slice", "series"}:
+        raise ValueError(f"Janela de intensidade desconhecida: {intensity_window}")
     if target_pooling is not None and target_pooling not in {"mean", "max", "topk"}:
         raise ValueError(f"Pooling de alvo desconhecido: {target_pooling}")
     started = time.perf_counter()
@@ -1000,6 +1084,7 @@ def run(
         slice_profile=slice_profile,
         pooling=embedding_pooling,
         fast_preprocess=fast_preprocess,
+        intensity_window=intensity_window,
     )
     valid_train = np.asarray(
         visual_meta.get("valid_train_mask", [True] * len(visual_train_frame)),
@@ -1075,7 +1160,8 @@ def run(
         f"test={len(test)} visual_weight={visual_weight} targetwise={targetwise} "
         f"weak_visual={weak_visual} weak_label_mode={weak_label_mode} external_labels={label_dir} "
         f"slice_profile={slice_profile} view_pooling={view_pooling} "
-        f"target_pooling={target_pooling or 'per-target'} teacher_profile={teacher_profile}"
+        f"target_pooling={target_pooling or 'per-target'} intensity_window={intensity_window} "
+        f"teacher_profile={teacher_profile}"
     )
     if targetwise:
         print(f"targetwise_visual_weights={TARGETWISE_VISUAL_WEIGHTS}")
@@ -1104,6 +1190,7 @@ def main() -> None:
     parser.add_argument("--view-pooling", choices=("mean", "max", "topk", "target"), default=VIEW_POOLING)
     parser.add_argument("--teacher-profile", choices=("steven_v4", "targetwise"), default=TEACHER_PROFILE)
     parser.add_argument("--target-pooling", choices=("default", "mean", "max", "topk"), default="default")
+    parser.add_argument("--intensity-window", choices=("slice", "series"), default=INTENSITY_WINDOW)
     parser.add_argument("--fast-preprocess", action="store_true")
     parser.add_argument("--output", default=os.environ.get("RSNA_OUTPUT", "/kaggle/working/submission.csv"))
     args = parser.parse_args()
@@ -1123,6 +1210,7 @@ def main() -> None:
         view_pooling=args.view_pooling,
         teacher_profile=args.teacher_profile,
         fast_preprocess=args.fast_preprocess,
+        intensity_window=args.intensity_window,
         target_pooling=None if args.target_pooling == "default" else args.target_pooling,
     )
 

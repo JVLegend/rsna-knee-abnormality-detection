@@ -52,6 +52,7 @@
 | 10/08/2026 | `kaggle_v4_yash_lite_v8` | Reexecutar a mesma ablação com o código standalone | `COMPLETE` no T4; `adjacent3`, `fast_preprocess=True`, `target_pooling=max`; `submission.csv` gerado | `55418681` → público `0,673` | H-20/H-21 combinadas não superaram a v6; testar max isoladamente antes de descartar a ideia |
 | 11/08/2026 | `v4_dense6_max_mil` | Isolar H-20: trocar somente o pooling target por `max`, preservando a configuração integral da v6 | `COMPLETE` no T4, kernel v9; `4.410/4.410` estudos, `79.380` views, `8.125,9 s`; CSV válido | `55442653` → público `0,663` | Refutada contra a v6: queda de `-0,043`; manter o pooling targetwise original |
 | 11/08/2026 | `v4_dense6_soft_labels` | Implementar H-25: preservar a probabilidade dos weak labels com cópias ponderadas `p`/`1-p` | `COMPLETE` no T4, kernel v10; `4.410/4.410` estudos, `79.380` views, `6.882,9 s`; CSV válido | `55446808` → `PENDING` | Aguardar score; manter dense6, pooling, teacher e blend da v6 constantes |
+| 12/08/2026 | `v4_dense6_series_window` | Implementar H-22: trocar somente a normalização por slice por janela comum `1–99%` por série | Código e wrapper passaram `py_compile`; smoke sintético da v4 passou; suíte específica `9 passed` | — | Próxima candidata após H-25; não misturar com fine-tuning ou ensemble |
 
 ## Detalhe da candidata v0.2
 

@@ -51,12 +51,36 @@ def test_dense_profiles_make_three_channel_adjacent_slabs(tmp_path, monkeypatch)
         fast_preprocess=True,
     )
     legacy, legacy_valid = MODULE._series_image(tmp_path, "train", "study", "series", size=8, slice_profile="quantile3")
+    series_window, series_window_valid = MODULE._series_image(
+        tmp_path,
+        "train",
+        "study",
+        "series",
+        size=8,
+        slice_profile="dense6",
+        intensity_window="series",
+    )
 
     assert dense_valid and len(dense) == 6
     assert all(image.shape == (3, 8, 8) for image in dense)
     assert adjacent_valid and len(adjacent) == 3
     assert all(image.shape == (3, 8, 8) for image in adjacent)
     assert legacy_valid and len(legacy) == 1 and legacy[0].shape == (3, 8, 8)
+    assert series_window_valid and len(series_window) == 6
+    assert all(image.shape == (3, 8, 8) for image in series_window)
+
+
+def test_series_window_uses_shared_bounds_and_slice_mode_is_unchanged() -> None:
+    first = np.asarray([[0.0, 1.0], [2.0, 3.0]], dtype=np.float32)
+    second = np.asarray([[10.0, 11.0], [12.0, 13.0]], dtype=np.float32)
+    bounds = MODULE._series_window_bounds([first, second])
+    assert bounds is not None
+    low, high = bounds
+    assert low < 1.0 and high > 12.0
+    shared = MODULE._normalize_slice(second, bounds=bounds)
+    independent = MODULE._normalize_slice(second)
+    assert float(shared.min()) > 0.5
+    assert np.isclose(float(independent.min()), 0.0)
 
 
 def test_probability_pooling_is_target_aware_and_bounded() -> None:

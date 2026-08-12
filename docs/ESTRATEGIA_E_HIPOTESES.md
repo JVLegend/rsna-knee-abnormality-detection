@@ -410,7 +410,7 @@ Hipóteses abertas a partir dessa auditoria:
 |---|---|---|---|
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
-| H-22 | Janela de intensidade por série supera normalização independente por slice | Smoke nos 58 + kernel controlado, sem mudar teacher | nova |
+| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da v6, janela comum `1–99%` nas fatias usadas por série | preparada |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | submetida — ref `55446808`, score pendente |
@@ -439,6 +439,14 @@ probabilidade `p` gera duas cópias das mesmas views, com pesos `p` para a class
 1 e `1-p` para a classe 0; os 58 estudos gold continuam com rótulo binário e
 peso `1,0`. A implementação passou os 24 testes do projeto, completou no T4
 em `6.882,9 s` e gerou CSV válido; a submissão `55446808` aguarda score.
+
+### Implementação H-22 — janela de intensidade por série
+
+O wrapper `kaggle/rsna_knee_v4_dense6_series_window.py` mantém teacher,
+pooling, weak labels, B0, blend e `dense6` da v6. A única mudança é calcular
+uma janela `1–99%` comum às fatias que entram nos slabs da série, preservando
+contraste relativo entre cortes. O modo padrão `slice` permanece inalterado;
+o novo modo é opt-in e está pronto para smoke/T4.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 

@@ -164,6 +164,12 @@ da v6 e troca somente o tratamento dos weak labels: estudos pseudo-rotulados
 entram como duas observações ponderadas por `p` e `1-p`, preservando a incerteza
 do teacher. Os 58 rótulos oficiais continuam binários e com peso `1,0`.
 
+A ablação `kaggle/rsna_knee_v4_dense6_series_window.py` mantém a v6 e troca
+somente a normalização: as fatias usadas nos slabs recebem uma janela comum de
+percentis `1–99%` por série, em vez de uma janela independente por slice. O
+modo padrão continua sendo `slice`; o modo `series` é ativado explicitamente
+para o teste H-22.
+
 ### Bundle DINOv2-MIL offline (auditado, ainda não liberado para submissão)
 
 O bundle público `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para o HD
