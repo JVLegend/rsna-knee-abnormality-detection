@@ -71,6 +71,15 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - Os dois manifestos são disjuntos. Juntos, somam 18 estudos, 521 fatias e `362.807.330` bytes; com o smoke técnico, há 551 DICOMs locais no HD externo.
 - A leitura completa dos dois lotes passou com `pydicom`; todas as 521 fatias têm `MONOCHROME2` e pixels presentes. As dimensões observadas variam de `256×256` a `800×800`.
 
+## Estado da aquisição local — orçamento de aproximadamente 50 GB — 14/08/2026
+
+- O manifesto `data/processed/dicom_budget_50gb_manifest.json` selecionou 333 estudos, 999 séries e 37.363 DICOMs, totalizando `23.762.891.238` bytes.
+- O manifesto `data/processed/dicom_budget_50gb_manifest_v2.json` selecionou mais 367 estudos, 1.101 séries e 40.936 DICOMs, totalizando `28.220.610.242` bytes.
+- Os lotes são disjuntos e excluem os DICOMs já presentes. Juntos, adicionam 700 estudos, 2.100 séries, 78.299 DICOMs e `51.983.501.480` bytes; o HD ficou com 758 estudos, 2.159 séries, 80.278 DICOMs e aproximadamente `50G` ocupados em `data/raw/train_series/`.
+- A seleção mantém uma melhor série `Fluid_Sensitive/Fat_Suppression` por plano `Sagittal`, `Coronal` e `Axial` em cada estudo, com estratificação pelos weak labels públicos e quotas para não concentrar apenas casos fáceis ou positivos.
+- A transferência foi feita por `scripts/download_dicom_zip_subset.py`, lendo o ZIP Kaggle por HTTP Range e validando CRC por arquivo, com retomada incremental. Isso contornou os `HTTP 429` do download por arquivo individual. O seletor reproduzível está em `scripts/select_dicom_budget.py`.
+- Não ficaram arquivos `.part`; todos os diretórios das 2.100 séries selecionadas existem e não estão vazios. Uma amostra de 100 cabeçalhos DICOM passou com `pydicom`. Os DICOMs continuam ignorados pelo Git e `test_series/` permanece sem imagens locais.
+
 ## Artefato visual local — 2.5D — 08/08/2026
 
 - `scripts/build_dicom_25d_features.py` leu as 18 séries dos dois manifestos e criou 18 arrays compactos em `data/processed/dicom_25d_v0/`.
