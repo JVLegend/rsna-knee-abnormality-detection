@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Constrói uma representação visual 2.5D pequena a partir de manifestos locais."""
+"""#RSNA #Kaggle #Dados — constrói uma representação visual 2.5D de manifestos locais."""
 
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
 
@@ -14,6 +15,22 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUANTILES = (0.25, 0.5, 0.75)
+HEADER_TAGS = ("InstanceNumber",)
+PIXEL_TAGS = (
+    "InstanceNumber",
+    "PixelData",
+    "Rows",
+    "Columns",
+    "BitsAllocated",
+    "BitsStored",
+    "HighBit",
+    "PixelRepresentation",
+    "PhotometricInterpretation",
+    "SamplesPerPixel",
+    "PlanarConfiguration",
+    "RescaleSlope",
+    "RescaleIntercept",
+)
 
 
 def sample_indices(n_slices: int, quantiles: tuple[float, ...] = DEFAULT_QUANTILES) -> tuple[int, ...]:
@@ -77,13 +94,21 @@ def _sort_key(item: tuple[Path, pydicom.dataset.FileDataset]) -> tuple[object, .
     return (2, path.name)
 
 
-def read_series(series_dir: Path) -> list[tuple[Path, pydicom.dataset.FileDataset]]:
-    """Lê uma série e ordena por InstanceNumber, posição ou nome."""
+def read_series(
+    series_dir: Path,
+    sort_by_header: bool = True,
+) -> list[tuple[Path, pydicom.dataset.FileDataset | None]]:
+    """Lê somente os headers de uma série e ordena por InstanceNumber/posição."""
 
     files = sorted(series_dir.glob("*.dcm"))
     if not files:
         raise FileNotFoundError(f"Nenhum arquivo .dcm encontrado em {series_dir}")
-    records = [(path, pydicom.dcmread(path, force=False)) for path in files]
+    if not sort_by_header:
+        return [(path, None) for path in files]
+    records = [
+        (path, pydicom.dcmread(path, stop_before_pixels=True, specific_tags=HEADER_TAGS, force=False))
+        for path in files
+    ]
     records.sort(key=_sort_key)
     return records
 
@@ -121,17 +146,19 @@ def build_entry(
     size: int,
     quantiles: tuple[float, ...],
     overwrite: bool = False,
+    sort_by_header: bool = True,
 ) -> dict[str, object]:
     study_uid = str(entry["study_uid"])
     series_uid = str(entry["series_uid"])
     series_dir = data_dir / "train_series" / study_uid / series_uid
-    records = read_series(series_dir)
+    records = read_series(series_dir, sort_by_header=sort_by_header)
     indices = sample_indices(len(records), quantiles)
     channels: list[np.ndarray] = []
     selected: list[dict[str, object]] = []
 
     for index in indices:
-        path, dataset = records[index]
+        path, header = records[index]
+        dataset = pydicom.dcmread(path, specific_tags=PIXEL_TAGS, force=False)
         pixels = _pixel_array(dataset)
         normalized, low, high = normalize_slice(pixels)
         channels.append(resize_slice(normalized, size))
@@ -180,9 +207,33 @@ def build_features(
     size: int = 224,
     quantiles: tuple[float, ...] = DEFAULT_QUANTILES,
     overwrite: bool = False,
+    workers: int = 4,
+    sort_by_header: bool = True,
 ) -> dict[str, object]:
+    if workers < 1:
+        raise ValueError("workers precisa ser positivo.")
     entries = _manifest_entries(manifest_paths)
-    records = [build_entry(entry, data_dir, output_dir, size, quantiles, overwrite) for entry in entries]
+    if workers == 1:
+        records = [
+            build_entry(entry, data_dir, output_dir, size, quantiles, overwrite, sort_by_header)
+            for entry in entries
+        ]
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            futures = [
+                executor.submit(
+                    build_entry,
+                    entry,
+                    data_dir,
+                    output_dir,
+                    size,
+                    quantiles,
+                    overwrite,
+                    sort_by_header,
+                )
+                for entry in entries
+            ]
+            records = [future.result() for future in futures]
     output_dir.mkdir(parents=True, exist_ok=True)
     index = {
         "format": "rsna-knee-dicom-25d-v0",
@@ -211,6 +262,12 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("data/processed/dicom_25d_v0"))
     parser.add_argument("--size", type=int, default=224)
     parser.add_argument("--quantiles", default="0.25,0.5,0.75")
+    parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--fast-file-order",
+        action="store_true",
+        help="Ablação rápida: amostra a ordem lexicográfica sem ler headers de todas as fatias.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
 
@@ -228,6 +285,8 @@ def main() -> None:
         size=args.size,
         quantiles=_parse_quantiles(args.quantiles),
         overwrite=args.overwrite,
+        workers=args.workers,
+        sort_by_header=not args.fast_file_order,
     )
     for position, record in enumerate(index["records"], start=1):
         print(

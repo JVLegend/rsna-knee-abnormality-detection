@@ -79,6 +79,7 @@ Um ponto central do desafio é que somente uma pequena parte dos estudos de trei
 - A seleção mantém uma melhor série `Fluid_Sensitive/Fat_Suppression` por plano `Sagittal`, `Coronal` e `Axial` em cada estudo, com estratificação pelos weak labels públicos e quotas para não concentrar apenas casos fáceis ou positivos.
 - A transferência foi feita por `scripts/download_dicom_zip_subset.py`, lendo o ZIP Kaggle por HTTP Range e validando CRC por arquivo, com retomada incremental. Isso contornou os `HTTP 429` do download por arquivo individual. O seletor reproduzível está em `scripts/select_dicom_budget.py`.
 - Não ficaram arquivos `.part`; todos os diretórios das 2.100 séries selecionadas existem e não estão vazios. Uma amostra de 100 cabeçalhos DICOM passou com `pydicom`. Os DICOMs continuam ignorados pelo Git e `test_series/` permanece sem imagens locais.
+- O perfil exploratório `--fast-file-order` gerou 2.100 arrays `(3, 224, 224)` e embeddings `(2.100, 1.280)` em MPS. Contra os weak labels, a concatenação dos três planos marcou macro-AUC diagnóstico `0,655891`; no holdout independente dos 58 estudos oficiais, mean pooling marcou `0,577565` e treino por série `0,575001`. Como os estudos de treino foram selecionados pelos weak labels, esse perfil não será submetido; a ordenação anatômica por header continua necessária.
 
 ## Artefato visual local — 2.5D — 08/08/2026
 
