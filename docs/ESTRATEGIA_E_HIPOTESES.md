@@ -1,7 +1,7 @@
 ---
 titulo: Estratégia, evidências e hipóteses — RSNA Knee Abnormality Detection
 projeto: RSNA Knee Abnormality Detection
-updated: 2026-08-11
+updated: 2026-08-15
 status: living-document
 tags: [Kaggle, RSNA, Medicina, Tecnologia]
 ---
@@ -41,17 +41,17 @@ Aprendizado:
 
 ## Snapshot do ponto de partida
 
-- Melhor submissão confirmada até este registro: `55392604`, public score `0,655`.
+- Melhor submissão confirmada até este registro: `55413852`, public score `0,706`; manter como fallback até uma nova variante ter evidência independente.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
 - Treino: `4.407` estudos; somente `58` possuem os 12 rótulos oficiais.
 - Alvos: ACL, MCL, meniscos medial/lateral, OA medial/lateral/patelar, derrame, sinovite, cisto de Baker, contusão e fratura.
-- Dados locais no HD: `1.979` DICOMs, aproximadamente `1,2 GB`, cobrindo apenas parte das séries dos 58 estudos dourados. O corpus completo de séries é muito maior; não devemos concluir que o CV visual local representa o exame inteiro.
+- Dados locais no HD: `80.278` DICOMs, aproximadamente `50 GB`, cobrindo 758 estudos e 2.159 séries; `test_series/` continua ausente localmente. O CV visual local é útil para ablações de treino, mas não representa sozinho o exame de teste.
 - Baseline atual: uma série por plano, três fatias quantílicas, média das representações, EfficientNet-B0 congelada e peso visual global. Isso é um baseline útil, mas não é próximo do padrão dos notebooks públicos mais fortes.
 - A auditoria local de labels encontrou macro-AUC nos 58 de `0,892707` para Steven v4, `0,887349` para Steven v2, `0,870040` para Pilkwang, `0,835194` para Lixin e `0,892826` para consenso por ranking. Os quatro datasets baixados pelo Kaggle CLI declararam `CC0-1.0`.
 - Os CSVs estão no HD, fora do Git: `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/labels/`. A variante `kaggle/rsna_knee_v3_external_labels.py` neutraliza o `0,5` do Steven v2 antes de usar o v4 e aplica confiança mínima `0,85`.
 - O bundle `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/bundles/ericwang-dinov2-mil`. O backbone local tem `88.283.115` bytes, SHA-256 `b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9`, 175 tensores e embedding 384. O Kaggle CLI reportou licença `other`; o bundle fica em auditoria e não deve ser usado no leaderboard até a licença dos heads e dos pesos ser esclarecida.
 - O `predict.py` original tentava carregar o backbone via URL. `kaggle/rsna_knee_dinov2_offline.py` corrige o caminho com `weights=<arquivo local>` e uma trava `RSNA_DINOV2_LICENSE_ACK=1`. A construção do modelo e uma inferência `224×224 → (1,384)` passaram localmente; o smoke DICOM completo não foi possível porque o checkout incremental mantém CSVs, não `test_series/` bruto.
-- A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. Os testes são unitários; ainda não há evidência de leaderboard.
+- A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. A v6 concluiu no T4 com submissão `55413852` e público `0,706`; mudanças novas precisam superar esse fallback.
 - Limitação de inferência: os relatórios existem no treino, mas não no teste. O relatório deve servir para gerar supervisão auxiliar; o modelo final precisa inferir somente de imagem e metadados disponíveis no teste.
 - Runtime alternativo confirmado: o Mac local tem PyTorch `2.11.0` com MPS funcional. H-22 processou um estudo real com `dense6`/6 views em `2,96 s`, gerando embedding `(6, 1280)` finito. O HD, porém, não contém DICOM de `test_series`; esse ambiente é adequado para smoke/CV e não para uma submissão oficial.
 - O código aceita `--device mps` e `auto` seleciona CUDA, MPS ou CPU nessa ordem. Não há host DGX/túnel SSH configurado nesta máquina; Docker/Colima não fornece uma GPU alternativa no Mac.
@@ -86,6 +86,14 @@ testaremos um mapa por alvo com validação leave-one-source-out e pesos suaves.
 ### Conclusão operacional
 
 O gargalo provável não é ajustar o `visual_weight` do baseline. A maior oportunidade é trocar a representação: rótulos fracos melhores, DICOM em ordem física, seis slots de aquisição, grupos de fatias adjacentes, DINOv2/MIL ou backbone parcialmente ajustado, e ensemble por ranking. A primeira meta é reproduzir uma melhoria robusta local; a segunda é aproximar a faixa pública alegada de `0,89` sem transformar um único leaderboard em critério de verdade.
+
+## Evidência nova — ordenação anatômica e ensemble — 15/08/2026
+
+O teste controlado no gold oficial comparou a mesma EfficientNet-B0 e os mesmos estudos, mudando somente a ordem dos cortes 2.5D. A ordenação por `InstanceNumber`/header marcou macro-AUC médio `0,578718` em duas seeds, contra `0,543691` da ordem lexicográfica. O ganho não foi uniforme por alvo e o gold tem cobertura insuficiente para validar três planos.
+
+Ao escalar a hipótese para os 700 estudos weak (2.100 séries), o holdout independente dos 58 estudos marcou `0,585771` com mean pooling e `0,591101` agregando as previsões por série. Uma mistura fixa 50/50 dos ramos filename + header chegou a `0,614597` com mean pooling e `0,607885` por série. Esses valores são evidência de complementaridade, não calibração de leaderboard: o ramo filename pode estar oferecendo views diferentes, não uma ordem anatômica melhor.
+
+Decisão operacional: preservar `55413852` (`0,706`) como fallback e preparar uma única variante Kaggle baseada em mistura fixa, sem selecionar pesos por alvo nos 58 estudos. O gate para promoção é CSV íntegro no kernel e score público superior ao fallback; se falhar, manter a v6 e avançar para fine-tuning/weak labels melhores.
 
 ## O que a pesquisa do Kaggle mostrou
 
@@ -257,6 +265,8 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | E-004 | representação | DINOv2 frozen + MIL offline | médio | OOF agrupado | — | — | código/auditoria prontos; bloqueado por licença e execução DICOM |
 | E-004a | engenharia | Loader local de pesos + inferência unitária | baixo | shape, finitude, hash | local | passou | caminho offline validado; não é score de competição |
 | E-009 | representação/pooling/labels | v4 `dense6 + target pooling + teacher targetwise` | alto | macro OOF + LB | v4 v2 em execução | — | v1 falhou só no mount do peso; v2 corrigida está sem logs ainda |
+| E-010 | representação | 2.5D filename vs `InstanceNumber` no gold e nos 700 estudos weak | médio/alto | holdout oficial por alvo | — | `0,591` header por série | Header supera filename no holdout, mas ainda fica abaixo de `0,706`; manter como ramo complementar |
+| E-011 | ensemble | Mistura fixa 50/50 filename + header, sem tuning targetwise | médio | holdout oficial + LB | — | `0,615` mean / `0,608` série | Hipótese aprovada para uma execução Kaggle; grade de pesos é apenas diagnóstico |
 | E-005 | geometria | ordem física + seis slots | médio | OOF + auditoria | — | — | planejado |
 | E-006 | resolução | 224 vs 336 | médio/alto | menisco/focal + macro | — | — | planejado |
 | E-007 | pooling | target-specific max/top-k | médio | focal vs difuso | — | — | planejado |
