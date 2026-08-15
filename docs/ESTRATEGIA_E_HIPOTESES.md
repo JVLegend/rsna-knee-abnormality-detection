@@ -41,7 +41,7 @@ Aprendizado:
 
 ## Snapshot do ponto de partida
 
-- Melhor submissão confirmada até este registro: `55413852`, public score `0,706`; manter como fallback até uma nova variante ter evidência independente.
+- Melhor submissão confirmada até este registro: `55446808`, public score `0,708`; manter como fallback até uma nova variante ter evidência independente.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
 - Treino: `4.407` estudos; somente `58` possuem os 12 rótulos oficiais.
 - Alvos: ACL, MCL, meniscos medial/lateral, OA medial/lateral/patelar, derrame, sinovite, cisto de Baker, contusão e fratura.
@@ -51,7 +51,7 @@ Aprendizado:
 - Os CSVs estão no HD, fora do Git: `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/labels/`. A variante `kaggle/rsna_knee_v3_external_labels.py` neutraliza o `0,5` do Steven v2 antes de usar o v4 e aplica confiança mínima `0,85`.
 - O bundle `ericwang03/rsna-knee-dinov2-mil-bundle` foi baixado para `/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/bundles/ericwang-dinov2-mil`. O backbone local tem `88.283.115` bytes, SHA-256 `b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9`, 175 tensores e embedding 384. O Kaggle CLI reportou licença `other`; o bundle fica em auditoria e não deve ser usado no leaderboard até a licença dos heads e dos pesos ser esclarecida.
 - O `predict.py` original tentava carregar o backbone via URL. `kaggle/rsna_knee_dinov2_offline.py` corrige o caminho com `weights=<arquivo local>` e uma trava `RSNA_DINOV2_LICENSE_ACK=1`. A construção do modelo e uma inferência `224×224 → (1,384)` passaram localmente; o smoke DICOM completo não foi possível porque o checkout incremental mantém CSVs, não `test_series/` bruto.
-- A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. A v6 concluiu no T4 com submissão `55413852` e público `0,706`; mudanças novas precisam superar esse fallback.
+- A v4 agressiva está em `kaggle/rsna_knee_v4_dense_target_pool.py`: `dense6/dense9` são janelas adjacentes de três canais, `view_pooling=target` treina em views repetidas e agrega `top-k`/`mean` por alvo, e `teacher_profile=targetwise` usa a fonte mais forte por alvo com cobertura controlada. A v6 concluiu no T4 com submissão `55413852` e público `0,706`; H-25 elevou a referência para `55446808` e público `0,708`; mudanças novas precisam superar esse fallback.
 - Limitação de inferência: os relatórios existem no treino, mas não no teste. O relatório deve servir para gerar supervisão auxiliar; o modelo final precisa inferir somente de imagem e metadados disponíveis no teste.
 - Runtime alternativo confirmado: o Mac local tem PyTorch `2.11.0` com MPS funcional. H-22 processou um estudo real com `dense6`/6 views em `2,96 s`, gerando embedding `(6, 1280)` finito. O HD, porém, não contém DICOM de `test_series`; esse ambiente é adequado para smoke/CV e não para uma submissão oficial.
 - O código aceita `--device mps` e `auto` seleciona CUDA, MPS ou CPU nessa ordem. Não há host DGX/túnel SSH configurado nesta máquina; Docker/Colima não fornece uma GPU alternativa no Mac.
@@ -93,7 +93,7 @@ O teste controlado no gold oficial comparou a mesma EfficientNet-B0 e os mesmos 
 
 Ao escalar a hipótese para os 700 estudos weak (2.100 séries), o holdout independente dos 58 estudos marcou `0,585771` com mean pooling e `0,591101` agregando as previsões por série. Uma mistura fixa 50/50 dos ramos filename + header chegou a `0,614597` com mean pooling e `0,607885` por série. Esses valores são evidência de complementaridade, não calibração de leaderboard: o ramo filename pode estar oferecendo views diferentes, não uma ordem anatômica melhor.
 
-Decisão operacional: preservar `55413852` (`0,706`) como fallback e preparar uma única variante Kaggle baseada em mistura fixa, sem selecionar pesos por alvo nos 58 estudos. O gate para promoção é CSV íntegro no kernel e score público superior ao fallback; se falhar, manter a v6 e avançar para fine-tuning/weak labels melhores.
+Decisão operacional: preservar `55446808` (`0,708`) como fallback e preparar uma única variante Kaggle H-22, sem selecionar pesos por alvo nos 58 estudos. O gate para promoção é CSV íntegro no kernel e score público superior ao fallback; se falhar, manter H-25 e avançar para fine-tuning/weak labels melhores.
 
 ## O que a pesquisa do Kaggle mostrou
 
@@ -422,14 +422,17 @@ Hipóteses abertas a partir dessa auditoria:
 |---|---|---|---|
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
-| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da v6, janela comum `1–99%` nas fatias usadas por série | bloqueada pela cota GPU semanal |
+| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da H-25, labels weak suaves e janela comum `1–99%` nas fatias usadas por série | pronta; push aguardando liberação de uma das 2 sessões GPU simultâneas |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
-| H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | submetida — ref `55446808`, score pendente |
+| H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | confirmada — ref `55446808`, público `0,708` |
 
 Decisão imediata: H-20 foi isolada na v9 e refutada (`0,663` contra `0,706`).
-H-25 foi executada na v10 e aguarda score. H-22 a H-24 continuam separadas
-para não atribuir um eventual ganho ao componente errado.
+H-25 foi executada na v10 e marcou público `0,708`, tornando-se a nova
+referência. H-22 está empacotada como script standalone em
+`kaggle/rsna_knee_v4_series_window_soft_kernel/`; o push foi recusado porque
+já existem duas sessões GPU T4 simultâneas na conta. H-22 a H-24 continuam
+separadas para não atribuir um eventual ganho ao componente errado.
 
 ### Resultado H-20/H-21 — v8
 
@@ -450,17 +453,18 @@ B0 e blend global. A única mudança é no treino visual: cada estudo weak com
 probabilidade `p` gera duas cópias das mesmas views, com pesos `p` para a classe
 1 e `1-p` para a classe 0; os 58 estudos gold continuam com rótulo binário e
 peso `1,0`. A implementação passou os 24 testes do projeto, completou no T4
-em `6.882,9 s` e gerou CSV válido; a submissão `55446808` aguarda score.
+em `6.882,9 s` e gerou CSV válido; a submissão `55446808` marcou público `0,708`.
 
 ### Implementação H-22 — janela de intensidade por série
 
-O wrapper `kaggle/rsna_knee_v4_dense6_series_window.py` mantém teacher,
-pooling, weak labels, B0, blend e `dense6` da v6. A única mudança é calcular
-uma janela `1–99%` comum às fatias que entram nos slabs da série, preservando
-contraste relativo entre cortes. O modo padrão `slice` permanece inalterado;
-o novo modo é opt-in; `py_compile` e smoke sintético passaram, mas o push T4
-foi bloqueado pelo Kaggle com `Maximum weekly GPU quota of 30.00 hours reached`.
-O script standalone está pronto para o reset da cota; não será forçado em CPU
+O script standalone `kaggle/rsna_knee_v4_series_window_soft_kernel/` mantém
+teacher, pooling, labels weak suaves, B0, blend e `dense6` da H-25. A única
+mudança é calcular uma janela `1–99%` comum às fatias que entram nos slabs da
+série, preservando contraste relativo entre cortes. JSON, `py_compile`, smoke
+dos helpers e `27` testes passaram; o commit `29e030a` foi publicado. O push
+T4 foi bloqueado pelo Kaggle com `Maximum batch GPU session count of 2
+reached`, pois já existem duas sessões GPU T4 simultâneas na conta. O script
+está pronto para retry; não será forçado em CPU
 sem medir antes a viabilidade do tempo.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
