@@ -422,7 +422,7 @@ Hipóteses abertas a partir dessa auditoria:
 |---|---|---|---|
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
-| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da H-25, labels weak suaves e janela comum `1–99%` nas fatias usadas por série | em execução no kernel Kaggle v1; score pendente |
+| H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da H-25, labels weak suaves e janela comum `1–99%` nas fatias usadas por série | v1 falhou no P100 por `sm_60`; v2 em execução no T4; score pendente |
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | 3 folds, mesmo split, augmentation sem flip horizontal | nova |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | OOF nos 58 e depois uma única submissão | nova |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | confirmada — ref `55446808`, público `0,708` |
@@ -430,9 +430,10 @@ Hipóteses abertas a partir dessa auditoria:
 Decisão imediata: H-20 foi isolada na v9 e refutada (`0,663` contra `0,706`).
 H-25 foi executada na v10 e marcou público `0,708`, tornando-se a nova
 referência. H-22 está empacotada como script standalone em
-`kaggle/rsna_knee_v4_series_window_soft_kernel/`. O kernel Kaggle v1 foi
-aceito e está `RUNNING`; ainda não há logs ou CSV no primeiro poll. H-22 a H-24
-continuam separadas para não atribuir um eventual ganho ao componente errado.
+`kaggle/rsna_knee_v4_series_window_soft_kernel/`. O kernel Kaggle v1 falhou
+no P100 por incompatibilidade `sm_60`; a v2 foi reenviada com T4 e está
+`RUNNING`, ainda sem logs ou CSV no primeiro poll. H-22 a H-24 continuam
+separadas para não atribuir um eventual ganho ao componente errado.
 
 ### Resultado H-20/H-21 — v8
 
@@ -463,8 +464,8 @@ mudança é calcular uma janela `1–99%` comum às fatias que entram nos slabs 
 série, preservando contraste relativo entre cortes. JSON, `py_compile`, smoke
 dos helpers e `27` testes passaram; o commit `29e030a` foi publicado. O push
 T4 foi bloqueado pelo Kaggle com `Maximum batch GPU session count of 2
-reached`; após a liberação de uma sessão, o kernel Kaggle v1 foi aceito e está
-`RUNNING`. Ainda não há logs ou CSV; não será forçado em CPU
+reached`; o v1 chegou a iniciar no P100 e falhou por `sm_60`; a v2 foi enviada
+com `NvidiaTeslaT4` e está `RUNNING`. Ainda não há logs ou CSV; não será forçado em CPU
 sem medir antes a viabilidade do tempo.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
