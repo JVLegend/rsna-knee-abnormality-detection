@@ -448,7 +448,7 @@ Hipóteses abertas a partir dessa auditoria:
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da H-25, labels weak suaves e janela comum `1–99%` nas fatias usadas por série | confirmada — v1 falhou no P100 por `sm_60`; v2 T4; ref `55551332`, público `0,712` |
-| H-23 | Fine-tuning leve do encoder supera B0 congelada | Uma época no último bloco, head auxiliar multilabel, mesma imagem/teacher/pooling da H-22 e sem flip horizontal | ativa — kernel privado `jvlegend/rsna-knee-v4-fine-tune-light`, aguardando T4 |
+| H-23 | Fine-tuning leve do encoder supera B0 congelada | Uma época no último bloco, head auxiliar multilabel, mesma imagem/teacher/pooling da H-22 e sem flip horizontal | ativa — kernel T4 completo; ref `55582655` PENDING, aguardando score |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | Auditoria fixa nos 58 com média/rank-mean de Steven, Pilkwang e Lixin | refutada para submissão — melhor blend `0,895808` vs target-wise `0,899120`; não gastar kernel |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | confirmada — ref `55446808`, público `0,708` |
 
@@ -509,9 +509,16 @@ alvos não abordados são mascarados. O head é descartado e o ajuste
 target-wise original continua sendo feito sobre os embeddings finais. Não há
 flip horizontal ou texto no teste.
 
-O smoke real no MPS processou 1 estudo e 18 views, com loss inicial/final
-`0,699462`, sem NaN. O worker T4 foi publicado para medir o custo completo e
-gerar um CSV comparável; nenhum score de leaderboard foi atribuído ainda.
+O smoke real no MPS processou 1 estudo e 18 views, com loss observado
+`0,699462`, sem NaN. O worker T4 completou `4.407/4.407` estudos de treino,
+`79.326` views no fine-tuning e `79.380` views na extração, com loss final
+`0,625231`; o tempo total foi `15.404,7 s`. O CSV de 3 linhas passou a
+validação de colunas, UIDs, finitude e faixa `[0,1]`; SHA-256
+`47a783fadca59d69cba08cb6ef90b2053623cc0b3a005a2c3b277d4bfb776ffc`.
+
+A saída foi submetida pelo fluxo Notebook-only como ref `55582655` em
+17/08/2026. O status atual é `PENDING`, sem erro; portanto H-23 ainda não foi
+promovida nem refutada por leaderboard.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
