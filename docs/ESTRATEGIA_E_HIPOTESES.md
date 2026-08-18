@@ -42,7 +42,7 @@ Aprendizado:
 ## Snapshot do ponto de partida
 
 - Melhor submissão confirmada até este registro: H-23, ref `55582655`, public score `0,718`; ganho de `+0,006` sobre H-22 (`55551332`, `0,712`). H-23 é a nova referência; manter H-22 como fallback reproduzível.
-- H-26 está em avaliação no Kaggle: mesma H-23, trocando somente o pooling de probabilidades para `mean` nos 12 alvos. O gate local dense6/janela por série marcou `0,643152` contra `0,635104` da política top-k/mean atual; kernel `jvlegend/rsna-knee-v4-mean-pool-h-26` foi publicado e ainda aguarda saída/submissão.
+- H-26 está em avaliação no Kaggle: mesma H-23, trocando somente o pooling de probabilidades para `mean` nos 12 alvos. O gate local dense6/janela por série marcou `0,643152` contra `0,635104` da política top-k/mean atual. A v1 caiu por alocação automática de P100 `sm_60`; a v2 foi relançada fixando `NvidiaTeslaT4` e está aguardando saída/submissão. Não há score H-26 ainda.
 - DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
@@ -556,9 +556,11 @@ ser afetado pelo checkout local parcial.
 
 O kernel privado foi publicado como
 [`jvlegend/rsna-knee-v4-mean-pool-h-26`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-mean-pool-h-26),
-mantendo fine-tuning H-23, teachers, blend e janela. O worker está em execução;
-só criar uma submissão se o `submission.csv` passar o validador, preservando
-H-23 (`0,718`) como referência.
+mantendo fine-tuning H-23, teachers, blend e janela. A primeira versão foi
+alocada em P100 `sm_60` e falhou antes da inferência porque o PyTorch do Kaggle
+aceita `sm_70+`. A segunda versão foi relançada com `NvidiaTeslaT4` e está
+`QUEUED`; só criar uma submissão se o `submission.csv` passar o validador,
+preservando H-23 (`0,718`) como referência.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
