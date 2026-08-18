@@ -42,6 +42,8 @@ Aprendizado:
 ## Snapshot do ponto de partida
 
 - Melhor submissão confirmada até este registro: H-23, ref `55582655`, public score `0,718`; ganho de `+0,006` sobre H-22 (`55551332`, `0,712`). H-23 é a nova referência; manter H-22 como fallback reproduzível.
+- H-26 está em avaliação no Kaggle: mesma H-23, trocando somente o pooling de probabilidades para `mean` nos 12 alvos. O gate local dense6/janela por série marcou `0,643152` contra `0,635104` da política top-k/mean atual; kernel `jvlegend/rsna-knee-v4-mean-pool-h-26` foi publicado e ainda aguarda saída/submissão.
+- DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
 - Treino: `4.407` estudos; somente `58` possuem os 12 rótulos oficiais.
@@ -451,6 +453,8 @@ Hipóteses abertas a partir dessa auditoria:
 | H-23 | Fine-tuning leve do encoder supera B0 congelada | Uma época no último bloco, head auxiliar multilabel, mesma imagem/teacher/pooling da H-22 e sem flip horizontal | confirmada — ref `55582655`, público `0,718`; ganho de `+0,006` sobre H-22 |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | Auditoria fixa nos 58 com média/rank-mean de Steven, Pilkwang e Lixin | refutada para submissão — melhor blend `0,895808` vs target-wise `0,899120`; não gastar kernel |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | confirmada — ref `55446808`, público `0,708` |
+| H-26 | Média de probabilidades por view supera a política top-k/mean por alvo | Preservar H-23 integralmente e trocar somente `TARGET_VIEW_POOLING` para `mean` nos 12 alvos | ativa — gate local `0,643152` vs `0,635104`; kernel Kaggle publicado, aguardando score |
+| H-27 | DINOv2-S oficial congelado supera EfficientNet-B0 | Mesmo dense6/janela/teacher e pooling MIL, trocar somente o backbone para DINOv2-S Apache 2.0 | refutada no gate local — embedding mean `0,568709`, MIL top-k `0,584075` vs B0 `0,636834`; fine-tuning DINO permanece hipótese distante |
 
 Decisão imediata: H-20 foi isolada na v9 e refutada (`0,663` contra `0,706`).
 H-25 foi executada na v10 e marcou público `0,708`. H-22 está empacotada como
@@ -460,7 +464,9 @@ no P100 por incompatibilidade `sm_60`; a v2 concluiu no T4, gerou CSV íntegro
 e foi submetida pelo Notebook como ref `55551332`, marcando público `0,712` e
 ganho de `+0,004`. A auditoria H-24 não encontrou ganho direcional para a fusão
 simétrica. H-23 superou H-22 e passa a ser a nova referência; H-22 continua
-como fallback reproduzível enquanto a próxima família é desenhada.
+como fallback reproduzível. A auditoria seguinte refutou DINOv2 congelado no
+holdout local, enquanto H-26 foi publicada como uma ablação barata de pooling
+e aguarda o leaderboard antes de qualquer promoção.
 
 ### Resultado H-20/H-21 — v8
 
@@ -521,6 +527,38 @@ A saída foi submetida pelo fluxo Notebook-only como ref `55582655` em
 `0,718`, superando H-22 (`0,712`) em `+0,006`. H-23 está promovida como nova
 referência; o CSV local é apenas cópia de auditoria/backup e não precisa ser
 enviado manualmente.
+
+### Auditoria H-27 — DINOv2-S oficial — 17/08/2026
+
+O modelo oficial `metaresearch/dinov2/pytorch/small/1` foi consultado pelo
+Kaggle CLI e identificado como Apache 2.0. A cópia local foi baixada para
+`/Volumes/Karine HD Externo/Dados_JV/Datasets/rsna-knee-abnormality-detection/models/dinov2_official_small/`;
+os pesos ficam fora do Git. O smoke real no MPS gerou embeddings finitos
+`(6,384)` a partir de slabs dense6.
+
+No holdout dos 58 estudos, com a mesma ordenação e janela por série, o DINOv2
+congelado marcou macro-AUC `0,568709` usando média dos embeddings. Treinando o
+classificador nas views e agregando por estudo, os melhores modos foram
+`topk=0,584075`, `max=0,581314` e `mean=0,576975`. O B0 congelado na mesma
+geometria marcou `0,636834`; portanto H-27 foi refutada para submissão nesta
+forma. O código oficial permanece em
+`kaggle/rsna_knee_dinov2_official_kernel/` para uma futura hipótese de
+fine-tuning, sem usar o bundle de licença `other`.
+
+### H-26 — pooling mean — 17/08/2026
+
+O ensaio local usou a geometria H-23 (`dense6`, janela `1–99%` por série,
+EfficientNet-B0, 58 estudos gold disponíveis localmente) e comparou apenas a
+agregação final das probabilidades por view. A política atual top-k/mean marcou
+`0,635104`; `mean` em todos os 12 alvos marcou `0,643152`, ganho local de
+`+0,008048`. Esse resultado é um gate de direção, não um score Kaggle, e pode
+ser afetado pelo checkout local parcial.
+
+O kernel privado foi publicado como
+[`jvlegend/rsna-knee-v4-mean-pool-h-26`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-mean-pool-h-26),
+mantendo fine-tuning H-23, teachers, blend e janela. O worker está em execução;
+só criar uma submissão se o `submission.csv` passar o validador, preservando
+H-23 (`0,718`) como referência.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
