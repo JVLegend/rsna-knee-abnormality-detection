@@ -41,7 +41,7 @@ Aprendizado:
 
 ## Snapshot do ponto de partida
 
-- Melhor submissão confirmada até este registro: `55551332`, public score `0,712`; manter como fallback até uma nova variante ter evidência independente.
+- Melhor submissão confirmada até este registro: H-23, ref `55582655`, public score `0,718`; ganho de `+0,006` sobre H-22 (`55551332`, `0,712`). H-23 é a nova referência; manter H-22 como fallback reproduzível.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
 - Treino: `4.407` estudos; somente `58` possuem os 12 rótulos oficiais.
@@ -448,7 +448,7 @@ Hipóteses abertas a partir dessa auditoria:
 | H-20 | Max pooling de probabilidades por view supera `top-k/mean` na nossa v4 | Dense6 integral, mesmo teacher/blend, trocar somente a agregação para `max` | refutada — ref `55442653`, público `0,663` |
 | H-21 | `adjacent3 + fast_preprocess` mantém sinal suficiente com menor custo | Kernel T4 completo e comparação de score/tempo contra v6 | enfraquecida |
 | H-22 | Janela de intensidade por série supera normalização independente por slice | Dense6 integral, mesma configuração da H-25, labels weak suaves e janela comum `1–99%` nas fatias usadas por série | confirmada — v1 falhou no P100 por `sm_60`; v2 T4; ref `55551332`, público `0,712` |
-| H-23 | Fine-tuning leve do encoder supera B0 congelada | Uma época no último bloco, head auxiliar multilabel, mesma imagem/teacher/pooling da H-22 e sem flip horizontal | ativa — kernel T4 completo; ref `55582655` PENDING, aguardando score |
+| H-23 | Fine-tuning leve do encoder supera B0 congelada | Uma época no último bloco, head auxiliar multilabel, mesma imagem/teacher/pooling da H-22 e sem flip horizontal | confirmada — ref `55582655`, público `0,718`; ganho de `+0,006` sobre H-22 |
 | H-24 | Fusão contínua e simétrica de teachers supera seleção de uma fonte por alvo | Auditoria fixa nos 58 com média/rank-mean de Steven, Pilkwang e Lixin | refutada para submissão — melhor blend `0,895808` vs target-wise `0,899120`; não gastar kernel |
 | H-25 | Preservar a probabilidade dos weak labels supera a conversão hard 0/1 | Dense6 integral, mesmo teacher/pooling/blend da v6, duplicar cada weak como pesos `p`/`1-p` | confirmada — ref `55446808`, público `0,708` |
 
@@ -459,8 +459,8 @@ script standalone em
 no P100 por incompatibilidade `sm_60`; a v2 concluiu no T4, gerou CSV íntegro
 e foi submetida pelo Notebook como ref `55551332`, marcando público `0,712` e
 ganho de `+0,004`. A auditoria H-24 não encontrou ganho direcional para a fusão
-simétrica; H-22 continua como referência e H-23 passa a ser a próxima família
-de execução.
+simétrica. H-23 superou H-22 e passa a ser a nova referência; H-22 continua
+como fallback reproduzível enquanto a próxima família é desenhada.
 
 ### Resultado H-20/H-21 — v8
 
@@ -517,8 +517,10 @@ validação de colunas, UIDs, finitude e faixa `[0,1]`; SHA-256
 `47a783fadca59d69cba08cb6ef90b2053623cc0b3a005a2c3b277d4bfb776ffc`.
 
 A saída foi submetida pelo fluxo Notebook-only como ref `55582655` em
-17/08/2026. O status atual é `PENDING`, sem erro; portanto H-23 ainda não foi
-promovida nem refutada por leaderboard.
+17/08/2026. A submissão foi processada com status `COMPLETE` e public score
+`0,718`, superando H-22 (`0,712`) em `+0,006`. H-23 está promovida como nova
+referência; o CSV local é apenas cópia de auditoria/backup e não precisa ser
+enviado manualmente.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
