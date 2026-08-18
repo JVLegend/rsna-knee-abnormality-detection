@@ -558,9 +558,26 @@ O kernel privado foi publicado como
 [`jvlegend/rsna-knee-v4-mean-pool-h-26`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-mean-pool-h-26),
 mantendo fine-tuning H-23, teachers, blend e janela. A primeira versão foi
 alocada em P100 `sm_60` e falhou antes da inferência porque o PyTorch do Kaggle
-aceita `sm_70+`. A segunda versão foi relançada com `NvidiaTeslaT4` e está
-`QUEUED`; só criar uma submissão se o `submission.csv` passar o validador,
-preservando H-23 (`0,718`) como referência.
+aceita `sm_70+`. A segunda versão foi relançada com `NvidiaTeslaT4`, concluiu e
+gerou um `submission.csv` íntegro. A submissão Notebook-only `55610358` está
+`PENDING`; o score ainda não foi processado. H-23 (`0,718`) permanece como
+referência.
+
+### Testes adicionais — resolução e slots — 18/08/2026
+
+- O probe de resolução simples comparou 224 px e 336 px nos mesmos 59 conjuntos
+  locais, com três views por série, ordenação por header e EfficientNet-B0. O
+  macro-AUC médio caiu de `0,578718` para `0,558250` (`-0,020469`). Isso
+  **refuta o resize simples para 336 px** neste protocolo; não refuta um crop
+  físico de aproximadamente 150 mm.
+- A auditoria do lote visual confirmou cobertura dos três planos: `333 + 367 =
+  700` estudos, todos com Sagittal, Coronal e Axial. Porém cada estudo tem
+  somente uma série por plano, não seis slots de contraste. A próxima
+  implementação deve preservar uma máscara de presença e não inventar slots
+  ausentes.
+- A submissão H-26 foi criada como `55610358` somente depois da validação do
+  CSV. Enquanto o Kaggle não retornar score, nenhuma decisão de promoção será
+  tomada.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
