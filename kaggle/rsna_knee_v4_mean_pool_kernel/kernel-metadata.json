@@ -1,6 +1,6 @@
 {
-  "id": "jvlegend/rsna-knee-v4-mean-pool",
-  "title": "RSNA Knee v4 Mean Pool H-26",
+  "id": "jvlegend/rsna-knee-v4-mean-pool-h-26",
+  "title": "RSNA Knee v4 Mean Pool H 26",
   "code_file": "rsna_knee_v4_mean_pool.py",
   "language": "python",
   "kernel_type": "script",
