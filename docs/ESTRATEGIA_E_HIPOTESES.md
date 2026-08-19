@@ -42,8 +42,8 @@ Aprendizado:
 ## Snapshot do ponto de partida
 
 - Melhor submissão confirmada até este registro: H-23, ref `55582655`, public score `0,718`; ganho de `+0,006` sobre H-22 (`55551332`, `0,712`). H-23 é a nova referência; manter H-22 como fallback reproduzível.
-- H-26 está em avaliação no Kaggle: mesma H-23, trocando somente o pooling de probabilidades para `mean` nos 12 alvos. O gate local dense6/janela por série marcou `0,643152` contra `0,635104` da política top-k/mean atual. A v1 caiu por alocação automática de P100 `sm_60`; a v2 foi relançada fixando `NvidiaTeslaT4` e está aguardando saída/submissão. Não há score H-26 ainda.
-- H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker está `RUNNING`; não há CSV ou score ainda.
+- H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
+- H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` está `PENDING`; ainda não há score.
 - DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
@@ -560,9 +560,9 @@ O kernel privado foi publicado como
 mantendo fine-tuning H-23, teachers, blend e janela. A primeira versão foi
 alocada em P100 `sm_60` e falhou antes da inferência porque o PyTorch do Kaggle
 aceita `sm_70+`. A segunda versão foi relançada com `NvidiaTeslaT4`, concluiu e
-gerou um `submission.csv` íntegro. A submissão Notebook-only `55610358` está
-`PENDING`; o score ainda não foi processado. H-23 (`0,718`) permanece como
-referência.
+gerou um `submission.csv` íntegro. A submissão Notebook-only `55610358` foi
+processada com public score `0,712`, abaixo de H-23 (`0,718`); a hipótese fica
+refutada para promoção e H-23 permanece como referência.
 
 ### Testes adicionais — resolução e slots — 18/08/2026
 
@@ -598,9 +598,13 @@ válidas.
 O código standalone e o metadata estão em
 `kaggle/rsna_knee_v4_plane_target_kernel/`, commit `a0843f6`. O smoke sintético,
 `py_compile`, JSON e os seis testes direcionados passaram. A versão 1 foi
-publicada com `NvidiaTeslaT4` e está `RUNNING`; não há submissão oficial até o
-worker gerar e validar `submission.csv`. H-23 (`55582655`, `0,718`) permanece o
-fallback.
+publicada com `NvidiaTeslaT4`, concluiu com `4.407/4.407` estudos, `79.380`
+views, fine-tuning em `79.326` views, loss final `0,624997` e elapsed
+`14.683,9 s`. O `submission.csv` validado tem 3 linhas/12 alvos e SHA-256
+`5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A
+submissão Notebook-only `55632699` foi criada informando explicitamente a
+versão 1 do kernel e está `PENDING`; o primeiro score ainda não foi processado.
+H-23 (`55582655`, `0,718`) permanece o fallback.
 
 ### Probe de representação por plano — 18/08/2026
 
