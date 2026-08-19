@@ -15,7 +15,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_QUANTILES = (0.25, 0.5, 0.75)
-HEADER_TAGS = ("InstanceNumber",)
+HEADER_TAGS = ("InstanceNumber", "ImagePositionPatient", "ImageOrientationPatient")
 PIXEL_TAGS = (
     "InstanceNumber",
     "PixelData",
@@ -94,9 +94,38 @@ def _sort_key(item: tuple[Path, pydicom.dataset.FileDataset]) -> tuple[object, .
     return (2, path.name)
 
 
+def _physical_sort_key(item: tuple[Path, pydicom.dataset.FileDataset]) -> tuple[object, ...]:
+    """Ordena pela posição física ao longo da normal da aquisição.
+
+    ``InstanceNumber`` é um fallback útil, mas pode ser inconsistente entre
+    séries. Quando IPP/IOP existem, a projeção de ``ImagePositionPatient`` na
+    normal derivada de ``ImageOrientationPatient`` fornece uma ordenação
+    determinística no eixo real de aquisição.
+    """
+
+    path, dataset = item
+    try:
+        position = np.asarray(getattr(dataset, "ImagePositionPatient"), dtype=np.float64)
+        orientation = np.asarray(getattr(dataset, "ImageOrientationPatient"), dtype=np.float64)
+        if position.shape != (3,) or orientation.shape != (6,):
+            raise ValueError
+        normal = np.cross(orientation[:3], orientation[3:])
+        norm = float(np.linalg.norm(normal))
+        if not np.isfinite(norm) or norm <= 1e-8:
+            raise ValueError
+        projection = float(np.dot(position, normal / norm))
+        if not np.isfinite(projection):
+            raise ValueError
+        instance = _number(getattr(dataset, "InstanceNumber", None))
+        return (0, projection, instance if instance is not None else float("inf"), path.name)
+    except (TypeError, ValueError):
+        return (1, *_sort_key(item))
+
+
 def read_series(
     series_dir: Path,
     sort_by_header: bool = True,
+    sort_mode: str | None = None,
 ) -> list[tuple[Path, pydicom.dataset.FileDataset | None]]:
     """Lê somente os headers de uma série e ordena por InstanceNumber/posição."""
 
@@ -105,11 +134,16 @@ def read_series(
         raise FileNotFoundError(f"Nenhum arquivo .dcm encontrado em {series_dir}")
     if not sort_by_header:
         return [(path, None) for path in files]
+    effective_sort_mode = sort_mode or "header"
+    if effective_sort_mode not in {"header", "physical", "filename"}:
+        raise ValueError(f"sort_mode desconhecido: {effective_sort_mode}")
+    if effective_sort_mode == "filename":
+        return [(path, None) for path in files]
     records = [
         (path, pydicom.dcmread(path, stop_before_pixels=True, specific_tags=HEADER_TAGS, force=False))
         for path in files
     ]
-    records.sort(key=_sort_key)
+    records.sort(key=_physical_sort_key if effective_sort_mode == "physical" else _sort_key)
     return records
 
 
@@ -147,11 +181,12 @@ def build_entry(
     quantiles: tuple[float, ...],
     overwrite: bool = False,
     sort_by_header: bool = True,
+    sort_mode: str | None = None,
 ) -> dict[str, object]:
     study_uid = str(entry["study_uid"])
     series_uid = str(entry["series_uid"])
     series_dir = data_dir / "train_series" / study_uid / series_uid
-    records = read_series(series_dir, sort_by_header=sort_by_header)
+    records = read_series(series_dir, sort_by_header=sort_by_header, sort_mode=sort_mode)
     indices = sample_indices(len(records), quantiles)
     channels: list[np.ndarray] = []
     selected: list[dict[str, object]] = []
@@ -209,13 +244,26 @@ def build_features(
     overwrite: bool = False,
     workers: int = 4,
     sort_by_header: bool = True,
+    sort_mode: str | None = None,
 ) -> dict[str, object]:
     if workers < 1:
         raise ValueError("workers precisa ser positivo.")
     entries = _manifest_entries(manifest_paths)
+    effective_sort_mode = "filename" if not sort_by_header else (sort_mode or "header")
+    if effective_sort_mode not in {"header", "physical", "filename"}:
+        raise ValueError(f"sort_mode desconhecido: {effective_sort_mode}")
     if workers == 1:
         records = [
-            build_entry(entry, data_dir, output_dir, size, quantiles, overwrite, sort_by_header)
+            build_entry(
+                entry,
+                data_dir,
+                output_dir,
+                size,
+                quantiles,
+                overwrite,
+                sort_by_header,
+                effective_sort_mode,
+            )
             for entry in entries
         ]
     else:
@@ -230,6 +278,7 @@ def build_features(
                     quantiles,
                     overwrite,
                     sort_by_header,
+                    effective_sort_mode,
                 )
                 for entry in entries
             ]
@@ -241,6 +290,7 @@ def build_features(
         "size": size,
         "channels": len(quantiles),
         "quantiles": list(quantiles),
+        "sort_mode": effective_sort_mode,
         "studies": len(records),
         "records": records,
     }
@@ -262,6 +312,7 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("data/processed/dicom_25d_v0"))
     parser.add_argument("--size", type=int, default=224)
     parser.add_argument("--quantiles", default="0.25,0.5,0.75")
+    parser.add_argument("--sort-mode", choices=("header", "physical", "filename"), default="header")
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument(
         "--fast-file-order",
@@ -287,6 +338,7 @@ def main() -> None:
         overwrite=args.overwrite,
         workers=args.workers,
         sort_by_header=not args.fast_file_order,
+        sort_mode="filename" if args.fast_file_order else args.sort_mode,
     )
     for position, record in enumerate(index["records"], start=1):
         print(

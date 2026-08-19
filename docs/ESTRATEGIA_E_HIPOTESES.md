@@ -221,7 +221,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-02 | DINOv2-S/14 + cabeça MIL supera EfficientNet-B0 congelada | Mesmos slots, slices, labels, folds e seed; mudar só encoder/head | Macro OOF `+0,02` sem queda grave nos alvos raros | nova |
 | H-03 | Descongelar os últimos 4–6 blocos melhora sobre DINOv2 congelado | Comparar frozen, last-4 e last-6 com LR pequeno | Ganho OOF e estabilidade entre folds; não aceitar apenas um fold | nova |
 | H-04 | 336 px com crop físico preserva melhor menisco e lesões focais que 224 | Probe 224/336, mesmo número de cortes e mesmo backbone | Ganho em meniscos/fratura e macro OOF; medir custo por estudo | nova |
-| H-05 | Ordem física supera ordem por filename | Auditoria de correlação/visualização + treino controlado | Menos inversões e ganho OOF; se não houver ganho, manter por correção física | alta prioridade |
+| H-05 | Ordem física supera ordem por filename | Auditoria de correlação/visualização + treino controlado | Menos inversões e ganho OOF; se não houver ganho, manter por correção física | parcial — `InstanceNumber` superou filename, mas `IPP/IOP` caiu `0,005838` contra o header no gold 3-view |
 | H-06 | Pooling por alvo supera média global | Mean vs attention vs max/top-k nos mesmos embeddings | Ganho em Fracture/Contusion/Baker sem prejudicar OA/derrame | nova |
 | H-07 | Seis slots clínicos + presence mask superam apenas três planos | Treinar com slots fixos, faltantes mascarados e diagnóstico de cobertura | Macro OOF subir e nenhuma aquisição dominar artificialmente | nova |
 | H-08 | Laterality por geometria e ausência de vertical flip reduzem erro sistemático | Auditar 20–50 estudos e comparar com/sem normalização | Menos inversão lateral; ganho ou neutralidade OOF | nova |
@@ -575,6 +575,11 @@ referência.
   somente uma série por plano, não seis slots de contraste. A próxima
   implementação deve preservar uma máscara de presença e não inventar slots
   ausentes.
+- O probe de ordenação física implementou a projeção de `ImagePositionPatient`
+  na normal de `ImageOrientationPatient`. Embora tenha alterado 27/59 séries,
+  marcou `0,572880` contra `0,578718` da ordenação por `InstanceNumber`.
+  Mantemos o loader atual; isso não invalida testar seis slots ou crop físico,
+  que são hipóteses diferentes.
 - A submissão H-26 foi criada como `55610358` somente depois da validação do
   CSV. Enquanto o Kaggle não retornar score, nenhuma decisão de promoção será
   tomada.
