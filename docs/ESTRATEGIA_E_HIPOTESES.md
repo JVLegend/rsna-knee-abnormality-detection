@@ -1,7 +1,7 @@
 ---
 titulo: Estratégia, evidências e hipóteses — RSNA Knee Abnormality Detection
 projeto: RSNA Knee Abnormality Detection
-updated: 2026-08-16
+updated: 2026-08-18
 status: living-document
 tags: [Kaggle, RSNA, Medicina, Tecnologia]
 ---
@@ -223,7 +223,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-04 | 336 px com crop físico preserva melhor menisco e lesões focais que 224 | Probe 224/336, mesmo número de cortes e mesmo backbone | Ganho em meniscos/fratura e macro OOF; medir custo por estudo | nova |
 | H-05 | Ordem física supera ordem por filename | Auditoria de correlação/visualização + treino controlado | Menos inversões e ganho OOF; se não houver ganho, manter por correção física | parcial — `InstanceNumber` superou filename, mas `IPP/IOP` caiu `0,005838` contra o header no gold 3-view |
 | H-06 | Pooling por alvo supera média global | Mean vs attention vs max/top-k nos mesmos embeddings | Ganho em Fracture/Contusion/Baker sem prejudicar OA/derrame | nova |
-| H-07 | Seis slots clínicos + presence mask superam apenas três planos | Treinar com slots fixos, faltantes mascarados e diagnóstico de cobertura | Macro OOF subir e nenhuma aquisição dominar artificialmente | nova |
+| H-07 | Seis slots clínicos + presence mask superam apenas três planos | Treinar com slots fixos, faltantes mascarados e diagnóstico de cobertura | Macro OOF subir e nenhuma aquisição dominar artificialmente | parcial — ensemble por plano ganhou no holdout, mas o gold não tem Axial |
 | H-08 | Laterality por geometria e ausência de vertical flip reduzem erro sistemático | Auditar 20–50 estudos e comparar com/sem normalização | Menos inversão lateral; ganho ou neutralidade OOF | nova |
 | H-09 | Folds agrupados por relatório duplicado dão estimativa mais honesta | Agrupar fingerprints, balancear os 12 alvos e comparar com split ingênuo | Reduzir gap CV/LB; usar apenas o protocolo agrupado para decisão | apoiada pelo fórum |
 | H-10 | Rank averaging é mais robusto que média de probabilidades | Comparar rank mean, prob mean, quality-weight e target-weight | Rank mean não pode perder o baseline em nenhuma submissão de controle | apoiada parcialmente |
@@ -583,6 +583,29 @@ referência.
 - A submissão H-26 foi criada como `55610358` somente depois da validação do
   CSV. Enquanto o Kaggle não retornar score, nenhuma decisão de promoção será
   tomada.
+
+### Probe de representação por plano — 18/08/2026
+
+Para transformar a auditoria de cobertura em um teste de modelagem, foi criado
+`scripts/evaluate_plane_presence_holdout.py`. O treino usa os 700 estudos do
+lote weak (`2.100` embeddings B0, exatamente uma série por plano) e o holdout
+usa os `58` estudos com os 12 rótulos oficiais. A comparação mantém o encoder,
+o limiar `0,5` e a regressão logística fixos:
+
+| Representação | Steven v4 | Pilkwang v2 | Delta vs média global (Pilkwang) |
+|---|---:|---:|---:|
+| Média de todos os planos disponíveis | `0,585771` | `0,587916` | — |
+| Concatenação Sagittal/Coronal/Axial + máscara | `0,600978` | `0,606066` | `+0,018150` |
+| Ensemble de modelos separados por plano | `0,619018` | `0,634186` | `+0,046270` |
+
+O sinal é consistente em duas fontes weak independentes e favorece separar a
+distribuição visual de cada plano, em vez de misturá-la antes do classificador.
+Ainda não é uma validação de seis slots: o gold local tem `56` Sagittal, `3`
+Coronal e `0` Axial. Assim, a decisão é **aprovar a implementação como
+variante Kaggle de baixo risco**, mantendo H-23 como fallback, mas não declarar
+ganho de leaderboard até o primeiro score. O próximo kernel deve preservar a
+seleção H-23, a janela por série, fine-tuning leve e teacher target-wise, trocando
+somente a cabeça visual por modelos por plano e máscara explícita de presença.
 
 ### 2026-08-10 — primeiro ganho confirmado e labels públicos
 
