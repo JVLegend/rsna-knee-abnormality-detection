@@ -44,6 +44,7 @@ Aprendizado:
 - Melhor submissão confirmada até este registro: H-23, ref `55582655`, public score `0,718`; ganho de `+0,006` sobre H-22 (`55551332`, `0,712`). H-23 é a nova referência; manter H-22 como fallback reproduzível.
 - H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
 - H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` está `PENDING`; ainda não há score.
+- O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). A próxima variante H-28 está pronta para ser avaliada depois do score H-27; não submeter ainda.
 - DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
@@ -605,6 +606,39 @@ views, fine-tuning em `79.326` views, loss final `0,624997` e elapsed
 submissão Notebook-only `55632699` foi criada informando explicitamente a
 versão 1 do kernel e está `PENDING`; o primeiro score ainda não foi processado.
 H-23 (`55582655`, `0,718`) permanece o fallback.
+
+### H-28 — slots adicionais — gate local — 19/08/2026
+
+O inventário de `train_series.csv` mostrou `336` séries nos `58` estudos com
+rótulos oficiais, contra `174` usadas no gold de três planos. As categorias
+observadas são `Sagittal/Coronal/Axial × {FLUID_FS, NONFLUID}`; os nomes são
+rótulos de metadata, não afirmações sobre o protocolo clínico. O manifesto
+reprodutível está em `data/processed/dicom_gold_six_slot_manifest.json` e o
+builder em `scripts/build_gold_six_slot_manifest.py`. O download incremental
+selecionou `10.528` arquivos e aproximadamente `7,013 GB` de DICOM; não há
+dados de teste local no pacote.
+
+Para evitar confundir geometria com aquisição, os arrays e embeddings foram
+regenerados com os mesmos quantis H-23 (`0,25`, `0,50`, `0,75`), ordenação por
+`InstanceNumber`, resize `224` e peso B0 SHA-256
+`7f5810bc96def8f7552d5b7e68d53c4786f81167d28291b21c0d90e1fca14934`. O gate
+treina nos `700` estudos weak e avalia nos `58` oficiais, usando uma cabeça por
+slot quando há exemplos positivos e negativos; slots sem classe suficiente
+ficam fora ou usam fallback por plano.
+
+| Teacher / C | H-27 proxy: plano preferencial | Cabeças por slot | Delta |
+|---|---:|---:|---:|
+| Steven v4 / `0,5` | `0,689533` | `0,698081` | `+0,008548` |
+| Pilkwang v2 / `0,5` | `0,683570` | `0,698814` | `+0,015244` |
+| Target-wise H-23 / `0,5` | `0,639910` | `0,642363` | `+0,002454` |
+| Target-wise H-23 / `0,1` | `0,646388` | `0,653319` | `+0,006931` |
+
+O ganho é direcionalmente consistente, mas há uma limitação explícita: o
+treino local não tem nenhum `Axial_NONFLUID` (`0/700`), enquanto esse slot
+aparece em `13/58` estudos gold. Decisão: **apoiar H-28 provisoriamente**, sem
+consumir novo worker antes do score H-27; quando houver cota e referência
+Kaggle, criar uma variante que preserve H-23/H-27 e troque apenas para slots,
+com fallback conservador por plano.
 
 ### Probe de representação por plano — 18/08/2026
 
