@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""H-23 — fine-tuning leve do último bloco com janela por série. #RSNA #Kaggle #Dados
+"""H-27 — fine-tuning leve e cabeça visual separada por plano. #RSNA #Kaggle #Dados
 
 Esta variante preserva a configuração H-22 (dense6, EfficientNet-B0,
 teacher target-wise, pooling visual por alvo, blend texto-imagem, labels weak
-suaves e janela 1–99% por série) e acrescenta uma única mudança de modelagem:
-um fine-tuning de uma época somente nos últimos blocos do encoder. O head
-auxiliar multilabel é descartado depois; a regressão logística target-wise
-original continua sendo ajustada sobre os embeddings resultantes.
+suaves e janela 1–99% por série) e separa a cabeça visual por Sagittal,
+Coronal e Axial, agregando somente os planos presentes. O fine-tuning de uma
+época somente nos últimos blocos do encoder continua igual; o head auxiliar
+multilabel é descartado depois.
 
 O fine-tuning usa exclusivamente imagens do treino e labels oficiais/weak já
 disponíveis no treino. Não há flip horizontal nem informação textual no teste.
@@ -81,7 +81,7 @@ SLICE_PROFILES = {
     "dense9": (0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.80, 0.95),
 }
 SLICE_PROFILE = os.environ.get("RSNA_SLICE_PROFILE", "dense6")
-VIEW_POOLING = os.environ.get("RSNA_VIEW_POOLING", "target")
+VIEW_POOLING = os.environ.get("RSNA_VIEW_POOLING", "plane_target")
 TEACHER_PROFILE = os.environ.get("RSNA_TEACHER_PROFILE", "targetwise")
 INTENSITY_WINDOW = os.environ.get("RSNA_INTENSITY_WINDOW", "series")
 FINE_TUNE_ENCODER = os.environ.get("RSNA_FINE_TUNE_ENCODER", "1").lower() not in {"0", "false", "no"}
