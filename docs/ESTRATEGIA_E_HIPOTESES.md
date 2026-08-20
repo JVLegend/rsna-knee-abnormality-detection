@@ -241,7 +241,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | em teste — worker T4 publicado, aguardando score |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | prioritária — crop apoiado no gate local; DINO last-6 ainda não implementado |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; falta integrar ao kernel |
-| H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada até auditoria de metadados |
+| H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 
 ## Plano de execução por fases
 
@@ -756,6 +756,10 @@ Resultados locais novos:
   peso `1`, melhorando `11/12` alvos; Synovitis foi a exceção (`-0,0149`). É
   um proxy de estudo, não prova de leaderboard; integrar apenas como ablação
   controlada e manter Synovitis com peso/teacher específico.
+- A auditoria de headers DICOM do gold encontrou `Laterality=R` em `48/174`
+  séries, `L` em `30/174`, string vazia em `54/174` e tag ausente em
+  `42/174`; `ImageLaterality` esteve ausente em todas. Não há base confiável
+  para flip condicionado ou troca medial/lateral na próxima submissão.
 - A nova sonda
   `scripts/build_physical_crop_25d_features.py` gerou `174` séries (`58×3`),
   arrays `3×336×336` e embeddings B0 em
