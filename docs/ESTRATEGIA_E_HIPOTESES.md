@@ -753,8 +753,9 @@ Resultados locais novos:
   700 weak com os gold de treino e avaliou somente o fold gold. Retirando o
   hash compartilhado do fold de validação, o peso gold `1/4/8` marcou
   `0,654226/0,658457/0,660684` (duas seeds); peso `8` ganhou `+0,006458` sobre
-  peso `1`, com menor desvio entre seeds. É um proxy de estudo, não prova de
-  leaderboard; integrar apenas como ablação controlada na próxima variante.
+  peso `1`, melhorando `11/12` alvos; Synovitis foi a exceção (`-0,0149`). É
+  um proxy de estudo, não prova de leaderboard; integrar apenas como ablação
+  controlada e manter Synovitis com peso/teacher específico.
 - A nova sonda
   `scripts/build_physical_crop_25d_features.py` gerou `174` séries (`58×3`),
   arrays `3×336×336` e embeddings B0 em
