@@ -240,7 +240,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | em teste — worker T4 publicado, aguardando score |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | prioritária — crop apoiado no gate local; DINO last-6 ainda não implementado |
-| H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | protocolo aprovado; experimento de peso pendente |
+| H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; falta integrar ao kernel |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada até auditoria de metadados |
 
 ## Plano de execução por fases
@@ -749,6 +749,12 @@ Resultados locais novos:
   estudos e somente `1/58` gold em grupo duplicado. O agrupamento é obrigatório
   para medir labels fracos sem vazamento, mas não explica sozinho a diferença
   para o leaderboard.
+- O novo `scripts/evaluate_gold_weighted_cv.py` treinou embeddings médios dos
+  700 weak com os gold de treino e avaliou somente o fold gold. Retirando o
+  hash compartilhado do fold de validação, o peso gold `1/4/8` marcou
+  `0,654226/0,658457/0,660684` (duas seeds); peso `8` ganhou `+0,006458` sobre
+  peso `1`, com menor desvio entre seeds. É um proxy de estudo, não prova de
+  leaderboard; integrar apenas como ablação controlada na próxima variante.
 - A nova sonda
   `scripts/build_physical_crop_25d_features.py` gerou `174` séries (`58×3`),
   arrays `3×336×336` e embeddings B0 em
@@ -768,8 +774,9 @@ Decisão operacional:
    (b) DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs
    adjacentes e slots com fallback. Não repetir DINO congelado, já refutado no
    gate local.
-3. Em paralelo, tornar `report_hash` parte dos folds e testar peso gold
-   `1/4/8`; não escolher o peso pelo leaderboard isolado.
+3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`,
+   comparando contra peso `1` no mesmo kernel; não escolher o peso pelo
+   leaderboard isolado.
 
 ### Próxima atualização
 
