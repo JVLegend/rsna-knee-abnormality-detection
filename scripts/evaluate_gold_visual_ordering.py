@@ -267,6 +267,8 @@ def main() -> None:
     parser.add_argument("--seeds", default="42,2026")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--c", type=float, default=0.5)
+    parser.add_argument("--left-label", default="filename_order")
+    parser.add_argument("--right-label", default="header_instance_number")
     parser.add_argument("--output", type=Path, default=Path("reports/gold_visual_ordering_ablation.json"))
     args = parser.parse_args()
     seeds = [int(value.strip()) for value in args.seeds.split(",") if value.strip()]
@@ -281,6 +283,7 @@ def main() -> None:
         args.folds,
         args.c,
     )
+    result["variant_labels"] = {"left": args.left_label, "right": args.right_label}
     output = _resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -291,8 +294,8 @@ def main() -> None:
     )
     for seed, values in result["comparison"]["seed_macro"].items():
         print(
-            f"seed={seed} filename_macro={values['filename_macro_auc']:.6f} "
-            f"header_macro={values['header_macro_auc']:.6f} "
+            f"seed={seed} {args.left_label}_macro={values['filename_macro_auc']:.6f} "
+            f"{args.right_label}_macro={values['header_macro_auc']:.6f} "
             f"delta={values['delta_header_minus_filename']:+.6f}"
         )
     print(f"mean_delta_header_minus_filename={result['comparison']['mean_delta_header_minus_filename']:+.6f}")
