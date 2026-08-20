@@ -44,7 +44,7 @@ Aprendizado:
 - Melhor submissão confirmada até este registro: H-27, ref `55632699`, public score `0,727`; ganho de `+0,009` sobre H-23 (`55582655`, `0,718`) e `+0,015` sobre H-26/H-22 (`0,712`). H-27 é a nova referência; manter H-23 como fallback reproduzível.
 - H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
 - H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` fechou `COMPLETE` com public score `0,727`, novo melhor resultado.
-- O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). Com H-27 confirmada em `0,727`, a próxima variante H-28 será preparada como novo teste controlado de slots.
+- O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). H-28 foi publicada no Kaggle em T4 e está aguardando `COMPLETE`/score; H-27 (`0,727`) continua como fallback.
 - DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
@@ -238,6 +238,10 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-17 | Pretraining/crop com OAI ou KneeMRI pode ajudar, mas não deve misturar labels diretamente | Primeiro probe de transferência e verificação de licença/regras | Só avançar com autorização documental e ganho em CV | bloqueada |
 | H-18 | Um modelo especialista por família de alvo pode superar um único head | Ramo ligamentos/meniscos, OA, fluido e focal; ensemble por rank | Ganho em pelo menos duas famílias sem overfit dos 58 | nova |
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
+| H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | em teste — worker T4 publicado, aguardando score |
+| H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | prioritária — crop apoiado no gate local; DINO last-6 ainda não implementado |
+| H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | protocolo aprovado; experimento de peso pendente |
+| H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada até auditoria de metadados |
 
 ## Plano de execução por fases
 
@@ -710,6 +714,65 @@ fallback explícito para estudos/planos inválidos.
 - Incorporadas as conclusões anteriores do fórum, das competições RSNA passadas e do audit local de labels.
 - Definida a ordem P0→P4: reprodutibilidade, labels, representação, ensemble e somente depois dados externos/escala.
 
+### Atualização de pesquisa e ablações — 20/08/2026
+
+A revisão de soluções públicas mudou a prioridade: H-28 é uma melhoria de
+aquisição, mas a lacuna maior para a fronteira pública combina representação,
+supervisão e validação. O [baseline público V14 da Beiciccc](https://github.com/Beiciccc/rsna-knee-abnormality-detection/blob/main/docs/public_baselines.md)
+relata `0,824` em seu snapshot e combina DINOv2-S com os últimos seis blocos
+ajustados, crop físico de aproximadamente `130 mm` em `336 px`, três fatias
+adjacentes, seis slots de sequência/anatomia, maior peso para os 58 gold e
+grupos por hash de laudo. Isso não é um score nosso, mas é um blueprint mais
+completo que a simples troca de pooling.
+
+O [relato técnico de Yash Bishnoi](https://huggingface.co/blog/bishnoiyash/rsna-competetion)
+reforça quatro pontos: a qualidade dos labels é o gargalo; fusões de fontes
+precisam ser simétricas e corrigir conflitos; a seleção deve preferir séries
+fluido-sensíveis e uma série por plano; e o resultado interno cai quando a
+validação dos 58 é realmente cross-fitted. O [repositório de Junhao Li](https://github.com/JunhaoLiXD/RSNA_Knee_Abnormality_Detection)
+e o [ensemble de labels da Dianisay](https://github.com/dianisay/RSNA-Knee-Abnormality-Detection/blob/main/labels/README.md)
+adicionam duas práticas: DINOv2 com atenção por alvo e labels contínuos/rank-
+average, sem transformar silêncio do laudo em negativo. A política de flip de
+laterality, porém, diverge entre implementações públicas; por isso H-31 fica
+bloqueada até auditar os metadados DICOM e a troca de alvos medial/lateral.
+
+Resultados locais novos:
+
+- A auditoria `scripts/audit_external_labels.py` confirmou que o teacher
+  `targetwise_teacher.csv` continua melhor nos 58: macro-AUC `0,899120`, contra
+  `0,896616` do consenso simples de ranking, `0,892707` de Steven v4 e `0,870040`
+  de Pilkwang. Não substituir o teacher por consenso sem uma mudança de
+  confiança/coverage que seja validada separadamente.
+- `scripts/audit_report_hash_groups.py` encontrou `4.407` linhas, `4.257`
+  laudos normalizados únicos, `54` grupos duplicados, `204` linhas dentro de
+  grupos duplicados (`150` cópias além da primeira), maior grupo com `37`
+  estudos e somente `1/58` gold em grupo duplicado. O agrupamento é obrigatório
+  para medir labels fracos sem vazamento, mas não explica sozinho a diferença
+  para o leaderboard.
+- A nova sonda
+  `scripts/build_physical_crop_25d_features.py` gerou `174` séries (`58×3`),
+  arrays `3×336×336` e embeddings B0 em
+  `data/processed/dicom_embeddings_gold_physical_crop_130mm_336/`. Comparada
+  à representação header de 224 px nas mesmas `174` séries, marcou macro-AUC
+  médio `0,647449` contra `0,628697`, delta `+0,018752` em duas seeds. O
+  relatório está em `reports/gold_physical_crop_130mm_336_vs_header_20260820.json`.
+  É evidência de que crop físico merece entrar na próxima variante; não é
+  score Kaggle e não contradiz o resize simples 224→336, que caiu `-0,020469`
+  no gate anterior.
+
+Decisão operacional:
+
+1. Aguardar o H-28 e conservar H-27 (`55632699`, `0,727`) como fallback.
+2. Se o crop físico continuar positivo no primeiro worker, preparar H-29 em
+   duas etapas: (a) H-27 + crop físico para atribuir o ganho de preprocessing;
+   (b) DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs
+   adjacentes e slots com fallback. Não repetir DINO congelado, já refutado no
+   gate local.
+3. Em paralelo, tornar `report_hash` parte dos folds e testar peso gold
+   `1/4/8`; não escolher o peso pelo leaderboard isolado.
+
 ### Próxima atualização
 
-Adicionar o resultado T4 de `E-009`, a decisão de licença do bundle DINOv2 e a primeira comparação DINOv2 vs EfficientNet-B0 em DICOM real.
+Adicionar o resultado T4 de H-28 e, se o worker for concluído, a primeira
+variante H-29 com crop físico. O DINOv2 só será promovido depois de fine-tuning
+last-4/last-6; a variante congelada continua descartada.
