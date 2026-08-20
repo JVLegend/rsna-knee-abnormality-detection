@@ -14,6 +14,7 @@ import argparse
 from collections import defaultdict
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 import pandas as pd
@@ -23,10 +24,12 @@ from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from scripts.audit_report_hash_groups import report_hash
 
 
-ROOT = Path(__file__).resolve().parents[1]
 KEY_COLUMN = "StudyInstanceUID"
 TARGETS = (
     "ACL",
