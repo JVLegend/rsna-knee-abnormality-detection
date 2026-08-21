@@ -84,6 +84,7 @@ def evaluate(
     seeds: list[int],
     folds: int,
     c: float,
+    synovitis_weight: float | None = None,
 ) -> dict[str, object]:
     weak_ids, weak_matrix = _load_bundle(weak_index)
     gold_ids, gold_matrix = _load_bundle(gold_index)
@@ -116,6 +117,7 @@ def evaluate(
         "blocked_weak_rows_total": 0,
         "method": "study-level mean embedding + StandardScaler/LogisticRegression",
         "warning": "Proxy local; não é score Kaggle e o lote weak foi selecionado por labels públicos.",
+        "synovitis_weight": synovitis_weight,
         "weights": {},
     }
 
@@ -137,8 +139,11 @@ def evaluate(
                     results["blocked_weak_rows_total"] += int((~keep_weak).sum())
                     x_train = np.vstack((weak_matrix[keep_weak], gold_matrix[train_rows]))
                     y_train = np.concatenate((y_weak[keep_weak], y_gold[train_rows].astype(np.int8)))
+                    target_gold_weight = (
+                        synovitis_weight if target == "Synovitis" and synovitis_weight is not None else gold_weight
+                    )
                     sample_weights = np.concatenate(
-                        (np.ones(int(keep_weak.sum()), dtype=np.float64), np.full(len(train_rows), gold_weight))
+                        (np.ones(int(keep_weak.sum()), dtype=np.float64), np.full(len(train_rows), target_gold_weight))
                     )
                     model = _fit_model(c, x_train, y_train, sample_weights)
                     predictions[valid_rows, target_index] = model.predict_proba(gold_matrix[valid_rows])[:, 1]
@@ -167,11 +172,24 @@ def main() -> None:
     parser.add_argument("--seeds", default="42,2026")
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--c", type=float, default=0.5)
+    parser.add_argument(
+        "--synovitis-weight",
+        type=float,
+        default=None,
+        help="Peso gold alternativo somente para Synovitis; por padrão usa --weights.",
+    )
     parser.add_argument("--output", type=Path, default=Path("reports/gold_weighted_cv.json"))
     args = parser.parse_args()
     weights = [float(value.strip()) for value in args.weights.split(",") if value.strip()]
     seeds = [int(value.strip()) for value in args.seeds.split(",") if value.strip()]
-    if not weights or not seeds or any(value <= 0 for value in weights) or args.folds < 2 or args.c <= 0:
+    if (
+        not weights
+        or not seeds
+        or any(value <= 0 for value in weights)
+        or (args.synovitis_weight is not None and args.synovitis_weight <= 0)
+        or args.folds < 2
+        or args.c <= 0
+    ):
         raise ValueError("Pesos/seeds/folds/C inválidos.")
     result = evaluate(
         _resolve(args.weak_index),
@@ -182,6 +200,7 @@ def main() -> None:
         seeds,
         args.folds,
         args.c,
+        args.synovitis_weight,
     )
     output = _resolve(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)

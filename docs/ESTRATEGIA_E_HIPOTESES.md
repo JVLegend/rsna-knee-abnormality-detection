@@ -222,7 +222,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-01 | Consenso de labels públicos é melhor que o léxico local bruto | Avaliar léxico, Pilkwang, Steven v2/v4 e consenso em CV agrupado nos 58 | Macro OOF subir pelo menos `0,02` ou ganho consistente em ≥8/12 alvos | apoiada nos 58; falta testar visual |
 | H-02 | DINOv2-S/14 + cabeça MIL supera EfficientNet-B0 congelada | Mesmos slots, slices, labels, folds e seed; mudar só encoder/head | Macro OOF `+0,02` sem queda grave nos alvos raros | nova |
 | H-03 | Descongelar os últimos 4–6 blocos melhora sobre DINOv2 congelado | Comparar frozen, last-4 e last-6 com LR pequeno | Ganho OOF e estabilidade entre folds; não aceitar apenas um fold | nova |
-| H-04 | 336 px com crop físico preserva melhor menisco e lesões focais que 224 | Probe 224/336, mesmo número de cortes e mesmo backbone | Ganho em meniscos/fratura e macro OOF; medir custo por estudo | nova |
+| H-04 | 336 px com crop físico preserva melhor menisco e lesões focais que 224 | Probe 224/336, mesmo número de cortes e mesmo backbone | Ganho em meniscos/fratura e macro OOF; medir custo por estudo | parcial — positivo no gold pareado, mas sem ganho no ensemble weak→gold |
 | H-05 | Ordem física supera ordem por filename | Auditoria de correlação/visualização + treino controlado | Menos inversões e ganho OOF; se não houver ganho, manter por correção física | parcial — `InstanceNumber` superou filename, mas `IPP/IOP` caiu `0,005838` contra o header no gold 3-view |
 | H-06 | Pooling por alvo supera média global | Mean vs attention vs max/top-k nos mesmos embeddings | Ganho em Fracture/Contusion/Baker sem prejudicar OA/derrame | nova |
 | H-07 | Seis slots clínicos + presence mask superam apenas três planos | Treinar com slots fixos, faltantes mascarados e diagnóstico de cobertura | Macro OOF subir e nenhuma aquisição dominar artificialmente | apoiada provisoriamente — três planos completos favorecem ensemble por plano; seis slots ainda não testados |
@@ -239,9 +239,10 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-18 | Um modelo especialista por família de alvo pode superar um único head | Ramo ligamentos/meniscos, OA, fluido e focal; ensemble por rank | Ganho em pelo menos duas famílias sem overfit dos 58 | nova |
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | em teste — worker T4 publicado, aguardando score |
-| H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | prioritária — crop apoiado no gate local; DINO last-6 ainda não implementado |
-| H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; falta integrar ao kernel |
+| H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | parcial — B0 crop-only ficou abaixo do header no ensemble; manter apenas como entrada para DINO ajustado |
+| H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
+| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | apoiada provisoriamente — `0,661929` vs `0,660684` no header; crop físico não recuperou o gap (`0,642712`) |
 
 ## Plano de execução por fases
 
@@ -770,18 +771,31 @@ Resultados locais novos:
   É evidência de que crop físico merece entrar na próxima variante; não é
   score Kaggle e não contradiz o resize simples 224→336, que caiu `-0,020469`
   no gate anterior.
+- O lote weak de `700` estudos foi então processado com a mesma geometria no HD
+  externo: `2.100` séries, arrays `3×336×336` e embeddings B0 `2.100×1.280`.
+  No holdout completo, o crop marcou `0,627878` no `mean_all` e `0,622298` no
+  ensemble por plano com `C=0,5`; com `C=0,1`, marcou `0,633069` e `0,633436`,
+  contra `0,627124` e `0,646388` do header target-wise. Portanto o crop B0
+  isolado não deve substituir H-27: há sinal no pooling global, mas a perda no
+  ensemble por plano é maior. Os relatórios estão em
+  `reports/plane_presence_holdout_20260820_physical_crop_130mm_336.json` e
+  `reports/plane_presence_holdout_20260820_physical_crop_130mm_336_c01.json`.
+- A combinação crop + peso gold também não fechou o gap: o proxy com peso 8
+  marcou `0,642761` (`0,642712` com Synovitis em peso 1), contra `0,660684`
+  (`0,661929` com a exceção Synovitis) no header. A conclusão operacional é
+  separar o ganho de preprocessing do ganho de supervisão: H-32 vale integrar
+  na próxima cabeça, enquanto H-29 só volta como experimento DINOv2 ajustado,
+  não como troca B0 direta.
 
 Decisão operacional:
 
 1. Aguardar o H-28 e conservar H-27 (`55632699`, `0,727`) como fallback.
-2. Se o crop físico continuar positivo no primeiro worker, preparar H-29 em
-   duas etapas: (a) H-27 + crop físico para atribuir o ganho de preprocessing;
-   (b) DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs
-   adjacentes e slots com fallback. Não repetir DINO congelado, já refutado no
-   gate local.
-3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`,
-   comparando contra peso `1` no mesmo kernel; não escolher o peso pelo
-   leaderboard isolado.
+2. Não enviar B0 com crop físico sozinho. Preparar H-29 somente como encoder
+   DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs adjacentes
+   e slots com fallback; não repetir DINO congelado, já refutado no gate local.
+3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`
+   nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
+   o peso pelo leaderboard isolado.
 
 ### Próxima atualização
 
