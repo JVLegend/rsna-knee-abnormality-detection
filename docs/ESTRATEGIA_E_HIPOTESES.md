@@ -44,7 +44,7 @@ Aprendizado:
 - Melhor submissão confirmada até este registro: H-27, ref `55632699`, public score `0,727`; ganho de `+0,009` sobre H-23 (`55582655`, `0,718`) e `+0,015` sobre H-26/H-22 (`0,712`). H-27 é a nova referência; manter H-23 como fallback reproduzível.
 - H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
 - H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` fechou `COMPLETE` com public score `0,727`, novo melhor resultado.
-- O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). H-28 foi publicada no Kaggle em T4 e está aguardando `COMPLETE`/score; H-27 (`0,727`) continua como fallback.
+- O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). H-28 concluiu no T4 com CSV íntegro; a submissão Notebook-only `55665843` está `PENDING`, sem score ainda. H-27 (`0,727`) continua como fallback.
 - DINOv2-S oficial MetaResearch foi baixado para auditoria no HD com licença Apache 2.0. No holdout dos 58, embedding médio marcou `0,568709` e MIL top-k `0,584075`, abaixo do B0 congelado (`0,636834`); não consumir T4 com a versão congelada.
 - Auditoria H-24: o mapa target-wise atual marcou macro-AUC `0,899120` nos 58 estudos; o melhor blend simples testado (`Steven v4` mascarado + `Pilkwang` + `Lixin`) marcou `0,895808` (`-0,003311`). O relatório reprodutível está em `reports/teacher_blend_audit_20260816.json` e o código em `scripts/audit_teacher_blends.py`.
 - Submissões anteriores registradas: aproximadamente `0,505`, `0,607`, `0,582`, `0,605` e `0,635`; a v10 melhorou `+0,020` sobre a referência multi-view.
@@ -238,7 +238,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-17 | Pretraining/crop com OAI ou KneeMRI pode ajudar, mas não deve misturar labels diretamente | Primeiro probe de transferência e verificação de licença/regras | Só avançar com autorização documental e ganho em CV | bloqueada |
 | H-18 | Um modelo especialista por família de alvo pode superar um único head | Ramo ligamentos/meniscos, OA, fluido e focal; ensemble por rank | Ganho em pelo menos duas famílias sem overfit dos 58 | nova |
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
-| H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | em teste — worker T4 `RUNNING`, sem logs/artefato; não há score ainda |
+| H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | execução concluída — `4.410/4.410` estudos, CSV íntegro; submissão `55665843` `PENDING`, sem score ainda |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | parcial — B0 crop-only ficou abaixo do header no ensemble; manter apenas como entrada para DINO ajustado |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
@@ -647,9 +647,12 @@ avançar com um teste Kaggle controlado. A variante está em
 `kaggle/rsna_knee_v4_slot_target_kernel/`, com `view_pooling=slot_target`:
 seleciona uma série por plano × categoria, agrega apenas slots presentes e
 usa a cabeça por plano como fallback para slots sem duas classes no treino.
-`py_compile`, seleção sintética e smoke da cabeça/fallback passaram. Próximo
-gate: publicar no T4, validar `COMPLETE`/CSV e só então registrar uma nova
-submissão Notebook-only.
+`py_compile`, seleção sintética e smoke da cabeça/fallback passaram. O T4
+concluiu `4.410/4.410` estudos, `128.082` views e `79.326` views no
+fine-tuning, com loss `0,626189` e elapsed de `20.622,4 s`. O CSV de 3 linhas
+e 13 colunas passou o contrato, SHA-256
+`4677293025197e7804e101fa5bb735c0d962e20eeae2ea3b02c31bb32b43d8fb`; a
+submissão Notebook-only `55665843` está `PENDING`, aguardando score.
 
 ### Probe de representação por plano — 18/08/2026
 
@@ -778,9 +781,8 @@ Resultados locais novos:
   oficiais. `py_compile`, metadata, `--help` e smoke sintético passaram; ainda
   não foi publicado por causa da cota GPU.
 - O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
-  30.00 hours reached`. H-28 continua reportado como `RUNNING`, mas a API
-  devolve logs vazios e nenhum arquivo de saída; não há submissão nova para
-  validar.
+  30.00 hours reached`. H-28 agora está `COMPLETE`, com CSV íntegro e
+  submissão `55665843` `PENDING`; não promover antes do score público.
 - A auditoria de headers DICOM do gold encontrou `Laterality=R` em `48/174`
   séries, `L` em `30/174`, string vazia em `54/174` e tag ausente em
   `42/174`; `ImageLaterality` esteve ausente em todas. Não há base confiável
@@ -813,21 +815,23 @@ Resultados locais novos:
 
 Decisão operacional:
 
-1. Aguardar o H-28 e conservar H-27 (`55632699`, `0,727`) como fallback.
+1. Aguardar o score do H-28 e conservar H-27 (`55632699`, `0,727`) como
+   fallback.
 2. Não enviar B0 com crop físico sozinho. Preparar H-29 somente como encoder
    DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs adjacentes
    e slots com fallback; não repetir DINO congelado, já refutado no gate local.
 3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`
    nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
    o peso pelo leaderboard isolado.
-4. Após o retorno do H-28, publicar H-32 somente como variante controlada do
-   slot-target; comparar CSV e score contra H-27 e H-28 antes de promover.
+4. Após o score do H-28 e o reset da cota, publicar H-32 somente como variante
+   controlada do slot-target; comparar CSV e score contra H-27 e H-28 antes de
+   promover.
 5. Assim que a cota resetar, priorizar H-33 como alteração isolada sobre H-27:
    texto weak com confiança `>=0,85`, ensemble visual por plano e alpha fixo
    `0,1`; não combinar H-32, crop ou DINO na mesma execução.
 
 ### Próxima atualização
 
-Adicionar o resultado T4 de H-28. Após o reset da cota, executar primeiro H-33
+Adicionar o score público de H-28. Após o reset da cota, executar primeiro H-33
 como teste isolado; H-32 e H-29 só entram depois de CSV/score comparáveis. A
 variante DINOv2 congelada e B0 crop-only continuam descartadas.
