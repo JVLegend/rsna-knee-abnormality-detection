@@ -783,6 +783,10 @@ Resultados locais novos:
 - O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
   30.00 hours reached`. H-28 agora está `COMPLETE`, com CSV íntegro e
   submissão `55665843` `PENDING`; não promover antes do score público.
+- A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
+  médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
+  As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
+  não indica erro de escala, mas também não prediz o leaderboard.
 - A auditoria de headers DICOM do gold encontrou `Laterality=R` em `48/174`
   séries, `L` em `30/174`, string vazia em `54/174` e tag ausente em
   `42/174`; `ImageLaterality` esteve ausente em todas. Não há base confiável
