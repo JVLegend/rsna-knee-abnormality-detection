@@ -242,7 +242,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | parcial — B0 crop-only ficou abaixo do header no ensemble; manter apenas como entrada para DINO ajustado |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
-| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | apoiada provisoriamente — `0,661929` vs `0,660684` no header; crop físico não recuperou o gap (`0,642712`) |
+| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | pronta para worker — `0,661929` vs `0,660684` no header; variante standalone preparada, crop físico não recuperou o gap (`0,642712`) |
 
 ## Plano de execução por fases
 
@@ -757,6 +757,12 @@ Resultados locais novos:
   peso `1`, melhorando `11/12` alvos; Synovitis foi a exceção (`-0,0149`). É
   um proxy de estudo, não prova de leaderboard; integrar apenas como ablação
   controlada e manter Synovitis com peso/teacher específico.
+- A extensão target-wise confirmou `0,661929` ao manter peso `8` nos 11 alvos e
+  peso `1` em Synovitis, contra `0,660684` com peso `8` uniforme, em duas seeds.
+  A variante standalone
+  `kaggle/rsna_knee_v4_slot_gold_weight_kernel/` aplica essa política no
+  fine-tuning e nas cabeças visuais, preservando H-28; `py_compile`, metadata e
+  smoke dos pesos passaram. Ainda não há worker nem score Kaggle dessa variante.
 - A auditoria de headers DICOM do gold encontrou `Laterality=R` em `48/174`
   séries, `L` em `30/174`, string vazia em `54/174` e tag ausente em
   `42/174`; `ImageLaterality` esteve ausente em todas. Não há base confiável
@@ -796,9 +802,12 @@ Decisão operacional:
 3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`
    nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
    o peso pelo leaderboard isolado.
+4. Após o retorno do H-28, publicar H-32 somente como variante controlada do
+   slot-target; comparar CSV e score contra H-27 e H-28 antes de promover.
 
 ### Próxima atualização
 
-Adicionar o resultado T4 de H-28 e, se o worker for concluído, a primeira
-variante H-29 com crop físico. O DINOv2 só será promovido depois de fine-tuning
-last-4/last-6; a variante congelada continua descartada.
+Adicionar o resultado T4 de H-28 e, se o worker for concluído, publicar H-32
+como comparação controlada. H-29 só volta com DINOv2 ajustado depois de
+fine-tuning last-4/last-6; a variante congelada e B0 crop-only continuam
+descartadas.
