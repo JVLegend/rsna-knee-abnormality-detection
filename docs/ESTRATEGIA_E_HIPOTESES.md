@@ -243,7 +243,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | pronta localmente — `0,661929` vs `0,660684` no header; push rejeitado pela cota semanal GPU de 30 h |
-| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727` após o reset; não aceitar seleção pelo gold isolado | promissora — `0,742925` vs `0,740510` texto weak e `0,737327` com pesos targetwise H-27; ainda sem kernel/leaderboard |
+| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727` após o reset; não aceitar seleção pelo gold isolado | promissora — `0,742925` vs `0,740510` texto weak e `0,737327` com pesos targetwise H-27; kernel standalone preparado, ainda sem worker/leaderboard |
 
 ## Plano de execução por fases
 
@@ -771,6 +771,12 @@ Resultados locais novos:
   `0,742925`, enquanto o peso `0,4`/targetwise da H-27 marcou `0,737327` no
   mesmo gate. É evidência local de direção, não score Kaggle, e precisa de uma
   execução isolada após o reset da cota.
+- O worker H-33 foi preparado em
+  `kaggle/rsna_knee_v4_weak_text_plane_kernel/`: mantém a cabeça por plano da
+  H-27, fixa `alpha=0,1` para o ramo visual e adiciona ao ramo textual somente
+  pseudo-rótulos target-wise com confiança `>=0,85`, preservando os gold
+  oficiais. `py_compile`, metadata, `--help` e smoke sintético passaram; ainda
+  não foi publicado por causa da cota GPU.
 - O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
   30.00 hours reached`. H-28 continua reportado como `RUNNING`, mas a API
   devolve logs vazios e nenhum arquivo de saída; não há submissão nova para
@@ -817,8 +823,8 @@ Decisão operacional:
 4. Após o retorno do H-28, publicar H-32 somente como variante controlada do
    slot-target; comparar CSV e score contra H-27 e H-28 antes de promover.
 5. Assim que a cota resetar, priorizar H-33 como alteração isolada sobre H-27:
-   texto weak, ensemble visual por plano e alpha fixo `0,1`; não combinar H-32,
-   crop ou DINO na mesma execução.
+   texto weak com confiança `>=0,85`, ensemble visual por plano e alpha fixo
+   `0,1`; não combinar H-32, crop ou DINO na mesma execução.
 
 ### Próxima atualização
 
