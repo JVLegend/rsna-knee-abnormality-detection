@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from pathlib import Path
+from types import SimpleNamespace
 
-from scripts.build_dicom_25d_features import normalize_slice, sample_indices
+from scripts.build_dicom_25d_features import _physical_sort_key, normalize_slice, sample_indices
 
 
 def test_sample_indices_are_deterministic_and_repeat_for_short_series() -> None:
@@ -30,3 +32,16 @@ def test_sample_indices_reject_invalid_inputs() -> None:
         sample_indices(0)
     with pytest.raises(ValueError):
         sample_indices(3, (-0.1, 0.5, 1.0))
+
+
+def test_physical_sort_key_uses_ipp_projection_over_instance_number() -> None:
+    orientation = [1, 0, 0, 0, 1, 0]
+    entries = [
+        (Path("slice_2.dcm"), SimpleNamespace(ImagePositionPatient=[0, 0, 2], ImageOrientationPatient=orientation, InstanceNumber=1)),
+        (Path("slice_0.dcm"), SimpleNamespace(ImagePositionPatient=[0, 0, 0], ImageOrientationPatient=orientation, InstanceNumber=3)),
+        (Path("slice_1.dcm"), SimpleNamespace(ImagePositionPatient=[0, 0, 1], ImageOrientationPatient=orientation, InstanceNumber=2)),
+    ]
+
+    ordered = sorted(entries, key=_physical_sort_key)
+
+    assert [path.name for path, _ in ordered] == ["slice_0.dcm", "slice_1.dcm", "slice_2.dcm"]
