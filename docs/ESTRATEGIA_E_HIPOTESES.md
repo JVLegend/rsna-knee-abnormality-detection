@@ -243,7 +243,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | pronta localmente — `0,661929` vs `0,660684` no header; push rejeitado pela cota semanal GPU de 30 h |
-| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | promissora — `0,742925` vs `0,740510` texto weak e `0,737327` com pesos targetwise H-27; v1 falhou por P100 incompatível, v2 T4 `RUNNING`, score pendente |
+| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | promissora — gate local `0,742925`; v1 falhou por P100 incompatível, v2 T4 `COMPLETE`, CSV íntegro e submissão Notebook-only `PENDING`, score pendente |
 
 ## Plano de execução por fases
 
@@ -783,9 +783,13 @@ Resultados locais novos:
   oficiais. `py_compile`, metadata, `--help` e smoke sintético passaram. Após o
   reset, a versão 1 foi aceita mas recebeu P100 (`sm_60`) e falhou no primeiro
   tensor CUDA em `568 s`, pois o PyTorch do worker exige `sm_70+`. A mesma
-  versão foi reenviada como v2 com `--accelerator NvidiaTeslaT4` e está
-  `RUNNING` em `jvlegend/rsna-knee-v4-weak-text-plane`; ainda não há score nem
-  CSV final.
+  versão foi reenviada como v2 com `--accelerator NvidiaTeslaT4` e chegou a
+  `COMPLETE` em `13.744,4 s`: `4.410/4.410` estudos, `79.380` views,
+  `79.326` views no fine-tuning e loss `0,624871`. O CSV 3×13 passou os gates
+  locais e tem SHA-256
+  `d660cdc779eb38354236d0852032a114f0c0ac267ea6bb2c8821d6e264a29886`.
+  A submissão Notebook-only foi criada via kernel v2 e está `PENDING`; ainda
+  não há score Kaggle.
 - O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
   30.00 hours reached`. H-28 agora está `COMPLETE` com public score `0,723`,
   abaixo de H-27; não promover nem repetir slots sem novo mecanismo.
@@ -833,16 +837,16 @@ Decisão operacional:
 3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`
    nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
    o peso pelo leaderboard isolado.
-4. H-33 foi publicado como alteração isolada sobre H-27: texto weak com
+4. H-33 foi executado como alteração isolada sobre H-27: texto weak com
    confiança `>=0,85`, ensemble visual por plano e alpha fixo `0,1`; não
-   combinar H-32, crop ou DINO na mesma execução. Aguardar `COMPLETE` antes de
-   baixar ou submeter o CSV.
+   combinar H-32, crop ou DINO na mesma execução. A submissão está `PENDING`;
+   aguardar o score antes de promover ou descartar.
 5. Manter H-32 como ablação posterior: o H-28 perdeu `0,004` no leaderboard e
    o ganho local do peso gold não justifica consumir a primeira execução após o
    reset antes de medir H-33.
 
 ### Próxima atualização
 
-Após H-33 chegar a `COMPLETE`, validar o CSV e criar uma submissão Notebook-only
-comparável a H-27; H-32 e H-29 só entram depois desse score. A variante DINOv2
-congelada e B0 crop-only continuam descartadas.
+Após o score de H-33, comparar diretamente com H-27 (`0,727`) e decidir a
+promoção. H-32 e H-29 só entram depois desse gate; a variante DINOv2 congelada
+e B0 crop-only continuam descartadas.
