@@ -242,7 +242,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | parcial — B0 crop-only ficou abaixo do header no ensemble; manter apenas como entrada para DINO ajustado |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
-| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | pronta localmente — `0,661929` vs `0,660684` no header; push rejeitado pela cota semanal GPU de 30 h |
+| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `RUNNING` — gate local `0,661929` vs `0,660684`; score Kaggle pendente |
 | H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | não promovida — submissão `55694502` marcou `0,726` (`-0,001` vs H-27; `+0,003` vs H-28); o gate local `0,742925` não transferiu |
 
 ## Plano de execução por fases
@@ -768,7 +768,9 @@ Resultados locais novos:
   A variante standalone
   `kaggle/rsna_knee_v4_slot_gold_weight_kernel/` aplica essa política no
   fine-tuning e nas cabeças visuais, preservando H-28; `py_compile`, metadata e
-  smoke dos pesos passaram. Ainda não há worker nem score Kaggle dessa variante.
+  smoke dos pesos passaram. Após o score H-33, a versão 1 foi publicada
+  explicitamente com T4 e está `RUNNING` em
+  `jvlegend/rsna-knee-v4-slot-gold-weight`; ainda não há CSV nem score Kaggle.
 - A auditoria `scripts/evaluate_weak_gold_text_visual_blend.py` treinou o ramo
   textual nos 700 weak e bloqueou o único estudo com `report_hash` compartilhado
   com o gold, restando `699` estudos. O texto weak marcou `0,740510`; o ensemble
@@ -791,9 +793,9 @@ Resultados locais novos:
   A submissão Notebook-only via kernel v2 foi `55694502`, fechou `COMPLETE` com
   public score `0,726` e ficou `0,001` abaixo de H-27. O ganho local não
   transferiu para o leaderboard; H-33 não será promovida.
-- O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
-  30.00 hours reached`. H-28 agora está `COMPLETE` com public score `0,723`,
-  abaixo de H-27; não promover nem repetir slots sem novo mecanismo.
+- H-28 está `COMPLETE` com public score `0,723`, abaixo de H-27. H-32 agora
+  está em execução como ablação de supervisão sobre essa base; não misturar
+  slots, crop, DINO ou H-33 nessa rodada.
 - A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
   médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
   As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
