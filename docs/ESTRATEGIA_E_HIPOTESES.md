@@ -243,7 +243,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | pronta localmente — `0,661929` vs `0,660684` no header; push rejeitado pela cota semanal GPU de 30 h |
-| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | promissora — gate local `0,742925`; v1 falhou por P100 incompatível, v2 T4 `COMPLETE`, CSV íntegro e submissão Notebook-only `PENDING`, score pendente |
+| H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | não promovida — submissão `55694502` marcou `0,726` (`-0,001` vs H-27; `+0,003` vs H-28); o gate local `0,742925` não transferiu |
 
 ## Plano de execução por fases
 
@@ -788,8 +788,9 @@ Resultados locais novos:
   `79.326` views no fine-tuning e loss `0,624871`. O CSV 3×13 passou os gates
   locais e tem SHA-256
   `d660cdc779eb38354236d0852032a114f0c0ac267ea6bb2c8821d6e264a29886`.
-  A submissão Notebook-only foi criada via kernel v2 e está `PENDING`; ainda
-  não há score Kaggle.
+  A submissão Notebook-only via kernel v2 foi `55694502`, fechou `COMPLETE` com
+  public score `0,726` e ficou `0,001` abaixo de H-27. O ganho local não
+  transferiu para o leaderboard; H-33 não será promovida.
 - O push da H-32 foi recusado pelo Kaggle com `Maximum weekly GPU quota of
   30.00 hours reached`. H-28 agora está `COMPLETE` com public score `0,723`,
   abaixo de H-27; não promover nem repetir slots sem novo mecanismo.
@@ -838,15 +839,16 @@ Decisão operacional:
    nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
    o peso pelo leaderboard isolado.
 4. H-33 foi executado como alteração isolada sobre H-27: texto weak com
-   confiança `>=0,85`, ensemble visual por plano e alpha fixo `0,1`; não
-   combinar H-32, crop ou DINO na mesma execução. A submissão está `PENDING`;
-   aguardar o score antes de promover ou descartar.
+   confiança `>=0,85`, ensemble visual por plano e alpha fixo `0,1`. A
+   submissão `55694502` marcou `0,726`, então não promover; não combinar H-32,
+   crop ou DINO retroativamente.
 5. Manter H-32 como ablação posterior: o H-28 perdeu `0,004` no leaderboard e
    o ganho local do peso gold não justifica consumir a primeira execução após o
    reset antes de medir H-33.
 
 ### Próxima atualização
 
-Após o score de H-33, comparar diretamente com H-27 (`0,727`) e decidir a
-promoção. H-32 e H-29 só entram depois desse gate; a variante DINOv2 congelada
-e B0 crop-only continuam descartadas.
+H-27 (`55632699`, `0,727`) continua como referência. H-33 não será promovida;
+H-32 e H-29 só entram como ablações futuras e isoladas, depois de escolher a
+próxima hipótese. A variante DINOv2 congelada e B0 crop-only continuam
+descartadas.
