@@ -1,0 +1,22 @@
+{
+  "id": "jvlegend/rsna-knee-h29-dinov2-adjusted",
+  "title": "RSNA Knee H-29 DINOv2 Adjusted Physical Crop",
+  "code_file": "rsna_knee_h29_dinov2_adjusted.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [
+    "stevenleehans/rsna-knee-llm-report-labels",
+    "pilkwang/rsna-knee-llm-labels"
+  ],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "kernel_sources": [],
+  "model_sources": [
+    "metaresearch/dinov2/pytorch/small/1"
+  ]
+}
