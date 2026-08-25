@@ -239,10 +239,10 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-18 | Um modelo especialista por família de alvo pode superar um único head | Ramo ligamentos/meniscos, OA, fluido e focal; ensemble por rank | Ganho em pelo menos duas famílias sem overfit dos 58 | nova |
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | não promovida — submissão `55665843` marcou `0,723` (`-0,004` vs H-27; `+0,005` vs H-23) |
-| H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Primeiro repetir H-27 com crop físico; depois trocar somente o encoder para DINOv2 last-6, com 3 slabs adjacentes e slots observados | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | parcial — B0 crop-only ficou abaixo do header no ensemble; manter apenas como entrada para DINO ajustado |
+| H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Worker standalone `kaggle/rsna_knee_h29_dinov2_adjusted_kernel/`: 3 slabs adjacentes por plano, DINOv2-S oficial Apache 2.0, last-6, LR `2e-6`, sem pesos gold da H-32 | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | worker publicado para T4; aguardando `COMPLETE` e gates de CSV |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
-| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `COMPLETE`; submissão `55739684` `PENDING`; gate local `0,661929` vs `0,660684`, score Kaggle pendente |
+| H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `COMPLETE`; submissão `55739684` marcou público `0,720`; `-0,007` vs H-27 (`0,727`); gate local `0,661929` não transferiu; não promover |
 | H-33 | Treinar o ramo textual também com os laudos weak melhora a fusão multimodal | H-27 sem slots novos: teacher target-wise em 699 estudos sem hash compartilhado com o gold, texto weak + ensemble visual por plano, `alpha=0,1` | Ganho local independente e score acima de `0,727`; não aceitar seleção pelo gold isolado | não promovida — submissão `55694502` marcou `0,726` (`-0,001` vs H-27; `+0,003` vs H-28); o gate local `0,742925` não transferiu |
 
 ## Plano de execução por fases
@@ -772,7 +772,7 @@ Resultados locais novos:
   explicitamente com T4 e concluiu `COMPLETE` em `21.903,9 s`, com `128.082`
   views e `79.326` views no fine-tuning. O CSV 3×13 passou os gates e tem SHA-
   256 `22175985e76bbae6ee4dc22ef75b72334820c1abaadab933540fdbcd118372a6`.
-  A submissão Notebook-only `55739684` está `PENDING`; score Kaggle pendente.
+  A submissão Notebook-only `55739684` fechou `COMPLETE` com public score `0,720`, abaixo de H-27 (`0,727`) e H-28 (`0,723`); a ablação não será promovida.
 - A auditoria `scripts/evaluate_weak_gold_text_visual_blend.py` treinou o ramo
   textual nos 700 weak e bloqueou o único estudo com `report_hash` compartilhado
   com o gold, restando `699` estudos. O texto weak marcou `0,740510`; o ensemble
@@ -796,8 +796,16 @@ Resultados locais novos:
   public score `0,726` e ficou `0,001` abaixo de H-27. O ganho local não
   transferiu para o leaderboard; H-33 não será promovida.
 - H-28 está `COMPLETE` com public score `0,723`, abaixo de H-27. H-32 concluiu
-  e está `PENDING` no leaderboard como ablação de supervisão sobre essa base;
-  não misturar slots, crop, DINO ou H-33 nessa rodada.
+  com public score `0,720`, `0,007` abaixo de H-27 e `0,003` abaixo de H-28;
+  o ganho local de peso gold não transferiu. Não misturar slots, crop, DINO ou
+  H-33 retroativamente.
+- H-29 foi transformada em worker standalone no commit `052e944`: crop físico
+  central de `130 mm` em `336 px`, três slabs adjacentes por plano, DINOv2-S
+  oficial MetaResearch com last-6 e LR `2e-6`, mantendo teacher, cabeça por
+  plano e blend da H-27. Os gates locais (`py_compile`, JSON, `--help`, crop,
+  embedding `(1,384)` e fine-tuning sintético) passaram. O kernel privado
+  [`jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop`](https://www.kaggle.com/code/jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop)
+  está `RUNNING` no T4; ainda não há CSV nem submissão.
 - A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
   médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
   As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
@@ -846,13 +854,15 @@ Decisão operacional:
    confiança `>=0,85`, ensemble visual por plano e alpha fixo `0,1`. A
    submissão `55694502` marcou `0,726`, então não promover; não combinar H-32,
    crop ou DINO retroativamente.
-5. Manter H-32 como ablação posterior: o H-28 perdeu `0,004` no leaderboard e
-   o ganho local do peso gold não justifica consumir a primeira execução após o
-   reset antes de medir H-33.
+5. Encerrar H-32 como não promovida: o score público `0,720` refutou a
+   transferência do ganho local. Qualquer próxima execução deve mudar uma
+   família por vez e ter gate local reproduzível antes do upload.
+6. Deixar H-29 terminar no T4. Só criar a submissão se o worker registrar
+   `COMPLETE`, todas as séries/views esperadas, embedding finito e CSV 3×13
+   validado; em caso de erro, corrigir o worker sem consumir leaderboard.
 
 ### Próxima atualização
 
-H-27 (`55632699`, `0,727`) continua como referência. H-33 não será promovida;
-H-32 e H-29 só entram como ablações futuras e isoladas, depois de escolher a
-próxima hipótese. A variante DINOv2 congelada e B0 crop-only continuam
-descartadas.
+H-27 (`55632699`, `0,727`) continua como referência. H-33 e H-32 não serão
+promovidas. H-29 está em execução controlada no T4; a variante congelada e B0
+crop-only continuam descartadas.
