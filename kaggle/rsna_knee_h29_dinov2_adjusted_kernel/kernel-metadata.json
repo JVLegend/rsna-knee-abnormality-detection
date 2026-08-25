@@ -1,5 +1,5 @@
 {
-  "id": "jvlegend/rsna-knee-h29-dinov2-adjusted",
+  "id": "jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop",
   "title": "RSNA Knee H-29 DINOv2 Adjusted Physical Crop",
   "code_file": "rsna_knee_h29_dinov2_adjusted.py",
   "language": "python",
