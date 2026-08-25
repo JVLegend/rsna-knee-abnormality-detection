@@ -807,7 +807,11 @@ Resultados locais novos:
   [`jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop`](https://www.kaggle.com/code/jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop)
   A v1 foi alocada em P100 `sm_60` e falhou antes do primeiro tensor por
   incompatibilidade do PyTorch; a v2 foi reenviada explicitamente com
-  `NvidiaTeslaT4` e está `RUNNING`. Ainda não há CSV nem submissão.
+  `NvidiaTeslaT4` e concluiu `COMPLETE` em `11.644,5 s`: `4.407/4.407`
+  estudos, `39.663` views de fine-tuning, `39.690` views totais, loss
+  `0,561918`, todos os `4.410` estudos válidos e CSV SHA-256
+  `03ea2b055958263b66bb4c81ac237ef6ebca230d69ee1d03acf0fe4e22b62efa`.
+  A submissão Notebook-only `55779936` está `PENDING`; ainda não há score.
 - A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
   médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
   As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
@@ -859,12 +863,11 @@ Decisão operacional:
 5. Encerrar H-32 como não promovida: o score público `0,720` refutou a
    transferência do ganho local. Qualquer próxima execução deve mudar uma
    família por vez e ter gate local reproduzível antes do upload.
-6. Deixar H-29 terminar no T4. Só criar a submissão se o worker registrar
-   `COMPLETE`, todas as séries/views esperadas, embedding finito e CSV 3×13
-   validado; em caso de erro, corrigir o worker sem consumir leaderboard.
+6. A submissão H-29 `55779936` está `PENDING`. Aguardar o score público e
+   promover somente se superar H-27 `0,727`; o ganho técnico/local não basta.
 
 ### Próxima atualização
 
 H-27 (`55632699`, `0,727`) continua como referência. H-33 e H-32 não serão
-promovidas. H-29 está em execução controlada no T4; a variante congelada e B0
-crop-only continuam descartadas.
+promovidas. H-29 concluiu o worker e aguarda score da submissão `55779936`; a
+variante congelada e B0 crop-only continuam descartadas.
