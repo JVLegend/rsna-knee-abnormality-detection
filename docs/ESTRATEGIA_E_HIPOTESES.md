@@ -799,13 +799,15 @@ Resultados locais novos:
   com public score `0,720`, `0,007` abaixo de H-27 e `0,003` abaixo de H-28;
   o ganho local de peso gold não transferiu. Não misturar slots, crop, DINO ou
   H-33 retroativamente.
-- H-29 foi transformada em worker standalone no commit `052e944`: crop físico
+- H-29 foi transformada em worker standalone no commit `ad871bc`: crop físico
   central de `130 mm` em `336 px`, três slabs adjacentes por plano, DINOv2-S
   oficial MetaResearch com last-6 e LR `2e-6`, mantendo teacher, cabeça por
   plano e blend da H-27. Os gates locais (`py_compile`, JSON, `--help`, crop,
   embedding `(1,384)` e fine-tuning sintético) passaram. O kernel privado
   [`jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop`](https://www.kaggle.com/code/jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop)
-  está `RUNNING` no T4; ainda não há CSV nem submissão.
+  A v1 foi alocada em P100 `sm_60` e falhou antes do primeiro tensor por
+  incompatibilidade do PyTorch; a v2 foi reenviada explicitamente com
+  `NvidiaTeslaT4` e está `RUNNING`. Ainda não há CSV nem submissão.
 - A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
   médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
   As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
