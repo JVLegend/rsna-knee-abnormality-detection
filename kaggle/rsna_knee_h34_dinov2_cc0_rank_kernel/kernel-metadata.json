@@ -1,0 +1,26 @@
+{
+  "id": "jvlegend/rsna-knee-h-34-dinov2-cc0-rank",
+  "title": "RSNA Knee H-34 DINOv2 CC0 Rank Ensemble",
+  "code_file": "rsna_knee_h34_dinov2_cc0_rank_ensemble.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "intermediateEnsembling"
+  ],
+  "dataset_sources": [
+    "pilkwang/rsna-knee-weights"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [
+    "metaresearch/dinov2/PyTorch/small/1"
+  ],
+  "machine_shape": "NvidiaTeslaT4"
+}
