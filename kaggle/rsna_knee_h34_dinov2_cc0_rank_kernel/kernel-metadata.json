@@ -1,6 +1,6 @@
 {
   "id": "jvlegend/rsna-knee-h-34-dinov2-cc0-rank",
-  "title": "RSNA Knee H-34 DINOv2 CC0 Rank Ensemble",
+  "title": "RSNA Knee H-34 DINOv2 CC0 Rank",
   "code_file": "rsna_knee_h34_dinov2_cc0_rank_ensemble.ipynb",
   "language": "python",
   "kernel_type": "notebook",
