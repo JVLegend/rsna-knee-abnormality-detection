@@ -241,6 +241,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | não promovida — submissão `55665843` marcou `0,723` (`-0,004` vs H-27; `+0,005` vs H-23) |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Worker standalone `kaggle/rsna_knee_h29_dinov2_adjusted_kernel/`: 3 slabs adjacentes por plano, DINOv2-S oficial Apache 2.0, last-6, LR `2e-6`, sem pesos gold da H-32 | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | promovida — submissão `55779936` marcou `0,759` (`+0,032` vs H-27); novo baseline |
 | H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | preparada; gates estáticos passaram, push bloqueado pela cota semanal de GPU `30,00 h` |
+| H-35 | Um rank stack conservador entre H-29, H-27 e H-33 melhora robustez sem nova GPU | Kernel CPU `kaggle/rsna_knee_h35_rank_stack_kernel/`, pesos fixos `0,80/0,15/0,05`, usando outputs de kernels-fonte privados | Executar sem GPU, montar H-29 e gerar CSV íntegro; só promover acima de `0,759` | bloqueada — o Kaggle aceitou o kernel CPU, mas não montou outputs de kernels privados; não criar dataset auxiliar com predições da competição |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `COMPLETE`; submissão `55739684` marcou público `0,720`; `-0,007` vs H-27 (`0,727`); gate local `0,661929` não transferiu; não promover |
@@ -828,6 +829,12 @@ Resultados locais novos:
   cobertura e finitude. A publicação foi recusada pelo Kaggle por
   `Maximum weekly GPU quota of 30.00 hours reached`; não há ainda kernel,
   CSV ou score H-34.
+- H-35 foi tentada como rank stack CPU-only para aproveitar H-29 sem nova GPU.
+  A v1 foi corrigida porque varria recursivamente os DICOMs; a v2 foi aceita,
+  mas falhou fechado com `H-29 output is not mounted`, pois outputs de kernels
+  privados não entram como `kernel_sources`. Não há CSV nem score H-35; não
+  vamos copiar predições de competição para um dataset auxiliar sem necessidade
+  e sem revisar as regras.
 - A auditoria não-promocional do CSV H-28 contra H-27 encontrou delta absoluto
   médio `0,015054`, máximo `0,060188` e valores em `[0,110157;0,579436]`.
   As correlações por alvo ficaram altas, exceto Effusion (`0,816703`); isso
@@ -884,10 +891,15 @@ Decisão operacional:
 7. Executar H-34 somente após o reset da cota GPU: pacote DINOv2 CC0,
    20 membros, rank/pooling focal. Promover apenas se superar `0,759` e passar
    os gates; se não, manter H-29 como fallback.
+8. Encerrar H-35 como bloqueada operacionalmente: o stack não recebeu os
+   outputs dos kernels privados. Não tentar contornar isso com upload das
+   predições; manter H-29 como fallback e aguardar a H-34 ou uma fonte pública
+   permitida.
 
 ### Próxima atualização
 
 H-29 (`55779936`, `0,759`) é a referência atual, com H-27 (`0,727`) e H-23
 (`0,718`) como fallbacks. H-33 e H-32 não serão promovidas. H-34 está pronta
 para execução, mas aguarda o reset da cota semanal de GPU; a variante DINOv2
-congelada e B0 crop-only continuam descartadas.
+congelada e B0 crop-only continuam descartadas. H-35 foi bloqueada porque o
+Kaggle não montou outputs de kernels privados como fontes.
