@@ -240,7 +240,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | não promovida — submissão `55665843` marcou `0,723` (`-0,004` vs H-27; `+0,005` vs H-23) |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Worker standalone `kaggle/rsna_knee_h29_dinov2_adjusted_kernel/`: 3 slabs adjacentes por plano, DINOv2-S oficial Apache 2.0, last-6, LR `2e-6`, sem pesos gold da H-32 | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | promovida — submissão `55779936` marcou `0,759` (`+0,032` vs H-27); novo baseline |
-| H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | preparada; gates estáticos passaram, push bloqueado pela cota semanal de GPU `30,00 h` |
+| H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | submetida — v1 T4 `COMPLETE`, 20 membros conferidos, ref `55856090` em `PENDING`; score ainda não publicado |
 | H-35 | Um rank stack conservador entre H-29, H-27 e H-33 melhora robustez sem nova GPU | Kernel CPU `kaggle/rsna_knee_h35_rank_stack_kernel/`, pesos fixos `0,80/0,15/0,05`, usando outputs de kernels-fonte privados | Executar sem GPU, montar H-29 e gerar CSV íntegro; só promover acima de `0,759` | bloqueada — o Kaggle aceitou o kernel CPU, mas não montou outputs de kernels privados; não criar dataset auxiliar com predições da competição |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
@@ -826,9 +826,13 @@ Resultados locais novos:
 - H-34 está preparada em
   `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`: notebook compilado em 14
   células executáveis, metadata JSON válida e critérios explícitos de schema,
-  cobertura e finitude. A publicação foi recusada pelo Kaggle por
-  `Maximum weekly GPU quota of 30.00 hours reached`; não há ainda kernel,
-  CSV ou score H-34.
+  cobertura e finitude. As tentativas de 26–27/08 foram recusadas por
+  `Maximum weekly GPU quota of 30.00 hours reached`; em 28/08 a v1 foi aceita
+  no T4, concluiu `COMPLETE` e conferiu os 20 fingerprints. O `submission.csv`
+  local tem 3×13, zero nulos e SHA-256
+  `f9fb57b7bac8489a5d5285b3984b06df57f142572be6417eac6341c43e96707`.
+  A submissão Notebook-only `55856090` foi criada e está `PENDING`; ainda não
+  há score H-34.
 - H-35 foi tentada como rank stack CPU-only para aproveitar H-29 sem nova GPU.
   A v1 foi corrigida porque varria recursivamente os DICOMs; a v2 foi aceita,
   mas falhou fechado com `H-29 output is not mounted`, pois outputs de kernels
@@ -888,9 +892,10 @@ Decisão operacional:
    família por vez e ter gate local reproduzível antes do upload.
 6. Promover H-29 como referência: a submissão `55779936` marcou `0,759`,
    `+0,032` vs H-27. Não alterar o vencedor retroativamente com H-32/H-33.
-7. Executar H-34 somente após o reset da cota GPU: pacote DINOv2 CC0,
-   20 membros, rank/pooling focal. Promover apenas se superar `0,759` e passar
-   os gates; se não, manter H-29 como fallback.
+7. H-34 v1 concluiu no T4 após o reset da quota: pacote DINOv2 CC0, 20 membros,
+   rank/pooling focal, cobertura/fingerprints/schema/finitude conferidos. A
+   submissão Notebook-only `55856090` está `PENDING`; promover apenas se o
+   score superar `0,759`, senão manter H-29.
 8. Encerrar H-35 como bloqueada operacionalmente: o stack não recebeu os
    outputs dos kernels privados. Não tentar contornar isso com upload das
    predições; manter H-29 como fallback e aguardar a H-34 ou uma fonte pública
@@ -899,7 +904,7 @@ Decisão operacional:
 ### Próxima atualização
 
 H-29 (`55779936`, `0,759`) é a referência atual, com H-27 (`0,727`) e H-23
-(`0,718`) como fallbacks. H-33 e H-32 não serão promovidas. H-34 está pronta
-para execução, mas aguarda o reset da cota semanal de GPU; a variante DINOv2
-congelada e B0 crop-only continuam descartadas. H-35 foi bloqueada porque o
-Kaggle não montou outputs de kernels privados como fontes.
+(`0,718`) como fallbacks. H-33 e H-32 não serão promovidas. H-34 v1 concluiu no
+T4, gerou CSV validado e foi submetida como `55856090`; o score está pendente.
+A variante DINOv2 congelada e B0 crop-only continuam descartadas. H-35 foi
+bloqueada porque o Kaggle não montou outputs de kernels privados como fontes.
