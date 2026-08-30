@@ -1873,7 +1873,7 @@ def build_study_pair(
     tsdir,
     reader,
 ):
-"""
+    """
     Produce exact MaxSpan and legacy-span volumes while reading every required
     DICOM only once. Both checkpoints keep their own percentile normalization.
     """
