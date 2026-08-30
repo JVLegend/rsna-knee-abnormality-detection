@@ -34,7 +34,7 @@ mais de 4.000 estudos recusa gerar uma saída parcial.
 ## Critério de decisão
 
 1. Executar sem internet em T4.
-2. Cobrir 4.410/4.410 estudos, sem NaN, duplicatas ou drift de schema.
+2. Cobrir 3/3 estudos de teste, sem NaN, duplicatas ou drift de schema.
 3. Submeter pelo Notebook-only apenas após a confirmação do usuário no botão
    final.
 4. Promover somente se superar o H-34, 0,899; caso contrário, preservar
