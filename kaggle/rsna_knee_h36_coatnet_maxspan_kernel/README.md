@@ -37,8 +37,9 @@ mais de 4.000 estudos recusa gerar uma saída parcial.
 2. Cobrir 3/3 estudos de teste, sem NaN, duplicatas ou drift de schema.
 3. Submeter pelo Notebook-only apenas após a confirmação do usuário no botão
    final.
-4. Promover somente se superar o H-34, 0,899; caso contrário, preservar
-   H-34 como referência e o H-29 como fallback.
+4. Promover somente se superar o H-34, 0,899; esse gate foi cumprido com
+   public score `0,928`. H-36 é a referência atual; H-34 e H-29 ficam como
+   fallbacks auditáveis.
 
 ## Smoke local
 
