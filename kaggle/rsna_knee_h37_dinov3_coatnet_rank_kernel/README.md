@@ -14,8 +14,9 @@ de kernel privado.
   `xcodex`.
 - CoAtNet: checkpoint público H-36, cinco slots, 64 fatias, span de 2–98%,
   crop físico de 140 mm, janelas sobrepostas e rank-percentile.
-- Fusão final: ranks por coluna, com o arm DINOv3 como pai e o braço CoAtNet
-  como residual de 50% por alvo (a mesma política pública do DINOsaur V4.5).
+- Fusão final: ranks por coluna, com exatamente 50% do braço DINOv3 e 50% do
+  braço CoAtNet em cada alvo. As ponderações adaptativas herdadas do código
+  público foram desativadas para manter uma ablação limpa.
 
 ## Fontes e licenças
 

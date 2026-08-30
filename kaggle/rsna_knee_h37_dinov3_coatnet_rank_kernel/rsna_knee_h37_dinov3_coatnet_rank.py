@@ -3245,32 +3245,13 @@ try:
             raise RuntimeError(f'Raptor/transformer study order mismatch: {raptor_path.name}')
         rr = raptor[_blend_labels].rank(method='average', pct=True)
         output = _blend_transformer.copy()
+        # H-37 is a clean diversity ablation: keep the two public families at
+        # exactly equal weight. The public V5.3 source has adaptive weights
+        # inherited from an older calibrated family; those are intentionally
+        # disabled here so a three-study smoke cannot silently change the
+        # experimental question.
         weight = {label: 0.50 for label in _blend_labels}
-        if globals().get('V18_CALIBRATOR_APPLIED', False):
-            weight.update({
-                'ACL': 0.54,
-                'Medial Meniscus': 0.565,
-                'Lateral Meniscus': 0.625,
-                'Lateral OA': 0.56,
-                'Fracture': 0.625,
-            })
-        base_0935 = {label: 0.50 for label in _blend_labels}
-        base_0935.update({
-            'Medial Meniscus': 0.52,
-            'Lateral Meniscus': 0.54,
-            'Fracture': 0.54,
-        })
         for label in _blend_labels:
-            correlation = float(_blend_np.corrcoef(
-                _blend_tr[label].to_numpy(_blend_np.float64),
-                rr[label].to_numpy(_blend_np.float64),
-            )[0, 1])
-            if not _blend_np.isfinite(correlation):
-                weight[label] = base_0935[label]
-            elif correlation > 0.992:
-                weight[label] = 0.65 * weight[label] + 0.35 * base_0935[label]
-            elif correlation < 0.60:
-                weight[label] = 0.50 * weight[label] + 0.50 * base_0935[label]
             cw = float(weight[label])
             output[label] = (1.0 - cw) * _blend_tr[label] + cw * rr[label]
         output[_blend_labels] = output[_blend_labels].rank(method='average', pct=True)
