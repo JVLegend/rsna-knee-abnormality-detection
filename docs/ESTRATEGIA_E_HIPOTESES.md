@@ -41,7 +41,7 @@ Aprendizado:
 
 ## Snapshot do ponto de partida
 
-- Melhor submissão confirmada até este registro: H-29, ref `55779936`, public score `0,759`; ganho de `+0,032` sobre H-27 (`55632699`, `0,727`) e `+0,041` sobre H-28 (`55665843`, `0,723`). H-29 é a nova referência; manter H-27 e H-23 como fallbacks reproduzíveis.
+- Melhor submissão confirmada até este registro: H-34, ref `55856090`, public score `0,899`; ganho de `+0,140` sobre H-29 (`55779936`, `0,759`) e `+0,172` sobre H-27 (`55632699`, `0,727`). H-34 é a nova referência; manter H-29, H-27 e H-23 como fallbacks reproduzíveis.
 - H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
 - H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` fechou `COMPLETE` com public score `0,727`, novo melhor resultado.
 - O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). H-28 concluiu no T4 com CSV íntegro e a submissão Notebook-only `55665843` marcou public score `0,723`, abaixo de H-27 (`0,727`) por `-0,004`; não promover.
@@ -240,7 +240,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-19 | Fonte de weak label por alvo supera Steven v4 uniforme | Comparar v4 uniforme, mapa target-wise e consenso com fonte neutra quando a cobertura cair | Ganho OOF agrupado em pelo menos 8/12 alvos, sem escolher pelo leaderboard isolado | nova |
 | H-28 | Separar cabeças por plano × categoria de aquisição supera uma série preferencial por plano | Kernel Kaggle preservando H-27 e adicionando `FLUID_FS/NONFLUID` com fallback por plano | Superar `0,727` com CSV íntegro e sem custo operacional inviável | não promovida — submissão `55665843` marcou `0,723` (`-0,004` vs H-27; `+0,005` vs H-23) |
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Worker standalone `kaggle/rsna_knee_h29_dinov2_adjusted_kernel/`: 3 slabs adjacentes por plano, DINOv2-S oficial Apache 2.0, last-6, LR `2e-6`, sem pesos gold da H-32 | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | promovida — submissão `55779936` marcou `0,759` (`+0,032` vs H-27); novo baseline |
-| H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | submetida — v1 T4 `COMPLETE`, 20 membros conferidos, ref `55856090` em `PENDING`; score ainda não publicado |
+| H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | confirmada/promovida — v1 T4 `COMPLETE`, 20 membros conferidos, ref `55856090`, public score `0,899` (`+0,140` vs H-29) |
 | H-35 | Um rank stack conservador entre H-29, H-27 e H-33 melhora robustez sem nova GPU | Kernel CPU `kaggle/rsna_knee_h35_rank_stack_kernel/`, pesos fixos `0,80/0,15/0,05`, usando outputs de kernels-fonte privados | Executar sem GPU, montar H-29 e gerar CSV íntegro; só promover acima de `0,759` | bloqueada — o Kaggle aceitou o kernel CPU, mas não montou outputs de kernels privados; não criar dataset auxiliar com predições da competição |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
@@ -831,8 +831,8 @@ Resultados locais novos:
   no T4, concluiu `COMPLETE` e conferiu os 20 fingerprints. O `submission.csv`
   local tem 3×13, zero nulos e SHA-256
   `f9fb57b7bac8489a5d5285b3984b06df57f142572be6417eac6341c43e96707`.
-  A submissão Notebook-only `55856090` foi criada e está `PENDING`; ainda não
-  há score H-34.
+  A submissão Notebook-only `55856090` concluiu `COMPLETE` com public score
+  `0,899`; H-34 passa a ser o baseline de produção.
 - H-35 foi tentada como rank stack CPU-only para aproveitar H-29 sem nova GPU.
   A v1 foi corrigida porque varria recursivamente os DICOMs; a v2 foi aceita,
   mas falhou fechado com `H-29 output is not mounted`, pois outputs de kernels
@@ -890,12 +890,12 @@ Decisão operacional:
 5. Encerrar H-32 como não promovida: o score público `0,720` refutou a
    transferência do ganho local. Qualquer próxima execução deve mudar uma
    família por vez e ter gate local reproduzível antes do upload.
-6. Promover H-29 como referência: a submissão `55779936` marcou `0,759`,
+6. Manter H-29 como fallback auditável: a submissão `55779936` marcou `0,759`,
    `+0,032` vs H-27. Não alterar o vencedor retroativamente com H-32/H-33.
-7. H-34 v1 concluiu no T4 após o reset da quota: pacote DINOv2 CC0, 20 membros,
+7. Promover H-34 v1 como nova referência: pacote DINOv2 CC0, 20 membros,
    rank/pooling focal, cobertura/fingerprints/schema/finitude conferidos. A
-   submissão Notebook-only `55856090` está `PENDING`; promover apenas se o
-   score superar `0,759`, senão manter H-29.
+   submissão Notebook-only `55856090` marcou `0,899`, ganho `+0,140` sobre
+   H-29; repetir a validação em novas variantes sem misturar famílias.
 8. Encerrar H-35 como bloqueada operacionalmente: o stack não recebeu os
    outputs dos kernels privados. Não tentar contornar isso com upload das
    predições; manter H-29 como fallback e aguardar a H-34 ou uma fonte pública
@@ -903,8 +903,7 @@ Decisão operacional:
 
 ### Próxima atualização
 
-H-29 (`55779936`, `0,759`) é a referência atual, com H-27 (`0,727`) e H-23
-(`0,718`) como fallbacks. H-33 e H-32 não serão promovidas. H-34 v1 concluiu no
-T4, gerou CSV validado e foi submetida como `55856090`; o score está pendente.
+H-34 (`55856090`, `0,899`) é a nova referência, com H-29 (`0,759`), H-27
+(`0,727`) e H-23 (`0,718`) como fallbacks. H-33 e H-32 não serão promovidas.
 A variante DINOv2 congelada e B0 crop-only continuam descartadas. H-35 foi
 bloqueada porque o Kaggle não montou outputs de kernels privados como fontes.
