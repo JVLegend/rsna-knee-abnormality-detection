@@ -246,7 +246,7 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-35 | Um rank stack conservador entre H-29, H-27 e H-33 melhora robustez sem nova GPU | Kernel CPU `kaggle/rsna_knee_h35_rank_stack_kernel/`, pesos fixos `0,80/0,15/0,05`, usando outputs de kernels-fonte privados | Executar sem GPU, montar H-29 e gerar CSV íntegro; só promover acima de `0,759` | bloqueada — o Kaggle aceitou o kernel CPU, mas não montou outputs de kernels privados; não criar dataset auxiliar com predições da competição |
 | H-36 | Uma família CoAtNet treinada no corpus Max-Span público e com amostragem densa supera o ensemble DINOv2 H-34 | `kaggle/rsna_knee_h36_coatnet_maxspan_kernel/`; checkpoint `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; CoAtNet RMLP 2 RW 384, 64 fatias, crop 140 mm, span 2–98%, 62 janelas, atenção por alvo e rank-percentile | Kernel T4 cobre `3/3` estudos de teste, CSV íntegro e score público > `0,899`; não aceitar o `0,928` declarado pelo dataset sem execução nossa | confirmada/promovida — v1 `COMPLETE` em `25,4 s`, `3/3` estudos, 0 falhas, CSV 3×13 íntegro; submissão Notebook-only `COMPLETE`, public score `0,928` (`+0,029` vs H-34), novo baseline |
 | H-37 | Uma família DINOv3 pública independente acrescenta diversidade ao CoAtNet H-36 quando a fusão é feita por rank e por alvo | `kaggle/rsna_knee_h37_dinov3_coatnet_rank_kernel/`; cinco folds `mattiaangeli/knee-mri-fold-weights` CC0-1.0, ViT-S DINOv3 336 px/130 mm/6 slots/16 fatias/`xcodex`, fundidos 50/50 por rank com H-36 `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; `kernel_sources=[]` | CSV 3×13 íntegro, cobertura `3/3`, finitude e execução T4; só promover se superar H-36 `0,928` | não promovida — v2 `COMPLETE` T4×2, submissão Notebook-only `COMPLETE`, public score `0,922` (`-0,006` vs H-36); CSV SHA-256 `a31f58a2a59ef31f8040bf469a335babf06b1663ae956c655141121f62ba4a50`; o braço DINOv3 público isolado também não justifica promoção |
-| H-38 | Um residual pequeno de DINOv3 preserva o ganho do CoAtNet H-36 e evita o excesso da fusão 50/50 do H-37 | `kaggle/rsna_knee_h38_dinov3_coatnet_residual/`; mesmos dois datasets públicos CC0-1.0, rank por alvo, peso DINOv3 `0,20` e CoAtNet `0,80`, sem `kernel_sources` | Rodar no T4, conferir `3/3`, schema e finitude; só promover se superar H-36 `0,928` | preparada — `py_compile` e metadata JSON passaram; ainda sem execução, CSV ou submissão |
+| H-38 | Um residual pequeno de DINOv3 preserva o ganho do CoAtNet H-36 e evita o excesso da fusão 50/50 do H-37 | `kaggle/rsna_knee_h38_dinov3_coatnet_residual/`; mesmos dois datasets públicos CC0-1.0, rank por alvo, peso DINOv3 `0,20` e CoAtNet `0,80`, sem `kernel_sources` | Rodar no T4, conferir `3/3`, schema e finitude; só promover se superar H-36 `0,928` | preparada — `py_compile` e metadata JSON passaram; reconstrução local exata a partir dos outputs públicos do H-37 gerou CSV 3×13 íntegro, SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`; kernel T4 ainda `QUEUED`, sem submissão |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `COMPLETE`; submissão `55739684` marcou público `0,720`; `-0,007` vs H-27 (`0,727`); gate local `0,661929` não transferiu; não promover |
@@ -860,8 +860,11 @@ Resultados locais novos:
 - H-38 foi preparada em
   `kaggle/rsna_knee_h38_dinov3_coatnet_residual/` para testar esse residual:
   20% DINOv3 e 80% CoAtNet, ambos convertidos para rank por alvo. O código
-  passou `py_compile`, o metadata passou JSON e a variante ainda não foi
-  executada nem submetida.
+  passou `py_compile`, o metadata passou JSON. A partir dos outputs públicos
+  separados do H-37, a reconstrução local exata gerou
+  `submissions/submission_h38_dinov3_coatnet_residual_local.csv`, 3×13, com
+  SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`;
+  o kernel T4 foi publicado e continua `QUEUED`, sem submissão.
 - H-35 foi tentada como rank stack CPU-only para aproveitar H-29 sem nova GPU.
   A v1 foi corrigida porque varria recursivamente os DICOMs; a v2 foi aceita,
   mas falhou fechado com `H-29 output is not mounted`, pois outputs de kernels
@@ -939,14 +942,16 @@ Decisão operacional:
     CSV H-36 como input. A submissão Notebook-only marcou `0,922`, abaixo de
     H-36 `0,928`; não promover.
 11. H-38 está preparada para execução no T4: é a primeira ablação pós-H-37
-    que reduz o braço DINOv3 a 20% e preserva 80% do H-36. Executar e validar
-    o CSV antes de considerar qualquer submissão; o critério continua superar
-    `0,928`.
+    que reduz o braço DINOv3 a 20% e preserva 80% do H-36. A reconstrução local
+    já passou os gates, mas a execução Kaggle permanece `QUEUED`; validar o
+    output do kernel antes de considerar qualquer submissão. O critério
+    continua superar `0,928`.
 
 ### Próxima atualização
 
 H-36 (`0,928`) é a nova referência protegida; H-37 marcou `0,922` e não foi
-promovida; H-38 está preparada para execução T4 com residual DINOv3 `20%`;
+promovida; H-38 está preparada para execução T4 com residual DINOv3 `20%`,
+tem reconstrução local validada e aguarda o kernel sair de `QUEUED`;
 H-34 (`55856090`, `0,899`),
 H-29 (`0,759`), H-27
 (`0,727`) e H-23 (`0,718`) como fallbacks. H-33 e H-32 não serão promovidas.
