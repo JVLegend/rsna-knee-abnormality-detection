@@ -1,0 +1,27 @@
+{
+  "id": "jvlegend/rsna-knee-h-38-dinov3-coatnet-residual",
+  "title": "RSNA Knee H-38 DINOv3 20% residual + CoAtNet",
+  "code_file": "rsna_knee_h38_dinov3_coatnet_residual.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare",
+    "image classification"
+  ],
+  "dataset_sources": [
+    "mattiaangeli/knee-mri-fold-weights",
+    "dreaddevelopment/raptor-knee-maxspan"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}
