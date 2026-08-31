@@ -41,9 +41,10 @@ Aprendizado:
 
 ## Snapshot do ponto de partida
 
-- Melhor submissão confirmada até este registro: H-36, CoAtNet RMLP 2 RW Max-Span, public score `0,928`; ganho de `+0,029` sobre H-34 (`0,899`), `+0,169` sobre H-29 (`0,759`) e `+0,201` sobre H-27 (`0,727`). H-36 é a nova referência; H-34, H-29, H-27 e H-23 permanecem como fallbacks reproduzíveis.
-- H-36 foi executada e submetida como uma família visual independente: CoAtNet RMLP 2 RW em 384 px, checkpoint Max-Span público CC0-1.0, cinco slots/64 fatias, crop físico de 140 mm, span 2–98% e 62 janelas sobrepostas. O kernel v1 T4 terminou `COMPLETE` em `25,4 s`, cobriu `3/3` estudos de teste, sem falhas, gerou CSV 3×13 íntegro com SHA-256 `fc8b32d5964f54619ef358b8cf97291012806c16aea6fe8db799c1d3279829b7` e a submissão Notebook-only de 30/08 às 13:05 terminou `COMPLETE` com public score `0,928`, novo baseline.
+- Melhor submissão confirmada até este registro: H-38, residual DINOv3 `20%` + CoAtNet H-36 `80%`, public score `0,929`; ganho de `+0,001` sobre H-36 (`0,928`), `+0,030` sobre H-34 (`0,899`), `+0,170` sobre H-29 (`0,759`) e `+0,202` sobre H-27 (`0,727`). H-38 é a nova referência; H-36, H-34, H-29, H-27 e H-23 permanecem como fallbacks reproduzíveis.
+- H-36 foi executada e submetida como uma família visual independente: CoAtNet RMLP 2 RW em 384 px, checkpoint Max-Span público CC0-1.0, cinco slots/64 fatias, crop físico de 140 mm, span 2–98% e 62 janelas sobrepostas. O kernel v1 T4 terminou `COMPLETE` em `25,4 s`, cobriu `3/3` estudos de teste, sem falhas, gerou CSV 3×13 íntegro com SHA-256 `fc8b32d5964f54619ef358b8cf97291012806c16aea6fe8db799c1d3279829b7` e a submissão Notebook-only de 30/08 às 13:05 terminou `COMPLETE` com public score `0,928`; H-36 é o baseline anterior, superado por H-38 em `+0,001`.
 - H-37 foi executada e submetida como uma família independente e auditável para testar diversidade de representação: cinco folds DINOv3 ViT-S públicos da Mattia Angeli (`CC0-1.0`) em 336 px, seis slots/16 fatias, crop de 130 mm e pooling `xcodex`, fundidos por rank com o CoAtNet Max-Span H-36 (`CC0-1.0`). A versão 2 T4×2 terminou `COMPLETE`, carregou as cinco dobras, cobriu `3/3` estudos, gerou CSV 3×13 e passou schema, IDs únicos, finitude e faixa `[0,1]`; SHA-256 `a31f58a2a59ef31f8040bf469a335babf06b1663ae956c655141121f62ba4a50`. O kernel não depende de outputs privados. A submissão Notebook-only foi criada em 30/08 às 21:46 BRT, terminou `COMPLETE` com public score `0,922` e ficou `-0,006` abaixo de H-36 `0,928`; não promover. A referência pública do braço DINOv3 é `0,920` atual / `0,922` best; isso é evidência de direção, não resultado nosso.
+- H-38 foi executada, validada e submetida como uma ablação residual: cinco folds DINOv3 ViT-S públicos (`CC0-1.0`) em 336 px, seis slots/16 fatias, crop de 130 mm e pooling `xcodex`, com fusão por rank de `20%` DINOv3 + `80%` CoAtNet H-36 (`CC0-1.0`). O kernel T4×2 terminou `COMPLETE`, cobriu `3/3` estudos e o CSV 3×13 passou schema, IDs únicos, finitude e faixa `[0,1]`; a saída Kaggle bateu byte a byte com a reconstrução local, SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`. A submissão Notebook-only de 31/08 às 10:06 BRT terminou `COMPLETE` com public score `0,929`, ganho `+0,001` sobre H-36; H-38 passa a ser o novo baseline de produção.
 - H-26 concluiu no Kaggle com a mesma H-23 e pooling `mean` nos 12 alvos. O gate local marcou `0,643152` contra `0,635104`, mas a submissão `55610358` fechou em `0,712`, abaixo de H-23 (`0,718`); não promover.
 - H-27 foi publicada no Kaggle como [`jvlegend/rsna-knee-v4-plane-target`](https://www.kaggle.com/code/jvlegend/rsna-knee-v4-plane-target), versão 1 em T4. Ela preserva H-23 e troca somente a cabeça visual por modelos separados por plano, agregando Sagittal/Coronal/Axial presentes. O worker concluiu com `4.407/4.407` estudos, `79.380` views, fine-tuning em `79.326` views, loss `0,624997` e elapsed `14.683,9 s`; o CSV validado tem SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0`. A submissão Notebook-only `55632699` fechou `COMPLETE` com public score `0,727`, novo melhor resultado.
 - O gate de slots adicionais foi concluído localmente: 336 séries dos 58 estudos oficiais, arrays 2.5D `336×(3,224,224)` e embeddings B0 `336×1.280`, sempre com a geometria H-23 (`0,25/0,50/0,75`). A cabeça por slot superou a cabeça por plano em Steven (`+0,008548`), Pilkwang (`+0,015244`) e teacher target-wise H-23 (`+0,002454` em C=`0,5`; `+0,006931` em C=`0,1`). H-28 concluiu no T4 com CSV íntegro e a submissão Notebook-only `55665843` marcou public score `0,723`, abaixo de H-27 (`0,727`) por `-0,004`; não promover.
@@ -244,9 +245,9 @@ Status: `nova`, `em teste`, `apoiada`, `descartada`, `bloqueada` ou `engenharia`
 | H-29 | Crop físico de ~130 mm em 336 px + DINOv2-S ajustado nos últimos 4–6 blocos aproxima a fronteira pública | Worker standalone `kaggle/rsna_knee_h29_dinov2_adjusted_kernel/`: 3 slabs adjacentes por plano, DINOv2-S oficial Apache 2.0, last-6, LR `2e-6`, sem pesos gold da H-32 | Ganho local pareado e score Kaggle acima de H-27; não aceitar DINO congelado | promovida — submissão `55779936` marcou `0,759` (`+0,032` vs H-27); novo baseline |
 | H-34 | Ensemble de 20 checkpoints DINOv2-S públicos, com ranks por alvo, janelas sobrepostas e pooling focal, supera um único fine-tune H-29 | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; pacote `pilkwang/rsna-knee-weights` CC0, backbone oficial Apache 2.0, sem bundle `other`/RadImageNet/DINOv3 | CSV íntegro e score público > `0,759`; não aceitar claim de notebook sem execução nossa | confirmada, fallback — v1 T4 `COMPLETE`, 20 membros conferidos, ref `55856090`, public score `0,899`; superada por H-36 |
 | H-35 | Um rank stack conservador entre H-29, H-27 e H-33 melhora robustez sem nova GPU | Kernel CPU `kaggle/rsna_knee_h35_rank_stack_kernel/`, pesos fixos `0,80/0,15/0,05`, usando outputs de kernels-fonte privados | Executar sem GPU, montar H-29 e gerar CSV íntegro; só promover acima de `0,759` | bloqueada — o Kaggle aceitou o kernel CPU, mas não montou outputs de kernels privados; não criar dataset auxiliar com predições da competição |
-| H-36 | Uma família CoAtNet treinada no corpus Max-Span público e com amostragem densa supera o ensemble DINOv2 H-34 | `kaggle/rsna_knee_h36_coatnet_maxspan_kernel/`; checkpoint `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; CoAtNet RMLP 2 RW 384, 64 fatias, crop 140 mm, span 2–98%, 62 janelas, atenção por alvo e rank-percentile | Kernel T4 cobre `3/3` estudos de teste, CSV íntegro e score público > `0,899`; não aceitar o `0,928` declarado pelo dataset sem execução nossa | confirmada/promovida — v1 `COMPLETE` em `25,4 s`, `3/3` estudos, 0 falhas, CSV 3×13 íntegro; submissão Notebook-only `COMPLETE`, public score `0,928` (`+0,029` vs H-34), novo baseline |
+| H-36 | Uma família CoAtNet treinada no corpus Max-Span público e com amostragem densa supera o ensemble DINOv2 H-34 | `kaggle/rsna_knee_h36_coatnet_maxspan_kernel/`; checkpoint `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; CoAtNet RMLP 2 RW 384, 64 fatias, crop 140 mm, span 2–98%, 62 janelas, atenção por alvo e rank-percentile | Kernel T4 cobre `3/3` estudos de teste, CSV íntegro e score público > `0,899`; não aceitar o `0,928` declarado pelo dataset sem execução nossa | confirmada, fallback — v1 `COMPLETE` em `25,4 s`, `3/3` estudos, 0 falhas, CSV 3×13 íntegro; submissão Notebook-only `COMPLETE`, public score `0,928`; superada por H-38 em `+0,001` |
 | H-37 | Uma família DINOv3 pública independente acrescenta diversidade ao CoAtNet H-36 quando a fusão é feita por rank e por alvo | `kaggle/rsna_knee_h37_dinov3_coatnet_rank_kernel/`; cinco folds `mattiaangeli/knee-mri-fold-weights` CC0-1.0, ViT-S DINOv3 336 px/130 mm/6 slots/16 fatias/`xcodex`, fundidos 50/50 por rank com H-36 `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; `kernel_sources=[]` | CSV 3×13 íntegro, cobertura `3/3`, finitude e execução T4; só promover se superar H-36 `0,928` | não promovida — v2 `COMPLETE` T4×2, submissão Notebook-only `COMPLETE`, public score `0,922` (`-0,006` vs H-36); CSV SHA-256 `a31f58a2a59ef31f8040bf469a335babf06b1663ae956c655141121f62ba4a50`; o braço DINOv3 público isolado também não justifica promoção |
-| H-38 | Um residual pequeno de DINOv3 preserva o ganho do CoAtNet H-36 e evita o excesso da fusão 50/50 do H-37 | `kaggle/rsna_knee_h38_dinov3_coatnet_residual/`; mesmos dois datasets públicos CC0-1.0, rank por alvo, peso DINOv3 `0,20` e CoAtNet `0,80`, sem `kernel_sources` | Rodar no T4, conferir `3/3`, schema e finitude; só promover se superar H-36 `0,928` | submetida, aguardando score — kernel T4 `COMPLETE`, `3/3` estudos, CSV 3×13 íntegro; saída Kaggle e reconstrução local têm SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`; Notebook-only criada em 31/08 às 10:06 BRT, `PENDING` |
+| H-38 | Um residual pequeno de DINOv3 preserva o ganho do CoAtNet H-36 e evita o excesso da fusão 50/50 do H-37 | `kaggle/rsna_knee_h38_dinov3_coatnet_residual/`; mesmos dois datasets públicos CC0-1.0, rank por alvo, peso DINOv3 `0,20` e CoAtNet `0,80`, sem `kernel_sources` | Rodar no T4, conferir `3/3`, schema e finitude; só promover se superar H-36 `0,928` | confirmada/promovida — kernel T4×2 `COMPLETE`, `3/3` estudos, CSV 3×13 íntegro; saída Kaggle e reconstrução local têm SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`; Notebook-only criada em 31/08 às 10:06 BRT, `COMPLETE`, public score `0,929` (`+0,001` vs H-36), novo baseline |
 | H-30 | Grupo por `report_hash` e peso maior para os 58 gold melhoram a estimativa e o treino fraco | Auditar grupos normalizados, usar GroupKFold e comparar pesos gold `1/4/8` sem contaminar o holdout | CV mais honesta e ganho estável em pelo menos 8/12 alvos | apoiada provisoriamente — peso 8 marcou `0,660684` vs `0,654226` no proxy; variante por alvo chegou a `0,661929` |
 | H-31 | Normalização de laterality com troca explícita de alvos mediais/laterais supera não fazer flip | Auditar `Laterality`/geometria e testar flip condicionado, sempre trocando os quatro alvos laterais | Ganho ou neutralidade pareada; nunca aplicar flip cego | bloqueada — no gold, `Laterality` explícita em `78/174`, vazia/ausente em `96/174`; `ImageLaterality` ausente |
 | H-32 | A exceção Synovitis deve receber peso gold menor que os demais alvos | Comparar peso 8 uniforme com peso 8 nos 11 alvos e 1 em Synovitis, sempre em GroupKFold | Ganho macro estável sem sacrificar outros alvos | v1 T4 `COMPLETE`; submissão `55739684` marcou público `0,720`; `-0,007` vs H-27 (`0,727`); gate local `0,661929` não transferiu; não promover |
@@ -844,7 +845,7 @@ Resultados locais novos:
   O kernel v1 T4 concluiu `COMPLETE` em `25,4 s`, cobriu `3/3` estudos de
   teste sem falhas e gerou CSV 3×13 íntegro. A submissão Notebook-only de
   30/08 marcou public score `0,928`, ganho `+0,029` sobre H-34 e `+0,169`
-  sobre H-29; H-36 é o novo baseline de produção.
+  sobre H-29; H-36 foi o baseline anterior, superado por H-38.
 - H-37 foi executada e submetida em
   `kaggle/rsna_knee_h37_dinov3_coatnet_rank_kernel/` como teste de diversidade
   entre duas famílias públicas: cinco folds DINOv3 ViT-S da Mattia Angeli,
@@ -868,7 +869,8 @@ Resultados locais novos:
   byte a byte e foi salvo como
   `submissions/submission_h38_dinov3_coatnet_residual.csv`. A submissão
   Notebook-only foi criada em 31/08 às 10:06 BRT com a versão 1 e o arquivo
-  `submission.csv`; está `PENDING`, aguardando o rerun privado e o score.
+  `submission.csv`; terminou `COMPLETE` com public score `0,929`, ganho
+  `+0,001` sobre H-36, promovendo H-38 como novo baseline.
 - H-35 foi tentada como rank stack CPU-only para aproveitar H-29 sem nova GPU.
   A v1 foi corrigida porque varria recursivamente os DICOMs; a v2 foi aceita,
   mas falhou fechado com `H-29 output is not mounted`, pois outputs de kernels
@@ -911,14 +913,17 @@ Resultados locais novos:
 
 Decisão operacional:
 
-1. Não enviar outra cópia de H-28; conservar H-27 (`55632699`, `0,727`) como
-   referência e H-23 (`55582655`, `0,718`) como fallback.
+1. Não enviar outra cópia de H-28. Proteger H-38 (`0,929`) como referência
+   operacional; H-36 (`0,928`), H-37 (`0,922`), H-34 (`0,899`), H-29
+   (`0,759`), H-27 (`0,727`) e H-23 (`0,718`) ficam como fallbacks
+   reproduzíveis.
 2. Não enviar B0 com crop físico sozinho. Preparar H-29 somente como encoder
    DINOv2-S ajustado nos últimos 4–6 blocos, LR pequeno, três slabs adjacentes
    e slots com fallback; não repetir DINO congelado, já refutado no gate local.
-3. Usar `report_hash` nos folds e iniciar a próxima ablação com peso gold `8`
-   nos 11 alvos e `1` em Synovitis, comparando contra peso uniforme; não escolher
-   o peso pelo leaderboard isolado.
+3. Manter `report_hash` nos folds e não reabrir o peso gold `8` como prioridade:
+   H-32 já marcou `0,720` no leaderboard. Só reabrir essa linha com uma hipótese
+   nova, um controle peso `1` e um gate local independente; não escolher peso pelo
+   leaderboard isolado.
 4. H-33 foi executado como alteração isolada sobre H-27: texto weak com
    confiança `>=0,85`, ensemble visual por plano e alpha fixo `0,1`. A
    submissão `55694502` marcou `0,726`, então não promover; não combinar H-32,
@@ -928,18 +933,18 @@ Decisão operacional:
    família por vez e ter gate local reproduzível antes do upload.
 6. Manter H-29 como fallback auditável: a submissão `55779936` marcou `0,759`,
    `+0,032` vs H-27. Não alterar o vencedor retroativamente com H-32/H-33.
-7. Promover H-36 v1 como nova referência: CoAtNet Max-Span CC0, atenção por
+7. Manter H-36 v1 como fallback independente: CoAtNet Max-Span CC0, atenção por
    alvo, crop físico e 62 janelas, com cobertura/schema/finitude conferidos. A
-   submissão Notebook-only marcou `0,928`, ganho `+0,029` sobre H-34 e
-   `+0,169` sobre H-29; manter H-34 como fallback independente.
+   submissão Notebook-only marcou `0,928`; H-38 a superou em `+0,001`.
 8. Encerrar H-35 como bloqueada operacionalmente: o stack não recebeu os
    outputs dos kernels privados. Não tentar contornar isso com upload das
-   predições; manter H-29 como fallback e aguardar a H-34 ou uma fonte pública
-   permitida.
+   predições; manter somente fontes públicas permitidas e os CSVs já auditados
+   como fallbacks.
 9. H-36 concluiu a execução T4 com `3/3` estudos de teste e CSV íntegro. O
    artefato está em `submissions/submission_h36_coatnet_maxspan.csv`; a
-   submissão Notebook-only marcou `0,928`. H-36 passa a ser o baseline e
-   qualquer próxima variante deve superá-la sem misturar outputs privados.
+   submissão Notebook-only marcou `0,928`. H-36 é o fallback visual direto de
+   H-38; qualquer próxima variante deve superar `0,929` sem misturar outputs
+   privados.
 10. H-37 concluiu a execução autorizada: DINOv3 público independente + H-36
     CoAtNet, rank por alvo, sem `kernel_sources`. O CSV passou os gates e está
     em `submissions/submission_h37_dinov3_coatnet_rank.csv`; não reutilizou o
@@ -948,13 +953,13 @@ Decisão operacional:
 11. H-38 concluiu a execução no T4 e foi submetida: é a primeira ablação
     pós-H-37 que reduz o braço DINOv3 a 20% e preserva 80% do H-36. O output
     Kaggle bateu byte a byte com a reconstrução local, passou os gates e a
-    submissão Notebook-only foi criada às 10:06 BRT; aguardar `COMPLETE` e
-    score antes de promover. O critério continua superar `0,928`.
+    submissão Notebook-only terminou `COMPLETE` com public score `0,929`,
+    `+0,001` sobre H-36; promover H-38 como novo baseline.
 
 ### Próxima atualização
 
-H-36 (`0,928`) é a nova referência protegida; H-37 marcou `0,922` e não foi
-promovida; H-38 está submetida e aguarda score, com residual DINOv3 `20%`;
+H-38 (`0,929`) é a nova referência protegida; H-36 (`0,928`) e H-37 (`0,922`)
+permanecem como fallbacks, com H-38 usando residual DINOv3 `20%`;
 H-34 (`55856090`, `0,899`),
 H-29 (`0,759`), H-27
 (`0,727`) e H-23 (`0,718`) como fallbacks. H-33 e H-32 não serão promovidas.
