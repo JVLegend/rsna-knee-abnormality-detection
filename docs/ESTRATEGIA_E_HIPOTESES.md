@@ -984,3 +984,10 @@ bloqueada porque o Kaggle não montou outputs de kernels privados como fontes.
 ### Decisão
 
 H-38 (`0,929`) continua sendo a referência oficial. H-39 concluiu e mostrou no log os cinco alvos promovidos, mas não será submetido porque seu CSV é idêntico ao H-38 e não cria uma nova hipótese no leaderboard. A comparação com o leaderboard continua sendo o gate final, não o `1,000000` leaky do gold local.
+
+## Atualização de pesquisa e implementação — 01/09/2026: H-40 WideDense
+
+- O checkpoint público `dreaddevelopment/raptor-knee-widedense/raptor_ft_coatnet_v4_full_swa.pt` foi baixado no HD externo, com licença `CC0-1.0`, arquitetura `coatnet_rmlp_2_rw_384.sw_in12k_ft_in1k`, resolução `384` e SHA-256 `d8bb0f8751b4bb65750257869ddc4c7a3c0cdfc6e62596fc68193919406c53eb`.
+- H-40 foi executada no T4 com cobertura `1.000` e sem erro de inferência. Depois de corrigir uma busca recursiva que poderia varrer o DICOM inteiro e uma âncora que apontava para o CoAtNet puro, a versão final usou corretamente `submission_v53_main.csv` (H-38 20/80).
+- O residual WideDense ainda colapsou para o ranking do H-36 puro: o CSV H-40 é byte a byte igual ao H-36, SHA-256 `fc8b32d5964f54619ef358b8cf97291012806c16aea6fe8db799c1d3279829b7`, e difere do H-38 em `24` células (`MAE=0,166667`). O complemento público não mostrou diversidade útil neste teste de três estudos.
+- Decisão: **não submeter H-40** e não trocar H-38 por WideDense. O checkpoint fica guardado para uma combinação futura apenas se houver uma validação OOF independente que justifique pesos diferentes; não ajustar os pesos pelo leaderboard de três linhas.
