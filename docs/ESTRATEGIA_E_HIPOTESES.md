@@ -965,3 +965,22 @@ H-29 (`0,759`), H-27
 (`0,727`) e H-23 (`0,718`) como fallbacks. H-33 e H-32 não serão promovidas.
 A variante DINOv2 congelada e B0 crop-only continuam descartadas. H-35 foi
 bloqueada porque o Kaggle não montou outputs de kernels privados como fontes.
+
+## Atualização de pesquisa e implementação — 01/09/2026: DINOsaur V16 e H-39
+
+### Evidência nova
+
+- A busca pública encontrou o output do kernel [`romantamrazov/rsna-knee-dinosaur-v4-train`](https://www.kaggle.com/code/romantamrazov/rsna-knee-dinosaur-v4-train), com o artefato `rsna-knee-dinov3-slothead-v16`: manifesto, cinco heads `v16_slothead_f0.pt`–`f4.pt` e `v16_slothead_oof.csv`. A receita é DINOv3 ViT-S, `336 px`, crop físico `130 mm`, seis slots (`Sagittal/Coronal/Axial × FS/NON-FS`), 16 cortes e feature por slot de `1152` dimensões (CLS + média + região focal).
+- O OOF público nos `58` estudos com os 12 labels completos marcou macro-AUC `0,824163` (`0,829327` Medial Meniscus, `0,730435` Lateral Meniscus, `0,860735` Lateral OA e `0,976449` Baker's). Esse é o número honesto para o head público; ele não supera automaticamente o DINOv3 base.
+- A reprodução local completa gerou features `(58, 6, 1152)` e DINOv3 base macro-AUC `0,868587`. Aplicar os cinco heads a todos os 58 gold produziu `1,000000`, mas esse resultado é diagnóstico com vazamento: o ensemble não é OOF. A mistura local com os pesos do manifesto marcou `0,884582` e também não deve ser tratada como CV independente. Não extrapolar nenhum desses números para o leaderboard.
+- A principal hipótese aproveitável é um residual pequeno e target-wise, apoiado pelo ganho OOF/nested do manifesto e limitado por estabilidade, diversidade e caps. O V16 não será aceito como troca integral do H-38.
+
+### H-39 — residual V16 sobre H-38
+
+- O worker está em `kaggle/rsna_knee_h39_dinov3_v16_coatnet/` e usa somente o output público declarado em `kernel_sources`, além dos dois datasets públicos já auditados. O decodificador V16 foi isolado das variáveis globais da etapa CoAtNet para não misturar os cinco slots/64 fatias do H-36 com os seis slots/16 fatias do V16.
+- O pós-processamento lê o H-38 como âncora e só promove alvos aprovados pela evidência do manifesto, correlação entre folds, estabilidade e diversidade; se o artefato não montar ou qualquer gate falhar, preserva byte a byte o CSV H-38. A versão 4 concluiu no Kaggle, promoveu cinco alvos (`Medial Meniscus`, `Lateral Meniscus`, `Lateral OA`, `PF OA` e `Baker's`) e gerou CSV `3×13` finito, com IDs únicos e faixa `[0,1]`.
+- As primeiras execuções encontraram e corrigiram três problemas de integração (tuplas de slots globais, import de `math` e conversão de tensor com gradiente). Depois do conserto, `submission_v16.csv` ficou byte a byte idêntico ao H-38: SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`. Como o teste público tem apenas 3 estudos, os ranks promovidos não alteraram a ordem final; H-39 é um candidato auditado, mas não uma nova submissão.
+
+### Decisão
+
+H-38 (`0,929`) continua sendo a referência oficial. H-39 concluiu e mostrou no log os cinco alvos promovidos, mas não será submetido porque seu CSV é idêntico ao H-38 e não cria uma nova hipótese no leaderboard. A comparação com o leaderboard continua sendo o gate final, não o `1,000000` leaky do gold local.
