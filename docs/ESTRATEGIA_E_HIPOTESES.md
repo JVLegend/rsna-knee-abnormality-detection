@@ -1022,3 +1022,29 @@ O checkpoint permanece armazenado para o único uso que ainda faz sentido: um bl
 ### Decisão H-41
 
 O WideDense full/SWA **não será promovido como modelo primário**: ambos ficam abaixo do H-38 no gate e a pequena melhora dos blends não tem intervalo separado de zero. Não consumiremos outro T4 nem criaremos submissão nova por causa de `+0,000476` em 58 estudos. O código e os checkpoints ficam guardados para um blend condicionado por fold/OOF; qualquer promoção futura exigirá ganho fora do gold usado para esta triagem e cobertura íntegra.
+
+## H-42 — ensembles DINOv2 públicos `champ` e `llm199e30` — 03/09/2026
+
+### Fonte e auditoria
+
+- A pesquisa encontrou os datasets públicos [`rsna-knee-champ-members-only`](https://www.kaggle.com/datasets/stevenleehans/rsna-knee-champ-members-only) e [`rsna-knee-llm199-e30-members`](https://www.kaggle.com/datasets/stevenleehans/rsna-knee-llm199-e30-members). A API do Kaggle declara `CC0-1.0` para ambos e cinco checkpoints DINOv2-Small por família. A descrição pública associa a composição `champ=0,20` e `llm199e30=0,80` ao experimento `exp056`, com public score informado de `0,886`; esse score é evidência externa, não uma submissão nossa.
+- Cada checkpoint carregou estritamente com `233` tensores: encoder DINOv2-Small de dimensão `384`, posição pré-treinada de `1370` tokens, `SlotHead` de entrada `768`, seis slots e doze saídas. Os fingerprints persistidos fixam `224 px`, crop físico `130 mm`, três canais de fatia e três grupos centrais em `0,35–0,65`.
+- Como o notebook de treino não pôde ser baixado via CLI (`403`), a reprodução usa a política de slots recuperada do H-37: `SAG_FLUID_FS`, `COR_FLUID_FS`, `AX_FLUID_FS`, `SAG_FLUID_NOFS`, `COR_T1` e `SAG_T1`. T1/T2/PD e FS/STIR/SPAIR são inferidos pelos headers DICOM; em empate, seleciona-se a série mais longa e depois o UID. Isso é uma reprodução compatível, não uma alegação de equivalência bit a bit ao notebook original.
+
+### Gate local
+
+- O decoder processou os `58` estudos com os `12` rótulos oficiais completos e `336` linhas de série. O cache final tem shape `(58,6,3,3,224,224)` e cobertura decodificada `56/55/58/39/39/26` nos seis slots. A decodificação foi incremental no HD externo, sem alterar o conjunto de rótulos.
+- A inferência dos cinco folds `champ` marcou macro-AUC `0,967357`; `llm199e30` marcou `0,996925`; a fusão rank `20/80` marcou `0,995527`. A âncora H-38 reconstruída no mesmo gold marcou `0,922466`. O bootstrap de `2.000` reamostragens do blend `20/80` contra H-38 deu delta médio `+0,072699`, IC95% `[+0,052073;+0,096115]`.
+- Esses números são deliberadamente classificados como **diagnósticos vazados**: os checkpoints foram treinados com o treino completo da competição, que contém os mesmos 58 estudos gold. O fato de a inferência não ler os rótulos durante a execução não transforma o conjunto em OOF. Não calibrar o peso `20/80` a partir desse gate.
+
+### Implementação e decisão
+
+- O avaliador local está em `scripts/evaluate_dinov2_members_gold.py`; a comparação reprodutível está em `scripts/compare_dinov2_members_gold.py`; os relatórios ignorados pelo Git ficam em `reports/dinov2_members_*_gold*.json`. O teste de carga estrita e inferência sintética do entrypoint também passou.
+- Foi preparado o kernel standalone `kaggle/rsna_knee_dinov2_members_exp056/`, com metadata válido, T4, internet desligada, `kernel_sources=[]` e somente os dois datasets CC0. Ele gera uma candidata `submission.csv` com rank `20% champ + 80% llm199e30` diretamente sobre o teste Kaggle.
+- H-38 (`0,929`) continua como baseline oficial. A candidata H-42 está **preparada, mas não publicada/executada/submetida** nesta rodada. Executar o kernel requer confirmação explícita; o score externo `0,886` torna a hipótese interessante, porém o gold local sozinho não autoriza promoção.
+
+### Próximo teste
+
+1. Executar o kernel H-42 no T4 somente após confirmar os mounts dos dois datasets e validar cobertura dos três estudos de teste.
+2. Conferir schema, finitude, IDs e a faixa `[0,1]` do CSV antes de qualquer submissão.
+3. Se o resultado Kaggle ficar abaixo de `0,929`, arquivar H-42; se superar, repetir uma vez para confirmar antes de trocar o baseline.
