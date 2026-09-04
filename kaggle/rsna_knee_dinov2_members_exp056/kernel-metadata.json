@@ -1,0 +1,27 @@
+{
+  "id": "jvlegend/rsna-knee-dinov2-members-exp056",
+  "title": "RSNA Knee DINOv2 public members exp056",
+  "code_file": "rsna_knee_dinov2_members_exp056.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare",
+    "image classification"
+  ],
+  "dataset_sources": [
+    "stevenleehans/rsna-knee-champ-members-only",
+    "stevenleehans/rsna-knee-llm199-e30-members"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

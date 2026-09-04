@@ -1,0 +1,28 @@
+{
+  "id": "jvlegend/rsna-knee-h-39-dinov3-v16-coatnet",
+  "title": "RSNA Knee H-39 DINOv3 + V16 + CoAtNet",
+  "code_file": "rsna_knee_h39_dinov3_v16_coatnet.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare"
+  ],
+  "dataset_sources": [
+    "mattiaangeli/knee-mri-fold-weights",
+    "dreaddevelopment/raptor-knee-maxspan"
+  ],
+  "kernel_sources": [
+    "romantamrazov/rsna-knee-dinosaur-v4-train"
+  ],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

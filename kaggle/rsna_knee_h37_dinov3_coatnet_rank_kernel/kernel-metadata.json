@@ -1,0 +1,27 @@
+{
+  "id": "jvlegend/rsna-knee-h-37-dinov3-coatnet-rank",
+  "title": "RSNA Knee H-37 DINOv3 + CoAtNet rank",
+  "code_file": "rsna_knee_h37_dinov3_coatnet_rank.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare",
+    "image classification"
+  ],
+  "dataset_sources": [
+    "mattiaangeli/knee-mri-fold-weights",
+    "dreaddevelopment/raptor-knee-maxspan"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

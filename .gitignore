@@ -31,6 +31,8 @@ kaggle.json
 # Competition data: never commit DICOMs or downloaded CSVs
 data/raw/*
 !data/raw/.gitkeep
+data/external_labels/*
+!data/external_labels/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
 *.dcm
