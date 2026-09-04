@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import gc
 import math
+import os
 from pathlib import Path
 import re
 import sys
@@ -79,6 +80,12 @@ def log(message: str) -> None:
 
 
 def find_data_root() -> Path:
+    configured = os.environ.get("RSNA_DATA_ROOT")
+    if configured:
+        candidate = Path(configured).expanduser()
+        if (candidate / "test.csv").is_file() and (candidate / "test_series.csv").is_file():
+            return candidate
+        raise FileNotFoundError(f"RSNA_DATA_ROOT inválido: {candidate}")
     candidates = [
         Path("/kaggle/input/competitions/rsna-knee-abnormality-detection"),
         Path("/kaggle/input/rsna-knee-abnormality-detection"),
@@ -94,6 +101,12 @@ def find_data_root() -> Path:
 
 
 def find_checkpoints(pattern: str) -> list[Path]:
+    configured = os.environ.get("RSNA_CHECKPOINT_ROOT")
+    if configured:
+        direct = sorted(Path(configured).expanduser().rglob(pattern))
+        if len(direct) == 5:
+            return direct
+        raise FileNotFoundError(f"RSNA_CHECKPOINT_ROOT={configured}: encontrei {len(direct)} arquivos para {pattern}")
     root = Path("/kaggle/input")
     direct: list[Path] = []
     for dataset_name in (
@@ -427,7 +440,15 @@ def main() -> int:
         return 0
     started = time.time()
     torch.set_grad_enabled(False)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    requested_device = os.environ.get("RSNA_DEVICE", "").strip().lower()
+    if requested_device:
+        device = torch.device(requested_device)
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
     data_root = find_data_root()
     test = pd.read_csv(data_root / "test.csv", dtype={"StudyInstanceUID": str})
     series = pd.read_csv(data_root / "test_series.csv", dtype={"StudyInstanceUID": str, "SeriesInstanceUID": str})
@@ -452,7 +473,8 @@ def main() -> int:
     values = submission[TARGETS].to_numpy(dtype=float)
     if not np.isfinite(values).all() or not ((values >= 0).all() and (values <= 1).all()):
         raise RuntimeError("predições inválidas")
-    output = Path("/kaggle/working/submission.csv")
+    output = Path(os.environ.get("RSNA_OUTPUT_PATH", "/kaggle/working/submission.csv")).expanduser()
+    output.parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(output, index=False)
     log(f"saved={output} shape={submission.shape} elapsed={time.time() - started:.1f}s")
     print(submission.to_string(index=False), flush=True)

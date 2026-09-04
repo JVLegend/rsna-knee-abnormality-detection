@@ -1,7 +1,7 @@
 ---
 titulo: Estratégia, evidências e hipóteses — RSNA Knee Abnormality Detection
 projeto: RSNA Knee Abnormality Detection
-updated: 2026-09-02
+updated: 2026-09-03
 status: living-document
 tags: [Kaggle, RSNA, Medicina, Tecnologia]
 ---
@@ -1048,3 +1048,14 @@ O WideDense full/SWA **não será promovido como modelo primário**: ambos ficam
 1. Executar o kernel H-42 no T4 somente após confirmar os mounts dos dois datasets e validar cobertura dos três estudos de teste.
 2. Conferir schema, finitude, IDs e a faixa `[0,1]` do CSV antes de qualquer submissão.
 3. Se o resultado Kaggle ficar abaixo de `0,929`, arquivar H-42; se superar, repetir uma vez para confirmar antes de trocar o baseline.
+
+## Atualização operacional — H-42 local e cota Kaggle — 03/09/2026
+
+- O preflight autenticado tentou publicar o kernel privado `jvlegend/rsna-knee-dinov2-members-exp056`, mas o Kaggle recusou antes da execução com `Maximum weekly GPU quota of 30.00 hours reached`. Não houve consumo adicional, versão executada ou submissão à competição.
+- O catálogo da competição foi paginado e auditado: `557` DICOMs de teste, total de `599.962.984` bytes (aprox. `574 MiB` em disco), cobrindo os `3` estudos e `15` séries. Todos os arquivos foram baixados para `data/raw/test_series/<StudyInstanceUID>/<SeriesInstanceUID>/` no HD externo e conferidos pelo tamanho anunciado pela API.
+- O entrypoint ganhou overrides locais sem alterar os defaults Kaggle: `RSNA_DATA_ROOT`, `RSNA_CHECKPOINT_ROOT`, `RSNA_OUTPUT_PATH` e `RSNA_DEVICE`. Em MPS, os dez folds públicos foram carregados estritamente e a inferência terminou em `194,3 s`; a cobertura de slots dos três estudos foi `2/3/3/2/1/1` (SAG_FLUID_FS, COR_FLUID_FS, AX_FLUID_FS, SAG_FLUID_NOFS, COR_T1, SAG_T1), coerente com os protocolos presentes no `test_series.csv`.
+- A saída local foi validada contra `test.csv`: `3×13`, doze alvos, IDs na ordem oficial, finita e em `[0,1]`. O artefato está em `submissions/submission_h42_dinov2_members_exp056_local.csv`, SHA-256 `2b9a159784efeeb45d50e209b5bdbc58317fa9ec512e7d2dad0974338ba77e22`.
+
+### Decisão atualizada
+
+H-38 (`0,929`) continua como baseline oficial. H-42 agora tem um candidato local auditado e um caminho de reprodução completo, mas permanece **não submetida**: o public score `0,886` associado externamente ao exp056 é inferior ao baseline, e o gold local é leaky. A próxima decisão racional é usar a cota após o reset apenas se quisermos confirmar a reprodução remota; não escolher peso novo a partir das três linhas do teste.
