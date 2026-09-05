@@ -11,6 +11,12 @@ multi-view texto–imagem com supervisão fraca, com score público `0,655`. A
 próxima hipótese troca somente a fonte da supervisão fraca por labels públicos
 auditados contra os 58 rótulos oficiais.
 
+O plano consolidado de melhorias, hipóteses, gates e estado de implementação
+está em [`docs/PLANO_MELHORIAS_2026-09-05.md`](docs/PLANO_MELHORIAS_2026-09-05.md).
+H-38 (`0,929`) continua protegida como baseline; o H-42 DINOv2 members é
+apenas candidato local até haver OOF independente e cota para uma execução
+Notebook-only.
+
 ## Estrutura
 
 ```text

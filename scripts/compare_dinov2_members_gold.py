@@ -50,6 +50,36 @@ def macro_auc(labels: np.ndarray, matrix: np.ndarray) -> float:
     return float(np.mean(list(auc_by_target(labels, matrix).values())))
 
 
+def align_matrix(
+    values: np.ndarray,
+    source_ids: list[str],
+    expected_ids: list[str],
+    label: str,
+) -> np.ndarray:
+    """Align a prediction matrix by UID and reject ambiguity or leakage.
+
+    Gold reports are generated in the order of their input CSV, but relying on
+    that incidental order makes a later cache/report reuse dangerously easy to
+    get wrong.  Every ensemble entering a comparison must therefore carry the
+    study IDs and be explicitly reindexed here.
+    """
+    source = [str(value) for value in source_ids]
+    expected = [str(value) for value in expected_ids]
+    if len(source) != len(set(source)):
+        raise ValueError(f"{label}: IDs duplicados no artefato")
+    if len(expected) != len(set(expected)):
+        raise ValueError("gold: IDs duplicados na referência")
+    if set(source) != set(expected):
+        missing = sorted(set(expected) - set(source))
+        extra = sorted(set(source) - set(expected))
+        raise ValueError(f"{label}: conjunto de IDs divergente; missing={missing[:3]} extra={extra[:3]}")
+    values = np.asarray(values, dtype=float)
+    if values.shape != (len(source), len(TARGETS)) or not np.isfinite(values).all():
+        raise ValueError(f"{label}: predições inválidas: {values.shape}")
+    positions = {study_id: index for index, study_id in enumerate(source)}
+    return values[[positions[study_id] for study_id in expected]]
+
+
 def bootstrap_delta(
     labels: np.ndarray,
     candidate: np.ndarray,
@@ -80,14 +110,32 @@ def bootstrap_delta(
     }
 
 
-def load_ensemble(path: Path, family: str, expected: int) -> tuple[np.ndarray, dict[str, object]]:
+def load_ensemble(
+    path: Path,
+    family: str,
+    expected_ids: list[str],
+    allow_legacy_order: bool = False,
+) -> tuple[np.ndarray, dict[str, object]]:
     report = json.loads(path.read_text(encoding="utf-8"))
-    values = np.asarray(report["families"][family]["ensemble_predictions"], dtype=float)
-    if values.shape != (expected, len(TARGETS)) or not np.isfinite(values).all():
-        raise ValueError(f"predições inválidas em {path}: {values.shape}")
+    source_ids = report.get("study_ids")
+    if not isinstance(source_ids, list):
+        if not allow_legacy_order:
+            raise ValueError(f"{path}: relatório não contém study_ids; não é seguro alinhar o ensemble")
+        source_ids = list(expected_ids)
+        legacy_order_assumed = True
+    else:
+        legacy_order_assumed = False
+    values = align_matrix(
+        report["families"][family]["ensemble_predictions"],
+        source_ids,
+        expected_ids,
+        f"{path.name}/{family}",
+    )
     return values, {
         "report": str(path),
         "family": family,
+        "study_count": len(source_ids),
+        "legacy_order_assumed": legacy_order_assumed,
         "coverage": report.get("slot_coverage_decoded"),
     }
 
@@ -101,6 +149,11 @@ def main() -> int:
     parser.add_argument("--dino-npz", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--bootstrap-count", type=int, default=2000)
+    parser.add_argument(
+        "--allow-legacy-report-order",
+        action="store_true",
+        help="permite relatórios antigos sem study_ids; registra a suposição explicitamente",
+    )
     args = parser.parse_args()
     if args.bootstrap_count < 1:
         raise ValueError("bootstrap-count precisa ser positivo")
@@ -109,8 +162,12 @@ def main() -> int:
     gold = train[train[TARGETS].notna().all(axis=1)].copy()
     labels = gold[TARGETS].to_numpy(dtype=float)
     ids = gold["StudyInstanceUID"].astype(str).tolist()
-    champ_raw, champ_meta = load_ensemble(args.champ_report, "champ", len(ids))
-    llm_raw, llm_meta = load_ensemble(args.llm_report, "llm199e30", len(ids))
+    champ_raw, champ_meta = load_ensemble(
+        args.champ_report, "champ", ids, args.allow_legacy_report_order
+    )
+    llm_raw, llm_meta = load_ensemble(
+        args.llm_report, "llm199e30", ids, args.allow_legacy_report_order
+    )
 
     h36 = json.loads(args.h36_report.read_text(encoding="utf-8"))
     h36_values = h36.get("predictions", {}).get("h36", {})
@@ -118,9 +175,13 @@ def main() -> int:
         raise ValueError("IDs do H-36 não coincidem com os 58 gold")
     h36_rank = ranks(np.asarray([h36_values[uid] for uid in ids], dtype=float))
     dino = np.load(args.dino_npz, allow_pickle=False)
-    if dino["ids"].astype(str).tolist() != ids:
-        raise ValueError("IDs do DINOv3 não coincidem com os 58 gold")
-    h38_rank = ranks(0.80 * h36_rank + 0.20 * np.asarray(dino["base_rank"], dtype=float))
+    dino_rank = align_matrix(
+        np.asarray(dino["base_rank"], dtype=float),
+        dino["ids"].astype(str).tolist(),
+        ids,
+        "DINOv3",
+    )
+    h38_rank = ranks(0.80 * h36_rank + 0.20 * dino_rank)
     champ_rank = ranks(champ_raw)
     llm_rank = ranks(llm_raw)
 
@@ -175,6 +236,7 @@ def main() -> int:
     result = {
         "format": "rsna-dinov2-members-gold-blend-comparison-v1",
         "diagnostic_only": True,
+        "legacy_order_override": args.allow_legacy_report_order,
         "gold_studies": len(ids),
         "models": {"champ": champ_meta, "llm199e30": llm_meta},
         "individual": individual,

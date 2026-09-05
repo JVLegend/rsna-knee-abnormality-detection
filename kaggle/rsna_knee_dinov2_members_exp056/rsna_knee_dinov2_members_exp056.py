@@ -16,6 +16,8 @@ No train labels, report text or private kernel output is used at inference.
 from __future__ import annotations
 
 import gc
+import hashlib
+import json
 import math
 import os
 from pathlib import Path
@@ -58,6 +60,7 @@ N_SLOT = len(SLOT_SPECS)
 GROUP = 3
 N_GROUP = 3
 SIZE = 224
+CACHE_VERSION = "h42-test-cache-v2"
 CROP_MM = 130.0
 WINDOW = (0.35, 0.65)
 MEAN = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
@@ -306,17 +309,21 @@ def render_group(raw: list[np.ndarray], spacings: list[tuple[float, float] | Non
     return np.rint(resized.numpy() * 255.0).clip(0, 255).astype(np.uint8)
 
 
-def decode_slot(record: dict[str, object], series_root: Path) -> np.ndarray | None:
+def decode_slot_diagnostic(
+    record: dict[str, object], series_root: Path
+) -> tuple[np.ndarray | None, str | None]:
     directory = series_root / str(record["study_uid"]) / str(record["series_uid"])
     files = order_files(directory, list(record.get("files", [])))
+    if not files:
+        return None, "no_files"
     if len(files) < GROUP + 2:
-        return None
+        return None, "too_few_slices"
     centers = [int(round(value * (len(files) - 1))) for value in np.linspace(WINDOW[0], WINDOW[1], N_GROUP)]
     groups: list[np.ndarray] = []
     for center in centers:
         indices = [center - 1, center, center + 1]
         if min(indices) < 0 or max(indices) >= len(files):
-            return None
+            return None, "center_out_of_bounds"
         raw: list[np.ndarray] = []
         spacings: list[tuple[float, float] | None] = []
         try:
@@ -325,29 +332,145 @@ def decode_slot(record: dict[str, object], series_root: Path) -> np.ndarray | No
                 raw.append(pixels)
                 spacings.append(spacing)
             groups.append(render_group(raw, spacings, record.get("pixel_spacing")))
-        except Exception:
-            return None
-    return np.stack(groups)
+        except FileNotFoundError:
+            return None, "missing_dicom"
+        except ValueError:
+            return None, "shape_or_render_error"
+        except Exception as exc:
+            return None, f"dicom_error:{type(exc).__name__}"
+    return np.stack(groups), None
+
+
+def decode_slot(record: dict[str, object], series_root: Path) -> np.ndarray | None:
+    decoded, _reason = decode_slot_diagnostic(record, series_root)
+    return decoded
+
+
+def decode_study(
+    study_uid: str,
+    selected_record: dict[str, dict[str, object] | None],
+    series_root: Path,
+) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+    images = np.zeros((N_SLOT, N_GROUP, GROUP, SIZE, SIZE), dtype=np.uint8)
+    masks = np.zeros(N_SLOT, dtype=np.uint8)
+    study_diagnostics: dict[str, object] = {"filled_slots": 0, "failures": {}}
+    for slot_index, (name, _plane, _fluid, _fatsat) in enumerate(SLOT_SPECS):
+        record = selected_record.get(name)
+        if record is None:
+            study_diagnostics["failures"][name] = "no_matching_series"
+            continue
+        decoded, reason = decode_slot_diagnostic(record, series_root)
+        if decoded is not None and decoded.shape == images[slot_index].shape:
+            images[slot_index] = decoded
+            masks[slot_index] = 1
+            study_diagnostics["filled_slots"] = int(study_diagnostics["filled_slots"]) + 1
+        else:
+            study_diagnostics["failures"][name] = reason or "unexpected_shape"
+    return images, masks, study_diagnostics
 
 
 def build_test_images(
     study_ids: list[str],
     selected: dict[str, dict[str, dict[str, object] | None]],
     series_root: Path,
-) -> tuple[np.ndarray, np.ndarray]:
+    include_diagnostics: bool = False,
+) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray, np.ndarray, dict[str, object]]:
     images = np.zeros((len(study_ids), N_SLOT, N_GROUP, GROUP, SIZE, SIZE), dtype=np.uint8)
     masks = np.zeros((len(study_ids), N_SLOT), dtype=np.uint8)
+    diagnostics: dict[str, object] = {}
     for study_index, study_uid in enumerate(study_ids):
-        for slot_index, (name, _plane, _fluid, _fatsat) in enumerate(SLOT_SPECS):
-            record = selected[study_uid].get(name)
-            if record is None:
-                continue
-            decoded = decode_slot(record, series_root)
-            if decoded is not None and decoded.shape == images[study_index, slot_index].shape:
-                images[study_index, slot_index] = decoded
-                masks[study_index, slot_index] = 1
-        log(f"study {study_index + 1}/{len(study_ids)} slots={int(masks[study_index].sum())}")
+        decoded_images, decoded_mask, study_diagnostics = decode_study(
+            study_uid, selected[study_uid], series_root
+        )
+        images[study_index] = decoded_images
+        masks[study_index] = decoded_mask
+        diagnostics[study_uid] = study_diagnostics
+        log(
+            f"study {study_index + 1}/{len(study_ids)} "
+            f"slots={int(masks[study_index].sum())} "
+            f"failures={len(study_diagnostics['failures'])}"
+        )
+    if include_diagnostics:
+        return images, masks, diagnostics
     return images, masks
+
+
+def cache_path(cache_root: Path, study_uid: str) -> Path:
+    digest = hashlib.sha256(study_uid.encode("utf-8")).hexdigest()[:24]
+    return cache_root / f"study_{digest}.npz"
+
+
+def load_cached_study(path: Path, study_uid: str) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
+    with np.load(path, allow_pickle=False) as cached:
+        cached_uid = str(cached["study_uid"].item())
+        version = str(cached["cache_version"].item())
+        images = np.asarray(cached["images"], dtype=np.uint8)
+        masks = np.asarray(cached["masks"], dtype=np.uint8)
+        diagnostic_json = str(cached["diagnostic_json"].item())
+    expected_shape = (N_SLOT, N_GROUP, GROUP, SIZE, SIZE)
+    if cached_uid != study_uid or version != CACHE_VERSION:
+        raise ValueError(f"cache incompatível para {study_uid}")
+    if images.shape != expected_shape or masks.shape != (N_SLOT,):
+        raise ValueError(f"shape de cache inválido para {study_uid}: {images.shape}/{masks.shape}")
+    diagnostics = json.loads(diagnostic_json)
+    if not isinstance(diagnostics, dict):
+        raise ValueError(f"diagnóstico de cache inválido para {study_uid}")
+    return images, masks, diagnostics
+
+
+def build_test_cache(
+    study_ids: list[str],
+    selected: dict[str, dict[str, dict[str, object] | None]],
+    series_root: Path,
+    cache_root: Path,
+) -> tuple[list[int], dict[str, object]]:
+    """Decode one study at a time and persist compact per-study arrays.
+
+    This keeps the DICOM decode out of the model loop and bounds RAM by the
+    inference batch. The cache is versioned so preprocessing changes cannot
+    silently reuse stale tensors.
+    """
+    cache_root.mkdir(parents=True, exist_ok=True)
+    coverage = np.zeros(N_SLOT, dtype=np.int64)
+    diagnostics: dict[str, object] = {}
+    for index, study_uid in enumerate(study_ids):
+        path = cache_path(cache_root, study_uid)
+        try:
+            _images, masks, study_diagnostics = load_cached_study(path, study_uid)
+        except (FileNotFoundError, OSError, KeyError, ValueError, json.JSONDecodeError):
+            images, masks, study_diagnostics = decode_study(
+                study_uid, selected[study_uid], series_root
+            )
+            np.savez_compressed(
+                path,
+                cache_version=np.asarray(CACHE_VERSION),
+                study_uid=np.asarray(study_uid),
+                images=images,
+                masks=masks,
+                diagnostic_json=np.asarray(json.dumps(study_diagnostics, ensure_ascii=False)),
+            )
+        coverage += masks.astype(np.int64)
+        diagnostics[study_uid] = study_diagnostics
+        log(
+            f"study {index + 1}/{len(study_ids)} "
+            f"slots={int(masks.sum())} "
+            f"failures={len(study_diagnostics.get('failures', {}))}"
+        )
+    return coverage.astype(int).tolist(), diagnostics
+
+
+def iter_cached_batches(
+    study_ids: list[str], cache_root: Path, batch_size: int
+):
+    for start in range(0, len(study_ids), batch_size):
+        stop = min(start + batch_size, len(study_ids))
+        batch_images: list[np.ndarray] = []
+        batch_masks: list[np.ndarray] = []
+        for study_uid in study_ids[start:stop]:
+            images, masks, _diagnostics = load_cached_study(cache_path(cache_root, study_uid), study_uid)
+            batch_images.append(images)
+            batch_masks.append(masks)
+        yield start, stop, np.stack(batch_images), np.stack(batch_masks)
 
 
 class EncoderWrapper(nn.Module):
@@ -410,7 +533,10 @@ def infer_family(
     images: np.ndarray,
     masks: np.ndarray,
     device: torch.device,
+    batch_size: int = 8,
 ) -> np.ndarray:
+    if batch_size < 1:
+        raise ValueError("batch_size precisa ser positivo")
     folds: list[np.ndarray] = []
     for path in checkpoints:
         log(f"loading {path.name}")
@@ -419,11 +545,55 @@ def infer_family(
         model.load_state_dict(checkpoint["model"], strict=True)
         model.eval().to(device)
         with torch.no_grad():
-            values = torch.from_numpy(images).to(device)
-            slot_mask = torch.from_numpy(masks).to(device)
-            logits = model(values, slot_mask)
-            folds.append(torch.sigmoid(logits).float().cpu().numpy())
-        del values, slot_mask, logits, model, checkpoint
+            predictions: list[np.ndarray] = []
+            for start in range(0, len(images), batch_size):
+                stop = min(start + batch_size, len(images))
+                values = torch.from_numpy(images[start:stop]).to(device)
+                slot_mask = torch.from_numpy(masks[start:stop]).to(device)
+                logits = model(values, slot_mask)
+                predictions.append(torch.sigmoid(logits).float().cpu().numpy())
+                del values, slot_mask, logits
+                if start == 0 or stop == len(images) or stop % max(batch_size * 8, 1) == 0:
+                    log(f"{path.name}: infer {stop}/{len(images)}")
+            folds.append(np.concatenate(predictions, axis=0))
+        del model, checkpoint
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
+        gc.collect()
+    return np.mean(np.stack(folds), axis=0)
+
+
+def infer_family_cached(
+    checkpoints: list[Path],
+    study_ids: list[str],
+    cache_root: Path,
+    device: torch.device,
+    batch_size: int = 8,
+) -> np.ndarray:
+    """Run a family from per-study cache without materializing all test images."""
+    if batch_size < 1:
+        raise ValueError("batch_size precisa ser positivo")
+    folds: list[np.ndarray] = []
+    for path in checkpoints:
+        log(f"loading {path.name}")
+        checkpoint = torch.load(path, map_location="cpu", weights_only=False)
+        model = Member()
+        model.load_state_dict(checkpoint["model"], strict=True)
+        model.eval().to(device)
+        with torch.no_grad():
+            predictions: list[np.ndarray] = []
+            for start, stop, image_batch, mask_batch in iter_cached_batches(
+                study_ids, cache_root, batch_size
+            ):
+                values = torch.from_numpy(image_batch).to(device)
+                slot_mask = torch.from_numpy(mask_batch).to(device)
+                logits = model(values, slot_mask)
+                predictions.append(torch.sigmoid(logits).float().cpu().numpy())
+                del image_batch, mask_batch, values, slot_mask, logits
+                if start == 0 or stop == len(study_ids) or stop % max(batch_size * 8, 1) == 0:
+                    log(f"{path.name}: infer {stop}/{len(study_ids)}")
+            folds.append(np.concatenate(predictions, axis=0))
+        del model, checkpoint
         if device.type == "cuda":
             torch.cuda.empty_cache()
         gc.collect()
@@ -457,11 +627,44 @@ def main() -> int:
     rows = series.to_dict("records")
     records = [probe_series(row, series_root) for row in rows]
     selected = select_slots(records, study_ids)
-    images, masks = build_test_images(study_ids, selected, series_root)
-    log(f"device={device} test_studies={len(study_ids)} coverage={masks.sum(axis=0).astype(int).tolist()}")
-
-    champ = infer_family(find_checkpoints("champ_fold*.pt"), images, masks, device)
-    llm199e30 = infer_family(find_checkpoints("llm199e30_fold*.pt"), images, masks, device)
+    batch_size = int(os.environ.get("RSNA_BATCH_SIZE", "8"))
+    streaming = os.environ.get("RSNA_STREAMING", "1").strip().lower() not in {"0", "false", "no"}
+    if streaming:
+        cache_root = Path(
+            os.environ.get("RSNA_CACHE_ROOT", "/kaggle/working/rsna_h42_test_cache")
+        ).expanduser()
+        slot_coverage, diagnostics = build_test_cache(
+            study_ids, selected, series_root, cache_root
+        )
+        empty_studies = [
+            uid for uid, item in diagnostics.items() if int(item.get("filled_slots", 0)) == 0
+        ]
+        if empty_studies:
+            raise RuntimeError(
+                f"nenhum slot DICOM decodificado para {len(empty_studies)} estudos: {empty_studies[:3]}"
+            )
+        log(
+            f"device={device} test_studies={len(study_ids)} "
+            f"coverage={slot_coverage} streaming_cache={cache_root}"
+        )
+        champ = infer_family_cached(
+            find_checkpoints("champ_fold*.pt"), study_ids, cache_root, device, batch_size
+        )
+        llm199e30 = infer_family_cached(
+            find_checkpoints("llm199e30_fold*.pt"), study_ids, cache_root, device, batch_size
+        )
+    else:
+        built = build_test_images(study_ids, selected, series_root, include_diagnostics=True)
+        images, masks, diagnostics = built
+        slot_coverage = masks.sum(axis=0).astype(int).tolist()
+        empty_studies = [uid for index, uid in enumerate(study_ids) if not masks[index].any()]
+        if empty_studies:
+            raise RuntimeError(
+                f"nenhum slot DICOM decodificado para {len(empty_studies)} estudos: {empty_studies[:3]}"
+            )
+        log(f"device={device} test_studies={len(study_ids)} coverage={slot_coverage}")
+        champ = infer_family(find_checkpoints("champ_fold*.pt"), images, masks, device, batch_size)
+        llm199e30 = infer_family(find_checkpoints("llm199e30_fold*.pt"), images, masks, device, batch_size)
     candidate = rank_columns(0.20 * rank_columns(champ) + 0.80 * rank_columns(llm199e30))
     submission = pd.DataFrame({"StudyInstanceUID": study_ids})
     for index, target in enumerate(TARGETS):
@@ -476,6 +679,25 @@ def main() -> int:
     output = Path(os.environ.get("RSNA_OUTPUT_PATH", "/kaggle/working/submission.csv")).expanduser()
     output.parent.mkdir(parents=True, exist_ok=True)
     submission.to_csv(output, index=False)
+    diagnostics_path = Path(
+        os.environ.get("RSNA_DIAGNOSTICS_PATH", f"{output}.diagnostics.json")
+    ).expanduser()
+    diagnostics_path.parent.mkdir(parents=True, exist_ok=True)
+    diagnostics_path.write_text(
+        json.dumps(
+            {
+                "study_count": len(study_ids),
+                "slot_coverage": slot_coverage,
+                "batch_size": batch_size,
+                "streaming": streaming,
+                "diagnostics": diagnostics,
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     log(f"saved={output} shape={submission.shape} elapsed={time.time() - started:.1f}s")
     print(submission.to_string(index=False), flush=True)
     return 0

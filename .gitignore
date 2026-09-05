@@ -35,6 +35,8 @@ data/external_labels/*
 !data/external_labels/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+data/models/*
+!data/models/.gitkeep
 *.dcm
 *.dicom
 *.nii
