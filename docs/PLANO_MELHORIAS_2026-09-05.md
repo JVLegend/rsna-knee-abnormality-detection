@@ -138,3 +138,33 @@ Artefatos centrais:
 - `kaggle/rsna_knee_dinov2_members_exp056/rsna_knee_dinov2_members_exp056.py`
 - `reports/grouped_oof_manifest_gold_20260905.json` (ignorado pelo Git)
 - [[06_Revisao_Estrategica_2026-09-05]] no vault
+
+## Atualização operacional — 13/09/2026
+
+- A autenticação Kaggle voltou a funcionar: a competição está aceita pelo
+  usuário, com prazo informado pela API para `22/10/2026` e execução T4
+  disponível.
+- A primeira publicação do H-42 (`jvlegend/rsna-knee-dinov2-members-exp056`,
+  versão 1) falhou antes da inferência porque a montagem dos datasets anexados
+  tinha mais níveis de diretório do que o buscador de checkpoints percorria.
+  Isso foi classificado como falha de integração, não como falha de modelo.
+- A versão 2 corrigiu a descoberta limitada por slug, sem fazer uma busca
+  recursiva na árvore DICOM. O kernel terminou `COMPLETE` no T4, carregou os
+  dez checkpoints públicos CC0 e gerou `submission.csv` em `48,7 s`, com
+  `3×13`, IDs únicos, valores finitos em `[0,1]` e cobertura de slots
+  `2/3/3/2/1/1`.
+- A saída Kaggle e a reprodução local são byte-idênticas:
+  `SHA-256=2b9a159784efeeb45d50e209b5bdbc58317fa9ec512e7d2dad0974338ba77e22`.
+  O artefato foi salvo em
+  `submissions/submission_h42_dinov2_members_exp056_kaggle_v2.csv`, com o
+  diagnóstico em `reports/h42_kaggle_v2_diagnostics.json`.
+- O primeiro baseline OOF efetivamente cross-fitted usando o manifesto agrupado
+  foi executado com `C=32`, lexicon e seed `2026`: macro-AUC `0,626918` em 58
+  estudos, sem usar relatórios não rotulados para construir o vocabulário.
+  Esse resultado é o gate de texto/metadados; ainda não é OOF visual dos
+  checkpoints públicos.
+
+Decisão: H-38 (`0,929`) continua sendo o baseline oficial até haver score
+Kaggle da H-42. O botão Notebook-only está preparado no kernel v2; a submissão
+externa aguarda a confirmação de envio no momento da ação. Não usar o gold
+leaky nem as três linhas visíveis para recalibrar pesos.

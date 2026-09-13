@@ -111,20 +111,46 @@ def find_checkpoints(pattern: str) -> list[Path]:
             return direct
         raise FileNotFoundError(f"RSNA_CHECKPOINT_ROOT={configured}: encontrei {len(direct)} arquivos para {pattern}")
     root = Path("/kaggle/input")
-    direct: list[Path] = []
-    for dataset_name in (
-        "rsna-knee-champ-members-only",
-        "rsna-knee-llm199-e30-members",
-    ):
-        direct.extend(sorted((root / dataset_name).glob(pattern)))
-    if len(direct) == 5:
-        return direct
-    # Kaggle can insert an owner/version directory for API-attached datasets.
-    for child in sorted(root.iterdir() if root.is_dir() else []):
-        direct.extend(sorted(child.glob(pattern)))
-        for nested in sorted(child.iterdir()) if child.is_dir() else []:
-            direct.extend(sorted(nested.glob(pattern)))
-    unique = sorted({path.resolve() for path in direct})
+    dataset_name = {
+        "champ_fold*.pt": "rsna-knee-champ-members-only",
+        "llm199e30_fold*.pt": "rsna-knee-llm199-e30-members",
+    }.get(pattern)
+    if dataset_name is None:
+        raise ValueError(f"padrão de checkpoint não suportado: {pattern}")
+
+    # A API do Kaggle pode montar um dataset como
+    # /kaggle/input/datasets/<owner>/<slug>/<version>/..., em vez de expor o
+    # slug diretamente na raiz. Descobrimos apenas diretórios cujo nome
+    # contém o slug e fazemos rglob somente dentro deles; nunca percorremos
+    # a árvore de DICOM da competição à procura de *.pt.
+    roots: set[Path] = set()
+    if root.is_dir():
+        frontier = [root]
+        skip = {"competition", "competitions", "train_series", "test_series"}
+        for depth in range(5):
+            next_frontier: list[Path] = []
+            for parent in frontier:
+                try:
+                    children = sorted(path for path in parent.iterdir() if path.is_dir())
+                except OSError:
+                    continue
+                for child in children:
+                    child_name = child.name.casefold()
+                    if dataset_name in child_name:
+                        roots.add(child)
+                        continue
+                    if child_name in skip:
+                        continue
+                    # Descend through the shallow API container hierarchy
+                    # (root/owner/slug/version), not through image trees.
+                    if depth == 0 or parent.name.casefold() == "datasets" or "dataset" in parent.name.casefold():
+                        next_frontier.append(child)
+            frontier = next_frontier
+
+    unique: set[Path] = set()
+    for candidate_root in sorted(roots):
+        unique.update(path.resolve() for path in candidate_root.rglob(pattern))
+    unique = sorted(unique)
     if len(unique) != 5:
         raise FileNotFoundError(f"checkpoint pattern={pattern}: encontrei {len(unique)} arquivos")
     return unique
