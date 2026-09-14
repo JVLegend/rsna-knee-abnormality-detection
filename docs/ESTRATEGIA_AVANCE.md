@@ -4,8 +4,8 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-001: scores reconciliados por CLI em 14/09/2026; nenhuma
-nova métrica de imagem. Inventário A00 e partição V01 executados abaixo.
+Atualizado na AV-002: preflight remoto aprovado e piloto parent estrito
+iniciado em 14/09/2026. Ainda sem nova métrica de imagem ou submissão.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -66,10 +66,14 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: A01 — preparar parent estrito, eliminar substituições silenciosas
-  e conferir todos os membros/mounts/cota antes de executar em duas T4.
-- Experiência em execução: nenhuma iniciada por este plano.
-- Kernel/submissão em andamento: nenhum novo lançado na AV-001.
+- Próxima ação: A01 — recuperar status/logs/recibos do piloto v1 existente.
+  Não duplicar o kernel e não submeter a versão piloto limitada a 30 minutos.
+- Experiência em execução: parent estrito, com 56 hashes fixados e gates.
+- Kernel em andamento: jvlegend/rsna-knee-h43-parent-strict-pilot, v1,
+  ID 134328295; último status RUNNING. T4x2 exigida pelo código, offline.
+- Preflight CPU: jvlegend/rsna-knee-h43-artifact-preflight, v1,
+  ID 134328050, COMPLETE; 56 arquivos/4,48 GB em 48,39 s da função.
+- Submissão à competição: nenhuma nova na AV-002.
 - Último resultado confirmado por CLI: H-42 COMPLETE, 0,881, ref 56217840.
 - Melhor candidato confirmado: H-38, 0,929, ref 55916072.
 - Alternativa se A01 bloquear: A03 — Native384Dense com receita nativa.
@@ -101,9 +105,9 @@ a cabeça. Se sua exposição for desconhecida, iniciar do pretreino genérico.
   e classes suficientes, e confirmação separada com cerca de 150 estudos.
   Dimensionar depois do inventário. O restante serve ao treino. Se faltar
   alguma classe, registrar a limitação e ampliar dados antes da confirmação.
-- O manifesto atual cobre apenas os 58 gold: V01 precisa criar uma partição
-  nova para os estudos weak. Não reutilizar aquele manifesto como se cobrisse
-  o corpus inteiro.
+- O manifesto anterior cobria apenas os 58 gold. V01 criou
+  data/processed/validation_weak_v1/manifest.json para 699 estudos weak;
+  não confundir as duas partições nem usar o gold como teste virgem.
 - Manter os 58 oficiais fora do treino dos novos modelos e como diagnóstico
   secundário. Já foram consultados repetidamente e não são um teste virgem.
 - Labels de validação ficam congelados. Ao comparar professores, não medir
@@ -155,7 +159,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
 | A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
-| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | PENDENTE |
+| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | EM_EXECUCAO — AV-002; preflight CPU aprovado, piloto T4 v1 RUNNING |
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | PENDENTE |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
@@ -299,3 +303,25 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   código scripts/freeze_weak_validation.py; downloads em reports/avance_av001_sources/.
 - Resultado observado: inventário e partição, não ganho de AUC. Sem novo
   treino/kernel/envio. H-38 0,929 preservada; próximo A01, alternativa A03.
+
+### AV-002 — 14/09/2026 — A01 iniciada
+
+- Código implementado: scripts/h43_integrity.py e scripts/prepare_h43_parent.py.
+  Fixa parent 0,60, exige todos os membros, rejeita ausência/NaN e falhas
+  dos ramos obrigatórios. Somente o gate final publica submission.csv;
+  intermediários ficam em h43_candidate.partial.csv.
+- 16 testes passaram, incluindo hashes incorretos, membros duplicados/ausentes,
+  IDs, NaN, proteção contra drift da fonte e falha sem publicação.
+- Preflight real na CPU Kaggle COMPLETE: 56 arquivos, 4.483.039.152 bytes
+  para hash, 48,39 s. Kernel rsna-knee-h43-artifact-preflight v1, ID 134328050.
+- Piloto rsna-knee-h43-parent-strict-pilot v1, ID 134328295, iniciado e
+  consultado RUNNING. Offline, T4 solicitada, código exige 2 GPUs T4,
+  limite 1.800 s. Build local h43_parent_strict_locked_v2.ipynb em
+  reports/avance_av002_build/, com lock dos 56 hashes observados.
+- Artefatos/log detalhado: docs/AV002_PARENT_ESTRITO.md. Outputs do piloto
+  serão recuperados em reports/avance_av002_pilot_v1/.
+- Cota antes do piloto: 24,38 h GPU; refresh informado 19/09 00:00 UTC.
+  Nenhuma submissão, nenhum score novo; H-38 0,929 preservada.
+- Retomar o piloto existente. Se completar, verificar recibo e cobertura;
+  ainda falta medir lote representativo antes da versão de submissão.
+  Se inviável, A03 é a alternativa. V01 permanece congelada.

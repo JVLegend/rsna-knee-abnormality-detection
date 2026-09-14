@@ -2,6 +2,24 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-002 — 14/09/2026 — A01 parent estrito em execução
+
+Implementados gates e builder ancorado na fonte auditada; 16 testes passaram.
+[Registro completo](AV002_PARENT_ESTRITO.md). Preflight CPU
+jvlegend/rsna-knee-h43-artifact-preflight v1 (ID 134328050) COMPLETE:
+56 arquivos, 4.483.039.152 bytes, 48,39 s para auditoria; hashes fixados no piloto.
+
+Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1 (ID 134328295)
+iniciado, último status RUNNING. T4 solicitada, exige duas T4 reais, offline,
+limite 1.800 s. Código não deixa CSV elegível após falha dos ramos obrigatórios.
+Build reports/avance_av002_build/h43_parent_strict_locked_v2.ipynb:
+a103e27720ba52f584c377ac6ffa470aad062c0a4e8558df22da06535a6b0306.
+
+Não confundir versão local v2 com versão remota v1. Não submeter este piloto
+de 30 minutos: faltam inferência íntegra, lote representativo e orçamento para
+teste oculto. Nenhuma submissão/score novo; H-38 0,929 preservada.
+Retomar o kernel existente antes de qualquer nova execução; alternativa A03.
+
 ## AV-001 — 14/09/2026 — A00 + V01 executadas
 
 Resultado: [auditoria e validação congelada](AV001_AUDITORIA_E_VALIDACAO.md).
