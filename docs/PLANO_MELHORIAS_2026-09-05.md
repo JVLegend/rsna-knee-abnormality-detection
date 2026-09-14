@@ -165,6 +165,7 @@ Artefatos centrais:
   checkpoints públicos.
 
 Decisão: H-38 (`0,929`) continua sendo o baseline oficial até haver score
-Kaggle da H-42. O botão Notebook-only está preparado no kernel v2; a submissão
-externa aguarda a confirmação de envio no momento da ação. Não usar o gold
-leaky nem as três linhas visíveis para recalibrar pesos.
+Kaggle da H-42. A submissão Notebook-only foi criada em `2026-09-14
+00:49:02 UTC` e aparece como `PENDING`/`Notebook Running`; public/private score
+ainda estão vazios porque o Kaggle está reexecutando o kernel no teste oculto.
+Não usar o gold leaky nem as três linhas visíveis para recalibrar pesos.
