@@ -2,20 +2,25 @@
 
 Baseline reprodutível para a competição [RSNA Knee Abnormality Detection](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection), mantido no HD externo e versionado sem dados da competição.
 
+#RSNA #Kaggle #Tecnologia
+
 ## Objetivo
 
 Prever, para cada estudo de MRI do joelho, a probabilidade de 12 anormalidades. A métrica é a média macro de ROC-AUC nos 12 alvos.
 
-O primeiro marco foi uma submissão textual; a referência atual é a candidata
-multi-view texto–imagem com supervisão fraca, com score público `0,655`. A
-próxima hipótese troca somente a fonte da supervisão fraca por labels públicos
-auditados contra os 58 rótulos oficiais.
+O primeiro marco foi uma submissão textual. A referência registrada em
+14/09/2026 é H-38, DINOv3 20% + CoAtNet 80%, público `0,929`.
 
 O plano consolidado de melhorias, hipóteses, gates e estado de implementação
 está em [`docs/PLANO_MELHORIAS_2026-09-05.md`](docs/PLANO_MELHORIAS_2026-09-05.md).
-H-38 (`0,929`) continua protegida como baseline; o H-42 DINOv2 members é
-apenas candidato local até haver OOF independente e cota para uma execução
-Notebook-only.
+H-42 terminou com público `0,881` e não foi promovida.
+
+Para continuar o projeto, ler primeiro
+[`docs/ESTRATEGIA_AVANCE.md`](docs/ESTRATEGIA_AVANCE.md): fila de 27 alternativas,
+cursor, dependências e critérios. O comando **AVANCE** retoma a experiência
+em execução ou testa a próxima elegível, atualiza o log e só envia candidatos
+que atendam ao protocolo. A fonte de verdade é a nota 07_Estrategia_AVANCE no vault.
+As seções abaixo conservam receitas históricas, não o estado operacional atual.
 
 ## Estrutura
 

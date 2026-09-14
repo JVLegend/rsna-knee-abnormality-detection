@@ -8,6 +8,10 @@ tags: [Kaggle, RSNA, Medicina, Tecnologia]
 
 # Estratégia, evidências e hipóteses
 
+Fila operacional vigente: [ESTRATEGIA_AVANCE.md](ESTRATEGIA_AVANCE.md).
+Ao receber AVANCE, consultar seu cursor e registrar a execução. O conteúdo
+abaixo preserva o histórico; as correções e o estado do plano novo prevalecem.
+
 Documento vivo para transformar a pesquisa no Kaggle em experimentos controlados. A ideia é registrar o que foi observado, o que é apenas uma afirmação de notebook, o que vamos testar e qual evidência fará uma hipótese avançar ou ser descartada.
 
 > [!warning]

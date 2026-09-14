@@ -9,6 +9,10 @@ artefatos reproduzíveis.
 
 ## Estado factual
 
+Atualização de execução: [ESTRATEGIA_AVANCE.md](ESTRATEGIA_AVANCE.md) é a fila
+vigente com 27 alternativas. Seus critérios e correções de interpretação
+prevalecem sobre a ordem preliminar de experiências abaixo.
+
 - H-38 é a referência do projeto: public score `0,929`; H-36 (`0,928`) é o
   fallback visual mais próximo. No snapshot de `14/09/2026 03:23 UTC`, a
   equipe DataRockstar estava em `1.385/3.706`; o topo marcava `0,956` e

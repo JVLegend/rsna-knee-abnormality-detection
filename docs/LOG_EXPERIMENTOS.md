@@ -2,6 +2,18 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## Plano AVANCE — 14/09/2026
+
+Criada [ESTRATEGIA_AVANCE.md](ESTRATEGIA_AVANCE.md), com 27 alternativas,
+dependências, validação, orçamento por execução e cursor persistente.
+Cada AVANCE do JV retoma o trabalho em andamento ou a próxima experiência
+elegível, com registro de código, resultado e eventual envio Notebook-only.
+Próxima ação: A00 (inventário H-43A); alternativa: V01 (partição agrupada).
+Estado: planejamento concluído; nenhuma experiência, treino ou submissão nova
+foi executada nesta rodada. H-38 permanece 0,929 e H-42 permanece rejeitada.
+
+## Histórico de experiências
+
 | Data | Versão | Hipótese | Validação local | Leaderboard | Decisão |
 |---|---|---|---:|---:|---|
 | 07/08/2026 | `setup` | Repositório, regras, protocolo e smoke test sintético | N/A | N/A | Infraestrutura pronta |
