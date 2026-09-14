@@ -4,7 +4,8 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-As métricas abaixo vêm do registro de 14/09; não são consultas novas.
+Atualizado na AV-001: scores reconciliados por CLI em 14/09/2026; nenhuma
+nova métrica de imagem. Inventário A00 e partição V01 executados abaixo.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -65,13 +66,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: A00 — inventário de reprodução H-43A e comparação com H-38.
+- Próxima ação: A01 — preparar parent estrito, eliminar substituições silenciosas
+  e conferir todos os membros/mounts/cota antes de executar em duas T4.
 - Experiência em execução: nenhuma iniciada por este plano.
-- Kernel/submissão em andamento: nenhum novo lançado nesta rodada.
-- Último resultado competitivo conhecido: H-42 COMPLETE, 0,881.
-- Melhor candidato conhecido: H-38, 0,929.
-- Plano alternativo se A00 bloquear: V01 — partição agrupada ampliada.
-- Experiências abaixo: planejadas; nenhuma métrica nova foi produzida aqui.
+- Kernel/submissão em andamento: nenhum novo lançado na AV-001.
+- Último resultado confirmado por CLI: H-42 COMPLETE, 0,881, ref 56217840.
+- Melhor candidato confirmado: H-38, 0,929, ref 55916072.
+- Alternativa se A01 bloquear: A03 — Native384Dense com receita nativa.
+- A00: inventário estático concluído; não é reprodução do score público.
+- V01: concluída; manifesto validation_weak_v1 congelado no HD, 299 treino,
+  250 desenvolvimento e 150 confirmação; nenhum modelo avaliado nesta partição.
 
 ## Validação e regras de decisão
 
@@ -150,11 +154,11 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
-| A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | PENDENTE |
+| A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
 | A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | PENDENTE |
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | PENDENTE |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
-| V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | PENDENTE |
+| V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PENDENTE |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | PENDENTE |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
@@ -271,3 +275,27 @@ Próxima experiência elegível / bloqueio:
 
 Fila criada com 27 alternativas, dependências e protocolo AVANCE.
 Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
+
+### AV-001 — 14/09/2026 — A00 + V01
+
+- A00: fonte H-43A fixada por SHA; 12 datasets, 2 outputs e modelo oficial.
+  Manifesto DINO atual tem 20 membros/5 folds; A5 lista 5 folds; Raptor são
+  4 views/3 checkpoints, e CoAt residual são 3 checkpoints. Heads E13 baixados,
+  63,5 MB, hash idêntico ao exigido. Versões reais dos mounts, demais hashes e
+  contagem integral de runtime ainda serão conferidos em A01.
+- Risco encontrado: fonte captura falha do CoAt e prossegue sem esse ramo;
+  também tolera falha na promoção DINO e preenche predições ausentes com 0,5.
+  Não enviar apenas porque um CSV passou no schema. A01 exige composição
+  completa e parent explícito 0,60, sem escolher pesos pelo gold.
+- V01: 700 estudos/2.100 caches existentes; excluído 1 por compartilhar laudo
+  com gold. Congelados 299 treino/250 desenvolvimento/150 confirmação, em
+  296/249/147 grupos disjuntos. Todos os alvos com positivos e negativos.
+  Labels 0,5 continuam incertos; confirmação sem avaliações de modelo.
+- Manifesto HD: data/processed/validation_weak_v1/manifest.json; SHA-256
+  365566b0f830e398e78bd36bd9118a7365c3af340f588e774c8bcc351398b6df.
+  Segunda execução idempotente; 6 testes passaram, incluindo exclusões,
+  grupos, NaN, incerteza e proteção contra sobrescrita.
+- Evidência detalhada no repo: docs/AV001_AUDITORIA_E_VALIDACAO.md;
+  código scripts/freeze_weak_validation.py; downloads em reports/avance_av001_sources/.
+- Resultado observado: inventário e partição, não ganho de AUC. Sem novo
+  treino/kernel/envio. H-38 0,929 preservada; próximo A01, alternativa A03.

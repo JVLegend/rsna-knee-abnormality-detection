@@ -2,6 +2,26 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-001 — 14/09/2026 — A00 + V01 executadas
+
+Resultado: [auditoria e validação congelada](AV001_AUDITORIA_E_VALIDACAO.md).
+A00 fixou fonte/hash/receitas do H-43A e identificou fallbacks que permitem
+CSV de ensemble incompleto. E13 real tem 63.534.726 bytes e SHA esperado;
+não estava ausente como a listagem de tamanho sugeria. Nenhum checkpoint foi
+executado. A01 deve exigir parent explícito, duas T4 e composição integral.
+
+V01 inventariou 700 estudos/2.100 arrays e excluiu 1 estudo que compartilha
+laudo com gold. Congelou 299 treino, 250 desenvolvimento e 150 confirmação,
+692 grupos disjuntos; 12 alvos com as duas classes em todas as partições.
+6 testes passaram e repetição não alterou o manifesto. Labels 0,5 são incertos.
+Código: scripts/freeze_weak_validation.py; artefato ignorado pelo Git:
+data/processed/validation_weak_v1/manifest.json, SHA-256
+365566b0f830e398e78bd36bd9118a7365c3af340f588e774c8bcc351398b6df.
+
+Sem AUC nova, treino, kernel ou submissão. CLI confirmou H-38 ref 55916072
+COMPLETE 0,929 e H-42 ref 56217840 COMPLETE 0,881. Preservar H-38.
+Próxima experiência: A01 preflight estrito; se bloquear, A03 Native384Dense.
+
 ## Plano AVANCE — 14/09/2026
 
 Criada [ESTRATEGIA_AVANCE.md](ESTRATEGIA_AVANCE.md), com 27 alternativas,
