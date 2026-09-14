@@ -10,15 +10,18 @@ artefatos reproduzíveis.
 ## Estado factual
 
 - H-38 é a referência do projeto: public score `0,929`; H-36 (`0,928`) é o
-  fallback visual mais próximo.
+  fallback visual mais próximo. No snapshot de `14/09/2026 03:23 UTC`, a
+  equipe DataRockstar estava em `1.385/3.706`; o topo marcava `0,956` e
+  `0,941` já alcançava aproximadamente a faixa 250–500.
 - O H-42 DINOv2 members tem duas famílias públicas CC0, cinco folds cada,
   e o blend externo `20% champ + 80% llm199e30`. O gold local marcou
   `0,995527`, mas isso é diagnóstico contaminado: os pesos foram treinados no
   treino da competição e os 58 estudos gold fazem parte dele.
 - Os `557` DICOMs baixados são somente os três estudos visíveis do teste, não
   uma amostra suficiente para inferir o comportamento privado.
-- A cota semanal de GPU Kaggle estava esgotada no último push do H-42; não há
-  novo score remoto desta rodada.
+- A H-42 foi executada e submetida pelo fluxo Notebook-only. O resultado final
+  foi `0,881`, queda de `-0,048` contra H-38; a família foi rejeitada como
+  candidata principal e o gold local `0,995527` ficou confirmado como leaky.
 - Dados DICOM, CSVs, pesos, cache, relatórios e submissões permanecem fora do
   Git. Licenças devem ser verificadas antes de anexar qualquer fonte a um
   kernel público.
@@ -164,8 +167,103 @@ Artefatos centrais:
   Esse resultado é o gate de texto/metadados; ainda não é OOF visual dos
   checkpoints públicos.
 
-Decisão: H-38 (`0,929`) continua sendo o baseline oficial até haver score
-Kaggle da H-42. A submissão Notebook-only foi criada em `2026-09-14
-00:49:02 UTC` e aparece como `PENDING`/`Notebook Running`; public/private score
-ainda estão vazios porque o Kaggle está reexecutando o kernel no teste oculto.
-Não usar o gold leaky nem as três linhas visíveis para recalibrar pesos.
+Decisão: H-38 (`0,929`) continua sendo o baseline oficial. A submissão
+Notebook-only da H-42, criada em `2026-09-14 00:49:02 UTC`, terminou
+`COMPLETE` com public score `0,881`; não promover nem ajustar pesos dessa
+família usando o gold leaky ou as três linhas visíveis.
+
+## Pesquisa de fórum e notebooks — 14/09/2026
+
+### Fatos novos que mudam a ordem do backlog
+
+1. **O salto público reproduzível mais próximo é `0,941`.** Os notebooks
+   [0.941 reestruturado](https://www.kaggle.com/code/maverickss26/rsna-knee-0941-restructured),
+   [source checklist](https://www.kaggle.com/code/starkhushi/rsna-knee-0-940-source-checklist-4-diffs)
+   e [fast 2xT4](https://www.kaggle.com/code/jiweiliu/rsna-knee-fast-2xt4-inference)
+   descrevem o mesmo stack de DINOv2/v3, A5, RadImageNet e quatro braços
+   CoAtNet. O `probe22` usa pesos CoAtNet por alvo e marcou `0,941`; o parent
+   com peso global `0,60` marcou `0,939`. Os pesos por alvo foram ajustados no
+   leaderboard público, logo o parent/halfway é a opção mais conservadora para
+   uma segunda submissão final.
+2. **Cobertura de fatias é efeito real, mas o H-38 já incorpora o principal
+   ganho publicado.** No tópico
+   [corpus geometry](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection/discussion/737696),
+   os mesmos pesos passaram de `0,924` com 42 janelas para `0,927` com 62.
+   H-36/H-38 já usam 64 fatias, span `0,02–0,98`, crop `140 mm` e 62 janelas;
+   não há ganho novo em simplesmente repetir essa troca. O próximo teste é
+   80–96 fatias ou 384 px, alterando uma variável por vez.
+3. **Adjacência vale mais que espalhar cortes.** Um teste controlado reportou
+   `+0,018` no fold 0 para nove cortes adjacentes centrais contra nove cortes
+   equiespaçados; outro notebook reporta `+0,0060` em 10/10 seeds ao passar o
+   cache de 16 para 32 fatias, evitando triplets 2.5D espacialmente
+   subamostrados. Isso atinge diretamente H-42, que usa uma banda central
+   estreita; exige treinar pesos compatíveis, não apenas mudar inferência.
+4. **Os 58 gold não podem selecionar microganhos.** O notebook
+   [58-study validation set](https://www.kaggle.com/code/starkhushi/58-study-validation-set-is-lying-to-you)
+   mostra inversão entre a ordem dos modelos no gold e no leaderboard e propõe
+   um holdout derivado de 250 estudos, agrupando 46 conjuntos de laudos
+   byte-idênticos. Nosso protocolo usa hashes normalizados e encontrou 54
+   grupos/204 linhas; manter grupos inteiros e reservar os 58 como auditoria,
+   não como seletor de checkpoint.
+5. **Modelo maior não resolve o gargalo atual.** DINOv2-Base contra Small, no
+   mesmo OOF de 2.652 estudos, mudou `0,7931→0,7942`, abaixo do noise floor
+   `0,0020`, com aproximadamente 4× o custo. Base convergiu mais rápido em
+   treino curto, mas Small chegou ao mesmo endpoint. Antes de trocar encoder,
+   conferir o `preprocessor_config.json`: normalização errada no RAD-DINO
+   produziu uma curva plausível e falsa.
+6. **Labels continuam sendo o maior espaço de ganho próprio.** Evidências
+   novas: negação turca pode vir depois do achado; intensidade leve pode ser
+   anotada como negativa; osteoartrite costuma aparecer como consequência
+   (`osteófito`, estreitamento, perda/defeito condral, condrose), não como
+   `OA`. O notebook
+   [Osteoarthritis is almost never written as OA](https://www.kaggle.com/code/busyaprime/osteoarthritis-is-almost-never-written-as-oa)
+   não reivindica score de leaderboard, mas oferece um léxico auditável e
+   `silver_labels.csv` com abstention. Ausência de menção continua proibida de
+   virar negativo.
+7. **Especialistas só devem entrar onde acrescentam.** O residual público de
+   [Medial Meniscus](https://www.kaggle.com/code/renta0426/rsna-knee-0-937-weak-label-dinov2-meniscus-resid)
+   altera apenas esse alvo (`0,30` transformer + `0,60` Raptor + `0,10`
+   especialista) e preserva os outros 11. Isso é mais defensável que misturar
+   um modelo fraco em todas as colunas. A evidência de quatro braços também
+   mostra que um componente com correlação de ranking próxima a `0,83` pode
+   adicionar valor; medir correlação e delta OOF por alvo é obrigatório.
+8. **SWA e blends fracos não merecem novas tentativas.** Seis pares SWA/não-SWA
+   tiveram efeito médio nulo e um par público marcou `0,937` contra `0,938`.
+   O histórico de 22 submissões em
+   [6 lessons](https://www.kaggle.com/code/yosukeinada/rsna-knee-0-937-22-submissions-6-lessons)
+   mostra que braços `0,874–0,910` não melhoraram um parent `0,936`, mesmo
+   quando pareciam diversos.
+
+### Auditoria de licenças das fontes do stack público
+
+Consulta feita com `kaggle datasets metadata`; licença declarada pelo autor,
+não parecer jurídico:
+
+| Grupo | Licença declarada | Decisão |
+|---|---|---|
+| Raptor MaxSpan/Native384/Native384Dense, folds Mattia, CoAt residual, Pilkwang labels/weights | `CC0-1.0` | compatível com nossa linha equity-free |
+| Especialista de menisco Renta | `Apache-2.0` | compatível, mantendo avisos |
+| Band32 adjacency leg | `CC0-1.0` | compatível como artefato experimental |
+| Encoder/heads RadImageNet de Marwan e Antoine | `CC-BY-NC-SA-4.0` | pode servir à competição, mas **não** é base segura para produto comercial no Brasil |
+| Heads Prvsiyan e bundle Tonylica | `other` | bloquear na linha equity-free até leitura da licença completa |
+
+### Fila de experimentos revisada
+
+| Ordem | Candidata | Comparação controlada | Gate |
+|---:|---|---|---|
+| 1 | `H-43A` — reprodução exata do parent público `0,939/0,941` | `probe22`, `halfway` e parent, sem braço próprio | contar todos os membros, hashes/fingerprints, zero `dropped`, T4×2 e runtime < 9 h |
+| 2 | `H-43B` — âncora H-38 + braço público realmente decorrelacionado | peso global pequeno em rank; nunca 12 pesos escolhidos no gold | correlação por alvo + delta em OOF de produção; preservar H-38 se faltar fonte |
+| 3 | `H-44` — professor textual v2 | léxico atual vs negação bilateral por idioma + severidade + vocabulário de consequências OA + abstention | holdout derivado ≥250, grupos de laudo inteiros, gold só como auditoria |
+| 4 | `H-45` — geometria 2.5D própria | 16 vs 32 fatias; equiespaçado vs adjacente; depois 64/80–96 | mesmos folds/seeds/backbone; ganho > noise floor em ≥2 seeds |
+| 5 | `H-46` — especialista de estrutura fina | ROI/atenção espacial para menisco/MCL, alterando somente alvos aprovados | especialista melhora o alvo e o macro OOF sem degradar os outros 11 |
+
+### Decisão imediata
+
+- Preparar `H-43A` como controle de reprodução é a ação com maior chance de
+  salto rápido de `0,929` para a faixa pública `0,939–0,941`.
+- Não substituir H-38 como escolha privada apenas por esse score: `probe22`
+  tem tuning target-wise no public LB. Manter H-38 e, se executado, guardar o
+  parent/halfway como alternativas finais.
+- A linha própria deve concentrar compute em labels, validação agrupada e
+  geometria/adjacência. Backbones maiores, SWA e grids de blend no gold saem
+  do backlog ativo.
