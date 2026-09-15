@@ -2,6 +2,23 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-003 — 14/09/2026 (15/09 UTC) — piloto COMPLETE, benchmark iniciado
+
+[Evidências e retomada](AV003_PILOTO_APROVADO_BENCHMARK.md). Piloto H43 parent
+v1 ID 134328295 COMPLETE, gate PASSED_PARENT_INTEGRITY aos 289,22 s; último
+evento 301,06 s. 20 DINO, 5 A5, Rad/calibrador, 4 views Raptor e 3 CoAt;
+CoAt zero fallback. CSV 3×13 validado novamente, SHA
+7d3b8bd4e76b309171e2c44a58301e71da26104d1049cc9f8c445c17eee3c770.
+
+Lançado jvlegend/rsna-knee-h43-runtime-benchmark v1, ID 134423935, RUNNING:
+36 estudos/205 séries do treino V01, offline, duas T4 exigidas, limite 3.600 s.
+Objetivo runtime/cobertura, não AUC. Sem acesso aos conjuntos dev/confirmação
+para avaliação. Código novo: prepare_h43_benchmark.py e assess_h43_runtime.py;
+22 testes passaram. Nunca submeter o kernel de benchmark nem o piloto de 30 min.
+
+Nenhuma submissão ou score novo; H-38 0,929 preservada. Retomar o benchmark
+existente e estimar orçamento antes de preparar a versão para o teste real.
+
 ## AV-002 — 14/09/2026 — A01 parent estrito em execução
 
 Implementados gates e builder ancorado na fonte auditada; 16 testes passaram.
