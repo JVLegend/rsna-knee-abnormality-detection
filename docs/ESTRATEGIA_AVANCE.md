@@ -4,8 +4,8 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-004: benchmark de 36 estudos e versão dedicada COMPLETE;
-H43 enviada, ref 56253529 PENDING. Ainda sem novo score.
+Atualizado na AV-005: H43 parent COMPLETE, público 0,939 (+0,010 vs H38).
+A02 probe22 enviada, ref 56263721 PENDING; ainda sem score dessa variante.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -19,14 +19,15 @@ Melhorar o modelo de imagem para os 12 alvos, com experimentos comparáveis,
 submissões rastreáveis e custo medido. Trabalhar em três frentes:
 reprodução pública forte, treino próprio e combinação/eficiência.
 
-Referência protegida: H-38, público 0,929; alternativa H-36, público 0,928.
+Melhor referência pública: H43 parent, público 0,939, ref 56253529.
+H-38 0,929 e H-36 0,928 permanecem disponíveis; seleção final não alterada.
 H-42 terminou com 0,881 e não será promovida. Sua avaliação local de 0,995527
 já tinha exposição dos pesos ao gold; a queda no leaderboard não identifica,
 sozinha, qual componente causou a diferença.
 
-O stack público que declara 0,939–0,941 é uma referência a reproduzir.
-Esse resultado não é nosso nem uma promessa de ganho. O objetivo inicial é
-superar H-38 com evidência; atingir 0,94 é uma meta aspiracional.
+O parent público 0,939 foi reproduzido pela H43 na AV-005, superando H38.
+O preset probe22 relata 0,941 na fonte: esse ainda não é nosso resultado.
+Superar 0,94 continua sendo uma meta; ganho público não garante o privado.
 
 ## O que significa AVANCE neste projeto
 
@@ -66,7 +67,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: A01 — consultar a submissão H43 ref 56253529; não reenviar.
+- Próxima ação: A02 — consultar a submissão probe22 ref 56263721, sem duplicar.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
@@ -79,10 +80,15 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 - Preflight CPU: jvlegend/rsna-knee-h43-artifact-preflight, v1,
   ID 134328050, COMPLETE; 56 arquivos/4,48 GB em 48,39 s da função.
 - Submissão H43 enviada na AV-004: ref 56253529, scriptVersionId 350055640,
-  15/09/2026 08:47 São Paulo; PENDING, sem score. Não duplicar.
-- Último resultado confirmado por CLI: H-42 COMPLETE, 0,881, ref 56217840.
-- Melhor candidato confirmado: H-38, 0,929, ref 55916072.
-- Alternativa se A01 bloquear: A03 — Native384Dense com receita nativa.
+  15/09/2026 08:47 São Paulo; COMPLETE, público 0,939, confirmado na AV-005.
+- Kernel A02: jvlegend/rsna-knee-h43-probe22-strict-submission v1,
+  ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
+  mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
+- Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
+  São Paulo, PENDING sem score. Um envio na AV-005; não reenviar.
+- Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
+- Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
+  sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
 - A00: inventário estático concluído; não é reprodução do score público.
 - V01: concluída; manifesto validation_weak_v1 congelado no HD, 299 treino,
   250 desenvolvimento e 150 confirmação; nenhum modelo avaliado nesta partição.
@@ -165,8 +171,8 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
 | A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
-| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | EM_EXECUCAO — AV-004; runtime íntegro, submissão 56253529 PENDING |
-| A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | PENDENTE |
+| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | REPRODUZIDA — AV-005; ref 56253529 COMPLETE 0,939, +0,010 vs H38 |
+| A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | EM_EXECUCAO — AV-005; probe22 íntegro, submissão 56263721 PENDING |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PENDENTE |
@@ -373,3 +379,29 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Evidência: docs/AV004_BENCHMARK_E_SUBMISSAO.md; benchmark e projeção no HD
   em reports/avance_av004_benchmark_v1/. Saída dedicada em
   reports/avance_av004_submission_v1/. Retomar a execução existente.
+
+### AV-005 — 15/09/2026 — A01 0,939 confirmada; A02 probe22
+
+- H43 parent ref 56253529 COMPLETE, 0,939; delta público exibido +0,010
+  contra H38 0,929. Nova referência pública, sem alterar seleção final.
+  Score privado e OOF independente indisponíveis; não atribuir causalidade
+  isolada a um componente do stack.
+- Escolhido unicamente probe22 publicado: peso externo 0,75 ACL, 0,80 Medial
+  Meniscus, 1,00 Lateral Meniscus, 0,75 Lateral OA/Fracture; outros sete 0,60.
+  Mistura interna 60/40 e todos os modelos/geometrias permanecem iguais.
+  Sem grade própria, sem consulta à confirmação V01 ou ajuste nos 58.
+- Builder ancorado no SHA do parent e teste de identidade das demais células;
+  gate exige RUN inteiro fixo. Comparador verifica parent diagnóstico contra
+  execução anterior, sete alvos inalterados, IDs/hashes/recibos e CoAt íntegro.
+  28 testes passaram; manifesto V01 manteve o mesmo SHA.
+- Kernel rsna-knee-h43-probe22-strict-submission v1, ID 134536133,
+  COMPLETE; T4x2/offline/teto9h, último log 248,28 s. Build SHA
+  beb65225a4ed75d1ce2d60f0afdd5ee46c39ed843c151e465ff07e6eb80d572c.
+  CSV 3×13 validado; parent idêntico ao anterior, sete alvos intactos,
+  CoAt zero fallback/falhas. SHA novo
+  ff848c73ba6f31e487d175161304d26df307e6e777189c01dfb508a76532ddfc.
+- Submissão 56263721, scriptVersionId 350168027, enviada às 19:51:17 São Paulo.
+  PENDING, sem score/erro informado. Único envio nesta AVANCE; três restantes hoje.
+  Retomar pelo submission_id, sem duplicar; H43 parent 0,939 preservada.
+- Detalhes: docs/AV005_PARENT_0939_E_PROBE22.md; outputs esperados no HD
+  em reports/avance_av005_probe22_v1/, com paired_integrity.json aprovado.

@@ -2,6 +2,31 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-005 — 15/09/2026 — H43 0,939 confirmada; A02 probe22
+
+[Evidências](AV005_PARENT_0939_E_PROBE22.md). H43 ref **56253529 COMPLETE,
+0,939**, delta público +0,010 vs H38. A01 REPRODUZIDA; melhor público passa
+a H43, sem modificar seleção final. OOF independente indisponível.
+
+A02 escolheu somente probe22 publicado. Cinco pesos externos alterados;
+sete alvos e todas as células de inferência preservados. Código:
+prepare_h43_probe22.py e assess_h43_probe22.py. Builder fixado por SHA,
+gate exige receita completa, comparação pareada protege sete alvos e parent
+diagnóstico. **28 testes passaram**, manifesto V01 inalterado.
+
+Kernel jvlegend/rsna-knee-h43-probe22-strict-submission v1, ID **134536133**,
+COMPLETE, privado/offline/T4x2/9h, mesmas fontes do parent. Build no HD:
+reports/avance_av005_build/h43_probe22_strict_v1.ipynb, SHA
+beb65225a4ed75d1ce2d60f0afdd5ee46c39ed843c151e465ff07e6eb80d572c.
+Último log 248,28 s. Parent diagnóstico idêntico ao CSV anterior, sete alvos
+intactos, CoAt sem falhas/fallback. CSV novo 3×13, SHA
+ff848c73ba6f31e487d175161304d26df307e6e777189c01dfb508a76532ddfc.
+
+**Submissão 56263721**, scriptVersionId 350168027, enviada em 15/09/2026
+19:51:17 São Paulo; **PENDING**, sem score/erro informado. Um envio nesta
+AVANCE, dois hoje, três restantes. Próximo: consultar esse ID, sem duplicar.
+Não testar halfway/grade própria; preservar H43 0,939 e seleção final.
+
 ## AV-004 — 15/09/2026 — benchmark COMPLETE, H43 enviada
 
 [Evidências e retomada](AV004_BENCHMARK_E_SUBMISSAO.md). Benchmark v1
