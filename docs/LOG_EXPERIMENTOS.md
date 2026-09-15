@@ -2,6 +2,27 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-004 — 15/09/2026 — benchmark COMPLETE, H43 enviada
+
+[Evidências e retomada](AV004_BENCHMARK_E_SUBMISSAO.md). Benchmark v1
+ID 134423935 aprovado: 36 estudos/205 séries, cinco ramos, lock 56 e T4x2,
+zero fallback CoAt. Total de etapas 667,72 s; Raptor/CoAt/fusão representa
+58%. Projeções com margem: 8,57 h para 1.322 e 12,94 h para 2.000 casos
+hipotéticos. Tamanho oculto desconhecido; risco de timeout explicitado.
+Limite oficial de 9h/offline/Notebook-only revalidado.
+
+Kernel dedicado jvlegend/rsna-knee-h43-parent-strict-submission v1,
+ID 134484564 COMPLETE, 32.400 s, mesmo build/hash do piloto íntegro.
+CSV 3×13 idêntico ao piloto, IDs/schema/finitude/hash oficiais conferidos,
+cinco ramos íntegros, CoAt zero fallback. Último log 281,49 s.
+
+Submissão **56253529**, scriptVersionId **350055640**, enviada em
+15/09/2026 08:47:46 São Paulo, **PENDING**, sem score/erro informado.
+Único envio desta AVANCE: API confirmou um hoje, quatro restantes e 24
+históricos. Reprodução pública; OOF independente indisponível; sem ajuste
+pelos 58. 22 testes passaram; manifesto V01 inalterado. Próximo: consultar
+esse submission_id sem duplicar. H38 0,929 e seleção final preservadas.
+
 ## AV-003 — 14/09/2026 (15/09 UTC) — piloto COMPLETE, benchmark iniciado
 
 [Evidências e retomada](AV003_PILOTO_APROVADO_BENCHMARK.md). Piloto H43 parent

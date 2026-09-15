@@ -4,8 +4,8 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-003: piloto parent estrito COMPLETE; benchmark de 36 estudos
-iniciado. Ainda sem nova AUC, score ou submissão.
+Atualizado na AV-004: benchmark de 36 estudos e versão dedicada COMPLETE;
+H43 enviada, ref 56253529 PENDING. Ainda sem novo score.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -66,16 +66,20 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: A01 — recuperar o benchmark de 36 estudos v1 e avaliar runtime.
-  Não submeter o piloto de 30 minutos nem o benchmark com casos de treino.
+- Próxima ação: A01 — consultar a submissão H43 ref 56253529; não reenviar.
+  Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
-- Experiência em execução: benchmark 36 estudos / 205 séries, somente treino V01.
-- Kernel em andamento: jvlegend/rsna-knee-h43-runtime-benchmark, v1,
-  ID 134423935; último status RUNNING. T4x2 exigida, offline, limite 3.600 s.
+- Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
+  zero fallback CoAt. Etapas 667,72 s. Projeção com margem: 8,57 h para 1.322
+  ou 12,94 h para 2.000 estudos hipotéticos; tamanho oculto não confirmado.
+- Kernel jvlegend/rsna-knee-h43-parent-strict-submission, v1,
+  ID 134484564 COMPLETE; CSV idêntico ao piloto, cinco ramos íntegros.
+  T4x2, offline, limite 9h; último evento aos 281,49 s.
 - Preflight CPU: jvlegend/rsna-knee-h43-artifact-preflight, v1,
   ID 134328050, COMPLETE; 56 arquivos/4,48 GB em 48,39 s da função.
-- Submissão à competição: nenhuma nova na AV-003.
+- Submissão H43 enviada na AV-004: ref 56253529, scriptVersionId 350055640,
+  15/09/2026 08:47 São Paulo; PENDING, sem score. Não duplicar.
 - Último resultado confirmado por CLI: H-42 COMPLETE, 0,881, ref 56217840.
 - Melhor candidato confirmado: H-38, 0,929, ref 55916072.
 - Alternativa se A01 bloquear: A03 — Native384Dense com receita nativa.
@@ -161,7 +165,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
 | A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
-| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | EM_EXECUCAO — AV-003; piloto T4 aprovado, benchmark 36 estudos v1 RUNNING |
+| A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | EM_EXECUCAO — AV-004; runtime íntegro, submissão 56253529 PENDING |
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | PENDENTE |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
@@ -347,3 +351,25 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   em reports/avance_av003_benchmark_v1/. Não duplicar a execução existente.
 - Próximo: medir tempos/limites e conferir cobertura. Se não couber, E03/A03.
   Nenhuma submissão ou score novo; H-38 0,929 preservada.
+
+### AV-004 — 15/09/2026 — A01 benchmark aprovado, confirmação preparada
+
+- Benchmark v1 COMPLETE; 36×13, 205 séries, cinco ramos, 56 hashes e T4x2
+  verificados. CoAt com três checkpoints, zero fallback/falhas. Sem AUC.
+- DINO 201,31 s; A5 29,48 s; Rad 49,43 s; Raptor/CoAt/fusão 387,50 s.
+  Este último subtotal representa 58% do tempo e orientará E03.
+- Projeção com margem 1,25: 8,57 h para 1.322 e 12,94 h para 2.000 estudos
+  hipotéticos. Há risco de timeout; não conhecemos o tamanho real oculto.
+  Limite de 9h/offline/Notebook-only revalidado no overview oficial.
+- Criado kernel dedicado rsna-knee-h43-parent-strict-submission v1,
+  ID 134484564, COMPLETE, teto 32.400 s, mesmo código/hash do piloto aprovado.
+  CSV 3×13 idêntico ao piloto, IDs oficiais conferidos e cinco ramos íntegros.
+  Último evento aos 281,49 s; CoAt zero fallback/falhas.
+- Submissão efetivada: ref 56253529, scriptVersionId 350055640, às 08:47
+  São Paulo. PENDING, sem score; um envio hoje, quatro restantes. Não
+  reenviar enquanto aguarda avaliação. H38 0,929 e seleção final preservadas.
+- 22 testes passaram; V01 permanece congelada e confirmação intocada.
+  Reprodução pública; OOF independente indisponível, sem liberação comercial.
+- Evidência: docs/AV004_BENCHMARK_E_SUBMISSAO.md; benchmark e projeção no HD
+  em reports/avance_av004_benchmark_v1/. Saída dedicada em
+  reports/avance_av004_submission_v1/. Retomar a execução existente.
