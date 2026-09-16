@@ -2,6 +2,20 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-017 — 16/09/2026 — auditoria L01 somente no treino
+
+[Evidências e retomada](AV017_AUDITORIA_L01_TREINO.md).
+Ref56281610 PENDING, sem score/erro; melhor0,941, nenhum novo envio.
+Teste de escopo/negação:299estudos/296grupos de treino,3.588pares;
+169sinais alterados vs extrator legado,17discordâncias com professor em723
+pares comparáveis. Sem adjudicação, não são17erros comprovados.
+
+725sinais definidos e653abstenções sobre sinais antigos: não substituir
+professor. Revisão cega60casos privada no HD, sem dados em GitHub.
+**102 testes passaram**, V01/professor intactos; nenhum dev/confirmation
+analisado ou AUC medida. L01 efeito visual pendente. Próximo: V02 baseline
+com pretreino genérico/professor original e preflight de cache/custo/checkpoint.
+
 ## AV-016 — 16/09/2026 — probe22 estável enviado
 
 [Evidências e retomada](AV016_CANDIDATA_ESTAVEL_PROBE22.md).

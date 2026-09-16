@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-016 (16/09): candidata estável com preset probe22 aprovada
-nos exemplos oficiais e enviada: ref56281610, PENDING, sem score ainda.
-Componentes/raw preservados; CSV visível igual ao probe22 histórico.
-97 testes passaram. Par completo anterior:624,30→580,65s (−6,99%).
+Atualizado na AV-017 (16/09): ref56281610 continua PENDING, sem novo score.
+L01 diagnóstico executado somente no treino299:3.588pares,169mudanças de
+sinal lexical e17discordâncias com professor; não são erros confirmados.
+102 testes passaram. Professor preservado; próximo passo V02 baseline próprio.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,6 +71,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-017 concluída: diagnóstico L01 em299estudos/296grupos de treino.
+  3.588pares;169sinais mudam contra extrator legado,17/723discordam do professor.
+  Apenas725pares recebem sinal definido;653sinais antigos passam à abstenção.
+  Não substituir professor nem chamar isso ganho de AUC.102testes passaram.
+  Outputs privados no HD: reports/avance_av017_l01_v2/. Fila cega60casos
+  com contexto completo e chave separada; nenhum adjudicado. V01/professor
+  intactos; dev/confirmation não analisados. L01 efeito visual pendente.
+  Próximo trabalho: V02 com pretreino genérico e professor original. Verificar
+  pixels/cache/proveniência/custo e checkpoint antes do treino; a revisão L01
+  não bloqueia o baseline. Retomada: docs/AV017_AUDITORIA_L01_TREINO.md.
 - Próxima ação: consultar submissão AV-016 **56281610**, PENDING, enviada
   16/09/2026 12:00:59 São Paulo; scriptVersionId350342219. Não reenviar.
   Comparar com probe22 histórico56263721 (0,941), sem mudar seleção final.
@@ -267,7 +277,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PENDENTE |
-| L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | PENDENTE |
+| L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
 | L04 / H-44 | Teacher atual versus consenso apenas nos casos discordantes, com abstenção se faltar evidência; regras ou LLM local já disponível | V01/V02; não repetir média irrestrita já negativa / alto | PENDENTE |
@@ -741,3 +751,22 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Melhor0,941 histórico não é score desta receita. Seleção final preservada.
   Próximo: acompanhar sem duplicar e seguir V02/L01, sem grade de pesos.
   Detalhes: docs/AV016_CANDIDATA_ESTAVEL_PROBE22.md.
+
+### AV-017 — 16/09/2026 — L01 diagnóstico de treino, sem promover labels
+
+- Ref56281610 PENDING, sem score/erro nas consultas; melhor0,941 preservado,
+  sem reenvio, alteração de seleção final, automação ou GPU nova.
+- Implementada variante lexical conservadora por cláusula/seção, cues antes/
+  depois, incerteza/conflito/ausência distintos. Vocabulário de alvos e extrator
+  antigo preservados; múltiplos alvos e anatomia sem achado suportado abstêm.
+- Auditoria real só no treino V01:299estudos/296grupos,3.588pares.
+  169sinais direcionais alterados vs legado;17discordâncias em723comparáveis
+  com professor. Não são erros comprovados.725sinais definidos,653abstenções
+  sobre sinais antigos;2.210pares sem match no vocabulário. Sem AUC/treino.
+- Fila cega60casos com laudo completo e chave separada, privada no HD.
+  Nenhuma adjudicação realizada. Outputs reports/avance_av017_l01_v2/;
+  v1preservada, mesmos estados/totais.102testes passaram, incluindo40casos
+  sintéticos; hashes V01/professor intactos, dev/confirmation não analisados.
+- Decisão: não substituir professor; L01 permanece parcial até revisão e
+  comparação visual. Próximo V02 original/pretreino genérico, com preflight
+  de pixels/cache/custo e checkpoint. Docs/AV017_AUDITORIA_L01_TREINO.md.
