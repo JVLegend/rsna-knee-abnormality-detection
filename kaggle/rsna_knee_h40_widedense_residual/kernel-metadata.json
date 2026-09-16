@@ -1,0 +1,27 @@
+{
+  "id": "jvlegend/rsna-knee-h-40-widedense-residual",
+  "title": "RSNA Knee H-40 WideDense Residual",
+  "code_file": "rsna_knee_h40_widedense_residual.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare"
+  ],
+  "dataset_sources": [
+    "mattiaangeli/knee-mri-fold-weights",
+    "dreaddevelopment/raptor-knee-maxspan",
+    "dreaddevelopment/raptor-knee-widedense"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}

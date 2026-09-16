@@ -1,0 +1,189 @@
+{
+  "artifact_type": "rsna-knee-dinov3-slothead-v16",
+  "version": 16,
+  "labels": [
+    "ACL",
+    "MCL",
+    "Medial Meniscus",
+    "Lateral Meniscus",
+    "Medial OA",
+    "Lateral OA",
+    "PF OA",
+    "Effusion",
+    "Synovitis",
+    "Baker's",
+    "Contusion",
+    "Fracture"
+  ],
+  "slots": [
+    [
+      "Sagittal",
+      1
+    ],
+    [
+      "Sagittal",
+      0
+    ],
+    [
+      "Coronal",
+      1
+    ],
+    [
+      "Coronal",
+      0
+    ],
+    [
+      "Axial",
+      1
+    ],
+    [
+      "Axial",
+      0
+    ]
+  ],
+  "image_size": 336,
+  "n_slice": 16,
+  "crop_mm": 130.0,
+  "feature": "per-slot CLS+mean+central-patch-mean from existing DINOv3 encoder",
+  "encoder_checkpoint": "m_f0.pt",
+  "encoder_cfg": {
+    "backbone": "vit_small_patch16_dinov3.lvd1689m",
+    "cond": "token",
+    "img": 336,
+    "meta": "none",
+    "pool": "xcodex",
+    "norm": "none",
+    "n_meta": 0,
+    "n_sites": 109,
+    "labels": [
+      "ACL",
+      "MCL",
+      "Medial Meniscus",
+      "Lateral Meniscus",
+      "Medial OA",
+      "Lateral OA",
+      "PF OA",
+      "Effusion",
+      "Synovitis",
+      "Baker's",
+      "Contusion",
+      "Fracture"
+    ],
+    "n_slice": 16,
+    "stem": "native",
+    "stem_lr": 0.0,
+    "pe_init": "tiled",
+    "triplet": "none",
+    "cache_suffix": ""
+  },
+  "encoder_checkpoint_sha256": "b447a665a92ed65e0f4cacf6800940ba7a6d585d0c36154ce18dee60ec48d5cd",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "deploy_weights": {
+    "ACL": 0.0,
+    "MCL": 0.0,
+    "Medial Meniscus": 0.22,
+    "Lateral Meniscus": 0.22,
+    "Medial OA": 0.0,
+    "Lateral OA": 0.1,
+    "PF OA": 0.1,
+    "Effusion": 0.0,
+    "Synovitis": 0.0,
+    "Baker's": 0.1,
+    "Contusion": 0.0,
+    "Fracture": 0.0
+  },
+  "inference_shrink": 0.85,
+  "validation": {
+    "ACL": {
+      "nested_gain": -0.011029411764705843,
+      "bootstrap_support": 0.175,
+      "deploy_weight": 0.0,
+      "head_auc": 0.8247549019607843,
+      "anchor_auc": 0.8897058823529411
+    },
+    "MCL": {
+      "nested_gain": -0.02494331065759625,
+      "bootstrap_support": 0.2375,
+      "deploy_weight": 0.0,
+      "head_auc": 0.8072562358276644,
+      "anchor_auc": 0.8843537414965985
+    },
+    "Medial Meniscus": {
+      "nested_gain": 0.02644230769230782,
+      "bootstrap_support": 0.940625,
+      "deploy_weight": 0.22,
+      "head_auc": 0.8293269230769232,
+      "anchor_auc": 0.8521634615384615
+    },
+    "Lateral Meniscus": {
+      "nested_gain": 0.024844720496894457,
+      "bootstrap_support": 0.759375,
+      "deploy_weight": 0.22,
+      "head_auc": 0.7304347826086957,
+      "anchor_auc": 0.7354037267080745
+    },
+    "Medial OA": {
+      "nested_gain": -0.0015503875968991832,
+      "bootstrap_support": 0.28125,
+      "deploy_weight": 0.0,
+      "head_auc": 0.9550387596899225,
+      "anchor_auc": 0.9674418604651163
+    },
+    "Lateral OA": {
+      "nested_gain": 0.030947775628626717,
+      "bootstrap_support": 0.909375,
+      "deploy_weight": 0.1,
+      "head_auc": 0.8607350096711799,
+      "anchor_auc": 0.7678916827852998
+    },
+    "PF OA": {
+      "nested_gain": 0.005148005148004953,
+      "bootstrap_support": 0.73125,
+      "deploy_weight": 0.1,
+      "head_auc": 0.7876447876447876,
+      "anchor_auc": 0.8455598455598456
+    },
+    "Effusion": {
+      "nested_gain": -0.001242236024844745,
+      "bootstrap_support": 0.403125,
+      "deploy_weight": 0.0,
+      "head_auc": 0.8919254658385094,
+      "anchor_auc": 0.9478260869565218
+    },
+    "Synovitis": {
+      "nested_gain": -0.0131421744324971,
+      "bootstrap_support": 0.078125,
+      "deploy_weight": 0.0,
+      "head_auc": 0.6702508960573477,
+      "anchor_auc": 0.8136200716845878
+    },
+    "Baker's": {
+      "nested_gain": 0.0126811594202898,
+      "bootstrap_support": 0.875,
+      "deploy_weight": 0.1,
+      "head_auc": 0.9764492753623188,
+      "anchor_auc": 0.9492753623188406
+    },
+    "Contusion": {
+      "nested_gain": -0.028340080971659964,
+      "bootstrap_support": 0.065625,
+      "deploy_weight": 0.0,
+      "head_auc": 0.7894736842105262,
+      "anchor_auc": 0.893387314439946
+    },
+    "Fracture": {
+      "nested_gain": -0.008333333333333193,
+      "bootstrap_support": 0.3375,
+      "deploy_weight": 0.0,
+      "head_auc": 0.7666666666666666,
+      "anchor_auc": 0.8513888888888889
+    }
+  },
+  "oof_source": "/kaggle/input/datasets/pilkwang/rsna-knee-weights/oof.npz"
+}

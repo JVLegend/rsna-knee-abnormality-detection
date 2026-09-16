@@ -116,6 +116,50 @@ def _series_for_studies(series: pd.DataFrame, frame: pd.DataFrame) -> pd.DataFra
     return series[series[KEY_COLUMN].astype(str).isin(study_ids)].copy()
 
 
+def _manifest_splits(
+    manifest_path: Path,
+    train: pd.DataFrame,
+    gold_indices: np.ndarray,
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Converte o manifesto UID-based em índices e valida a cobertura."""
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    folds = payload.get("folds")
+    if not isinstance(folds, list) or len(folds) < 2:
+        raise ValueError(f"manifesto inválido ou sem folds: {manifest_path}")
+    study_ids = train[KEY_COLUMN].astype(str).tolist()
+    if len(study_ids) != len(set(study_ids)):
+        raise ValueError("StudyInstanceUID duplicado na tabela de treino")
+    positions = {study_id: index for index, study_id in enumerate(study_ids)}
+    gold_set = set(gold_indices.tolist())
+    valid_seen: set[int] = set()
+    result: list[tuple[np.ndarray, np.ndarray]] = []
+    for item in folds:
+        if not isinstance(item, dict):
+            raise ValueError(f"fold inválido no manifesto: {item!r}")
+        train_ids = [str(value) for value in item.get("train_ids", [])]
+        valid_ids = [str(value) for value in item.get("valid_ids", [])]
+        if not train_ids or not valid_ids:
+            raise ValueError("cada fold precisa ter train_ids e valid_ids")
+        if len(train_ids) != len(set(train_ids)) or len(valid_ids) != len(set(valid_ids)):
+            raise ValueError("IDs duplicados dentro de um fold do manifesto")
+        if set(train_ids) & set(valid_ids):
+            raise ValueError("treino e validação se sobrepõem no manifesto")
+        try:
+            train_rows = np.asarray([positions[value] for value in train_ids], dtype=int)
+            valid_rows = np.asarray([positions[value] for value in valid_ids], dtype=int)
+        except KeyError as exc:
+            raise ValueError(f"UID do manifesto não está no train.csv: {exc.args[0]}") from exc
+        if not set(train_rows).issubset(gold_set) or not set(valid_rows).issubset(gold_set):
+            raise ValueError("manifesto contém estudo fora do conjunto gold completo")
+        if valid_seen.intersection(valid_rows.tolist()):
+            raise ValueError("um estudo aparece em mais de uma validação do manifesto")
+        valid_seen.update(valid_rows.tolist())
+        result.append((train_rows, valid_rows))
+    if valid_seen != gold_set:
+        raise ValueError("os folds do manifesto não cobrem exatamente o gold completo")
+    return result
+
+
 def _evaluate(
     train: pd.DataFrame,
     train_series: pd.DataFrame,
@@ -124,6 +168,7 @@ def _evaluate(
     c: float,
     use_lexicon: bool,
     lexicon_weight: float,
+    manifest_path: Path | None = None,
 ) -> dict[str, object]:
     labels = _label_series(train)
     folds = _n_splits(labels, requested_folds)
@@ -133,31 +178,60 @@ def _evaluate(
     oof = {target: np.full(len(train), np.nan, dtype=float) for target in TARGET_COLUMNS}
     split_mode = "target_specific"
 
-    common = None
-    if same_labeled_set:
-        common = _common_splits(labels, labeled_sets[0], folds, seed)
+    manifest_splits = None
+    if manifest_path is not None:
+        if not same_labeled_set:
+            raise ValueError("o manifesto gold exige os mesmos estudos rotulados nos 12 alvos")
+        manifest_splits = _manifest_splits(manifest_path, train, labeled_sets[0])
+        if len(manifest_splits) != folds:
+            raise ValueError(
+                f"manifesto tem {len(manifest_splits)} folds, mas requested_folds={requested_folds}"
+            )
 
-    if common is not None:
-        splits, split_mode = common
-        for train_positions, val_positions in splits:
-            train_indices = labeled_sets[0][train_positions]
-            val_indices = labeled_sets[0][val_positions]
-            fit_frame = _masked_training_frame(train, labels, train_indices)
-            model = KneeReportBaseline(c=c, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight).fit(fit_frame, train_series)
+    if manifest_splits is not None:
+        splits = manifest_splits
+        split_mode = "grouped_manifest"
+        for train_indices, val_indices in splits:
+            # Fit only on the fold's rows. This keeps the text vocabulary and
+            # series metadata from observing the held-out studies.
+            fit_frame = train.iloc[train_indices].copy().reset_index(drop=True)
+            fit_series = _series_for_studies(train_series, fit_frame)
+            model = KneeReportBaseline(c=c, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight).fit(
+                fit_frame, fit_series
+            )
             validation_frame = train.iloc[val_indices]
-            predictions = model.predict(validation_frame, _series_for_studies(train_series, validation_frame))
+            predictions = model.predict(
+                validation_frame, _series_for_studies(train_series, validation_frame)
+            )
             for target in TARGET_COLUMNS:
                 oof[target][val_indices] = predictions[target].to_numpy()
         folds_used = len(splits)
-    else:
-        folds_used = folds
-        for target in TARGET_COLUMNS:
-            for train_indices, val_indices in _target_specific_splits(labels, target, folds, seed):
-                fit_frame = _masked_training_frame(train, labels, train_indices, target=target)
+    if manifest_splits is None:
+        if same_labeled_set:
+            common = _common_splits(labels, labeled_sets[0], folds, seed)
+        else:
+            common = None
+        if common is not None:
+            splits, split_mode = common
+            for train_positions, val_positions in splits:
+                train_indices = labeled_sets[0][train_positions]
+                val_indices = labeled_sets[0][val_positions]
+                fit_frame = _masked_training_frame(train, labels, train_indices)
                 model = KneeReportBaseline(c=c, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight).fit(fit_frame, train_series)
                 validation_frame = train.iloc[val_indices]
                 predictions = model.predict(validation_frame, _series_for_studies(train_series, validation_frame))
-                oof[target][val_indices] = predictions[target].to_numpy()
+                for target in TARGET_COLUMNS:
+                    oof[target][val_indices] = predictions[target].to_numpy()
+            folds_used = len(splits)
+        else:
+            folds_used = folds
+            for target in TARGET_COLUMNS:
+                for train_indices, val_indices in _target_specific_splits(labels, target, folds, seed):
+                    fit_frame = _masked_training_frame(train, labels, train_indices, target=target)
+                    model = KneeReportBaseline(c=c, use_lexicon=use_lexicon, lexicon_weight=lexicon_weight).fit(fit_frame, train_series)
+                    validation_frame = train.iloc[val_indices]
+                    predictions = model.predict(validation_frame, _series_for_studies(train_series, validation_frame))
+                    oof[target][val_indices] = predictions[target].to_numpy()
 
     target_results: list[dict[str, int | float | str]] = []
     aucs: list[float] = []
@@ -188,8 +262,9 @@ def _evaluate(
         "requested_folds": requested_folds,
         "folds_used": folds_used,
         "split_mode": split_mode,
+        "manifest": None if manifest_path is None else str(manifest_path),
         "study_level_split": True,
-        "unlabeled_reports_used_for_feature_vocabulary": True,
+        "unlabeled_reports_used_for_feature_vocabulary": manifest_path is None,
         "macro_auc": float(np.mean(aucs)),
         "targets": target_results,
     }
@@ -203,6 +278,11 @@ def main() -> None:
     parser.add_argument("--c", type=float, default=2.0)
     parser.add_argument("--use-lexicon", action="store_true")
     parser.add_argument("--lexicon-weight", type=float, default=1.0)
+    parser.add_argument(
+        "--manifest",
+        default=None,
+        help="manifesto UID-based; treina vocabulário/metadados somente no fold de treino",
+    )
     parser.add_argument("--output", default="reports/v0_report_metadata_cv.json")
     args = parser.parse_args()
 
@@ -212,7 +292,21 @@ def main() -> None:
     if train.empty:
         raise RuntimeError("train.csv é necessário para a validação.")
 
-    result = _evaluate(train, tables["train_series"], args.folds, args.seed, args.c, args.use_lexicon, args.lexicon_weight)
+    manifest_path = None
+    if args.manifest is not None:
+        manifest_path = Path(args.manifest).expanduser()
+        if not manifest_path.is_absolute():
+            manifest_path = ROOT / manifest_path
+    result = _evaluate(
+        train,
+        tables["train_series"],
+        args.folds,
+        args.seed,
+        args.c,
+        args.use_lexicon,
+        args.lexicon_weight,
+        manifest_path,
+    )
     output = Path(args.output)
     if not output.is_absolute():
         output = ROOT / output
@@ -221,6 +315,8 @@ def main() -> None:
 
     print(f"data_dir={data_dir}")
     print(f"split_mode={result['split_mode']} folds={result['folds_used']} seed={result['seed']} C={result['c']} lexicon={result['use_lexicon']} lexicon_weight={result['lexicon_weight']}")
+    if result["manifest"] is not None:
+        print(f"manifest={result['manifest']}")
     for row in result["targets"]:
         print(f"{row['target']}: AUC={row['auc']:.6f} labeled={row['labeled']}")
     print(f"macro_auc={result['macro_auc']:.6f}")
