@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-010: H43 segue 0,939; probe22 ref 56263721 PENDING.
-Stack36 serial/prefetch COMPLETE: CSV final idêntico, 14,65% menos tempo.
-Gate completo reprovado: raw Raptor e dois componentes intermediários divergem.
-Diagnóstico Raptor36 determinístico iniciado; sem promoção ou nova submissão.
+Atualizado na AV-011: H43 segue 0,939; probe22 ref 56263721 PENDING.
+Raptor36 determinístico aprovado dentro da sessão: raw/ranks/inputs idênticos,
+26,79% menos tempo com prefetch contra serial aquecido. Repetição iniciada
+em nova sessão; ainda sem promoção do stack ou nova submissão.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -89,15 +89,21 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   Gate FAILED_STABLE_FULLSTACK_PARITY: Raptor raw1727/1728 valores diferentes
   (máx0,0004003644), 2 ranks Baker's; native DINO2 valores Medial OA.
   Imagens/máscaras Raptor idênticas. Não atribuir automaticamente ao prefetch.
-- Diagnóstico em execução: jvlegend/rsna-knee-raptor36-deterministic-abba v1
-  ID 134547620 RUNNING, offline/T4/teto1.800s. Raptor somente; 36 estudos/
-  205 séries, ABBA na mesma sessão, flags determinísticas explícitas.
-  Recuperar em reports/avance_av010_raptor_determinism_v1/, não duplicar.
-- Próximo: auditar com assess_h43_raptor_determinism; conferir ambiente,
-  hashes, inputs/raw/ranks e tempos nas quatro passagens. Se passar, ainda
-  será necessário testar repetibilidade entre workers e resolver/classificar
-  o diagnóstico native DINO. Causa cuDNN não confirmada. Smoke continua bloqueado.
-  Retomada: docs/AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md.
+- Raptor36 determinístico v1 ID 134547620 COMPLETE e auditado na AV-011.
+  ABBA: serial 287,49/240,80s; prefetch 177,11/175,46s. Média B 176,28s,
+  −26,79% contra serial aquecido; inputs/raw/ranks exatos nas quatro passagens.
+  Outputs: reports/avance_av010_raptor_determinism_v1/. Só Raptor, não stack.
+- Repetição em execução: jvlegend/rsna-knee-raptor36-deterministic-repeat v1
+  ID 134548619 RUNNING, offline/T4/teto1.800s; uma passagem prefetch, mesmos
+  36 estudos/205 séries, pesos e flags. Sessão nova; host físico não identificável.
+  Recuperar em reports/avance_av011_raptor_repeat_v1/, sem duplicar.
+- Próximo: assess_h43_raptor_repeat contra o ABBA aprovado; exigir ambiente,
+  modelos, IDs, inputs e raw/ranks iguais. Se passar, preparar par do stack
+  com a mesma receita determinística, preservando H43 histórica e sem promover.
+- Native DINO classificado por teste isolado: diagnóstico preservado, enquanto
+  o DINO público substitui o arquivo principal. Quatro variantes native não
+  alteram a saída; público ausente/inválido falha. Não alteramos o gate completo.
+  Causa cuDNN não confirmada. Retomada: docs/AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -114,8 +120,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
-  São Paulo, PENDING sem score, reconsultado na AV-010 (16/09 UTC).
-  Um envio na AV-005; nenhum novo na AV-006/007/008/009/010, não reenviar.
+  São Paulo, PENDING sem score, reconsultado na AV-011 (16/09 UTC).
+  Um envio na AV-005; nenhum novo na AV-006/007/008/009/010/011, não reenviar.
 - Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -223,7 +229,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-010; CSV final igual/−14,65% tempo, raw Raptor diverge; ABBA36 determinístico134547620 RUNNING; sem promoção |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-011; ABBA36 determinístico aprovado, −26,79% tempo vs serial aquecido; repetição134548619 RUNNING; sem promoção |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -539,3 +545,23 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   66 testes passaram; V01 intacta. Sem avaliação AUC/dev/confirmation.
 - Melhor0,939; probe22 PENDING, sem envio/seleção final/automação novos.
   Artefatos e próximo passo: docs/AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md.
+
+### AV-011 — 15/09/2026 à noite (16/09 UTC) — determinismo local aprovado
+
+- Raptor36 determinístico COMPLETE. Auditoria local conferiu flags, versões,
+  56 hashes/T4x2, amostra de treino, quatro NPZs e 108 pares receita-estudo
+  por passagem. Inputs, probabilidades e ranks exatamente iguais; delta zero.
+  Raw SHA: 1f42760aec1b82bb875e0c456f9dd5b11a653546640f1daa29a91d7977e4c1f5.
+- Tempos ABBA: 287,4890 / 177,1051 / 175,4631 / 240,7954s. Prefetch médio
+  176,2841s; 1,4984× no ABBA e 1,3660× vs serial aquecido (−26,79% tempo).
+  Só Raptor na mesma sessão; não prova causalidade do autotuner nem AUC.
+- Iniciada nova sessão prefetch v1 ID 134548619, offline/T4/teto1.800s;
+  mesmo código de modelo, decode e flags do ABBA. Builder só aceita auditoria
+  bem-sucedida. Auditor de repetição preparado, sem tolerância numérica.
+- Auditada promoção native/public: quatro constantes native (0/0,25/0,75/1)
+  geram o mesmo arquivo principal público; diagnóstico native preservado.
+  Público ausente/IDs inválidos causam erro. Código extraído por SHA, inferência
+  simulada, sem GPU/pesos/treino. Não é prova geral de dependências dinâmicas.
+- 71 testes passaram; V01 intacta; nenhum novo uso de labels/dev/confirmation.
+  Sem alteração do gate completo, serving, seleção final ou automação.
+  H43 0,939, probe22 PENDING. Ver docs/AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md.

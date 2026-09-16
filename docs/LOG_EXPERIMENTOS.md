@@ -2,6 +2,22 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-011 — 15/09/2026 à noite (16/09 UTC) — Raptor determinístico aprovado na sessão
+
+[Evidências e retomada](AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md).
+ABBA36 v1 ID134547620 COMPLETE: quatro passagens com imagens, raw e ranks
+exatamente iguais. Tempos 287,49/177,11/175,46/240,80s; média prefetch176,28s,
+**26,79% menos tempo contra serial aquecido**. Só Raptor, sem ganho de score medido.
+
+Repetição em nova sessão iniciada: rsna-knee-raptor36-deterministic-repeat v1
+ID134548619 RUNNING, offline/T4/teto1.800s; mesmos36 estudos/205 séries e flags,
+uma passagem prefetch. Identidade do host físico não disponível.
+
+Teste isolado classificou native DINO como diagnóstico no trecho de promoção:
+quatro variantes native geram o mesmo principal público; saída pública ausente
+ou inválida falha. Gate completo não alterado. **71 testes passaram**, V01 intacta.
+Probe22 56263721 PENDING, melhor H43 0,939; nenhuma submissão nova.
+
 ## AV-010 — 15/09/2026 à noite (16/09 UTC) — CSV igual, gate intermediário reprovado
 
 [Evidências e retomada](AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md).
