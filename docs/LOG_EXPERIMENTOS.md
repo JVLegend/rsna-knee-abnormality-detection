@@ -2,6 +2,24 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-006 — 15/09/2026 à noite (16/09 UTC) — E03 prefetch iniciado
+
+[Experimento e retomada](AV006_E03_PREFETCH.md). Probe22 ref 56263721 segue
+PENDING, sem score/erro informado. Não reenviado; H43 parent 0,939 preservado.
+
+E03 testa CPU preparando um estudo à frente da GPU, com produtor único e
+memória de lookahead limitada. Modelo/preparo/rank inalterados. Kernel
+jvlegend/rsna-knee-e03-prefetch-abba v1, ID 134542682 RUNNING, offline/T4,
+limite 1.800 s; 12 estudos/70 séries apenas do treino V01, ABBA de quatro
+passagens pelos quatro ramos Raptor. Nunca submeter este benchmark.
+
+Critério: paridade exata de inputs, raw probabilities, IDs e ranks; ganho
+≥5% no ABBA e contra serial aquecido habilita só teste futuro do stack completo.
+33 testes locais passaram; não há tempo ou paridade remota demonstrados ainda.
+Build SHA 223ec2a6ee262aae8202aa46866ee31df916454e9fa2a90399b39b258f3eeeb2.
+Nenhuma nova submissão/automação/seleção final; outputs esperados em
+reports/avance_av006_e03_v1/. Retomar o kernel e o submission_id existentes.
+
 ## AV-005 — 15/09/2026 — H43 0,939 confirmada; A02 probe22
 
 [Evidências](AV005_PARENT_0939_E_PROBE22.md). H43 ref **56253529 COMPLETE,

@@ -4,8 +4,8 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-005: H43 parent COMPLETE, público 0,939 (+0,010 vs H38).
-A02 probe22 enviada, ref 56263721 PENDING; ainda sem score dessa variante.
+Atualizado na AV-006: H43 parent segue 0,939; probe22 ref 56263721 PENDING.
+E03 serial/prefetch ABBA iniciado, sem novo score ou ganho de tempo medido.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -69,6 +69,9 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 - Próxima ação: A02 — consultar a submissão probe22 ref 56263721, sem duplicar.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
+- Em paralelo, recuperar E03 jvlegend/rsna-knee-e03-prefetch-abba v1,
+  ID 134542682, RUNNING; 12 estudos/70 séries, serial-prefetch-prefetch-serial,
+  quatro ramos Raptor, offline/T4/teto30min. Não é kernel de submissão.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -85,7 +88,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
-  São Paulo, PENDING sem score. Um envio na AV-005; não reenviar.
+  São Paulo, PENDING sem score, reconsultado na AV-006 (16/09 UTC).
+  Um envio na AV-005; nenhum novo na AV-006, não reenviar.
 - Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -193,7 +197,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | PENDENTE |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_EXECUCAO — AV-006; primeiro teste: preparo CPU one-ahead, ABBA 12 estudos, v1 ID 134542682 RUNNING |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -405,3 +409,20 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Retomar pelo submission_id, sem duplicar; H43 parent 0,939 preservada.
 - Detalhes: docs/AV005_PARENT_0939_E_PROBE22.md; outputs esperados no HD
   em reports/avance_av005_probe22_v1/, com paired_integrity.json aprovado.
+
+### AV-006 — 15/09/2026 à noite (16/09 UTC) — E03 iniciada
+
+- Probe22 56263721 ainda PENDING, sem score/erro informado. Não duplicada.
+  H43 parent 0,939, H38 e seleção final preservados. Sem nova submissão.
+- Implementado prefetch ordenado de um estudo, produtor CPU único, fechamento
+  e espera antes da troca de receita; funções de modelo/geometria preservadas.
+  33 testes passaram. Não é ganho de velocidade demonstrado ainda.
+- Kernel rsna-knee-e03-prefetch-abba v1, ID 134542682 RUNNING; 12 casos/
+  70 séries de treino V01, quatro passagens serial-prefetch-prefetch-serial.
+  Offline/T4/teto1.800s. Só Raptor, nunca submeter. Sem validação/AUC.
+- Critério: hashes de volumes/máscaras, IDs, probabilidades por ramo e ranks
+  exatamente iguais; speedup ≥1,05 tanto ABBA quanto contra o serial final
+  aquecido permite apenas teste futuro no stack completo, não promoção automática.
+- Build SHA 223ec2a6ee262aae8202aa46866ee31df916454e9fa2a90399b39b258f3eeeb2.
+  Registro repo docs/AV006_E03_PREFETCH.md; outputs esperados no HD em
+  reports/avance_av006_e03_v1/. Retomar ambos os IDs antes de executar de novo.
