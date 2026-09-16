@@ -2,6 +2,25 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-007 — 15/09/2026 à noite (16/09 UTC) — prefetch isolado aprovado
+
+[Evidências](AV007_E03_GANHO_E_FULLSTACK.md). E03 ABBA v1 ID 134542682 COMPLETE:
+serial 123,55/86,11 s, prefetch 64,08/63,37 s. Média B 63,73 s, **25,99% menos
+tempo** contra serial aquecido. Só Raptor/12 estudos, não o ensemble completo.
+Auditoria local independente conferiu NPZs/IDs/36 pares receita-estudo e
+recalculou métricas: paridade exata de inputs, probabilidades e ranks, delta0.
+Raw SHA dos quatro arquivos 498c9ea93f3544d8babe47bd45ac7c4d0647ad0fe8f8879c38a4485737b61278.
+
+Iniciado jvlegend/rsna-knee-e03-fullstack36-prefetch v1, ID **134543253**,
+RUNNING, offline/T4x2/1h, mesmos 36 estudos/205 séries de treino. Cinco ramos;
+exigir CSV idêntico e comparar tempos com benchmark AV-004. Não é submissão.
+Build SHA 7d2dc6c5f3538c451ae332c22ae92949b29370c1f02a82b3f86af6123285cb5c.
+**39 testes passaram**, V01 inalterada. Outputs isolados em
+reports/avance_av007_e03_v1/; fullstack esperado em reports/avance_av007_fullstack_v1/.
+
+Probe22 56263721 ainda PENDING, sem erro/score novo. H43 parent **0,939**
+preservado; nenhuma submissão/automação/seleção final nova. Retomar ambos os IDs.
+
 ## AV-006 — 15/09/2026 à noite (16/09 UTC) — E03 prefetch iniciado
 
 [Experimento e retomada](AV006_E03_PREFETCH.md). Probe22 ref 56263721 segue
