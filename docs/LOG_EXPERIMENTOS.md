@@ -2,6 +2,24 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-009 — 15/09/2026 à noite (16/09 UTC) — par completo com DINO estável
+
+[Código, hashes e retomada](AV009_DINO_ESTAVEL_STACK_PAREADO.md). Regra exata
+implementada apenas no DINO público uniforme. Teste CPU com captura real
+reproduz o replay independente em 20 ordens; pesos/IDs/finitude/cobertura validados.
+Parent histórico e demais ramos preservados; nenhum ganho de AUC alegado.
+**59 testes passaram**, incluindo replay real e casos negativos da auditoria.
+
+Iniciados rsna-knee-stable36-serial v1 **134546480** e
+rsna-knee-stable36-prefetch v1 **134546487**, ambos RUNNING. Cada um privado,
+offline/T4/teto1.800s; 36 estudos/205 séries e cinco ramos. Mesma regra DINO;
+varia só modo Raptor. Auditor de raw/inputs/componentes/CSV preparado.
+Não submeter os benchmarks; paridade e ganho completos pendentes.
+
+V01 intacta. Probe22 56263721 PENDING, sem reenvio; H43 parent **0,939**.
+Nenhuma alteração da seleção final ou automação. Recuperar outputs nos diretórios
+reports/avance_av009_serial_v1/ e reports/avance_av009_prefetch_v1/.
+
 ## AV-008 — 15/09/2026 à noite (16/09 UTC) — fullstack e empates DINO
 
 [Evidências e retomada](AV008_FULLSTACK_E_EMPATES_DINO.md). Stack36 v1

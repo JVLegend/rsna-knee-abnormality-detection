@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-008: H43 segue 0,939; probe22 ref 56263721 PENDING.
-E03 stack36 terminou 10,35% mais rápido, mas falhou na igualdade do CSV.
-Replay confirmou dependência da soma DINO da ordem de conclusão dos membros.
-Correção exata testada apenas no replay; sem promoção ou nova submissão.
+Atualizado na AV-009: H43 segue 0,939; probe22 ref 56263721 PENDING.
+Agregação DINO exata implementada em candidatos separados e testada localmente.
+Par stack36 serial/prefetch iniciado com a mesma regra; resultados pendentes.
+Sem promoção, alteração do serving aprovado ou nova submissão.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -83,11 +83,15 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   Mesmas previsões + duas ordens históricas reproduzem exatamente ambos os
   CSVs DINO. Soma inteira de ranks duplicados é invariável em 20 permutações,
   mas altera 14 valores contra o legado: é candidata distinta, não paridade.
-- Próximo E03: criar baseline com agregação DINO estável e testar stack36
-  serial vs prefetch com essa mesma regra. Separar a correção de empates do
-  ganho de execução; só depois smoke real. Não substituir H43 0,939.
-  Diagnóstico: docs/AV008_FULLSTACK_E_EMPATES_DINO.md e
-  reports/avance_av008_diagnosis/actual_replay_v2.json.
+- E03 par estável iniciado na AV-009: jvlegend/rsna-knee-stable36-serial v1
+  ID 134546480 RUNNING; jvlegend/rsna-knee-stable36-prefetch v1 ID 134546487
+  RUNNING. Cada um offline/T4/teto1.800s, cinco ramos/36 estudos/205 séries.
+  Mesma soma DINO inteira, uma diferença de modo Raptor; nunca submeter.
+- Próximo: recuperar ambos, sem relançar, em reports/avance_av009_serial_v1/
+  e reports/avance_av009_prefetch_v1/. Rodar assess_h43_stable_fullstack:
+  exigir replay independente do CSV DINO, raw DINO/Raptor, hashes de inputs,
+  todos os componentes e CSV final iguais. Medir tempo. Só depois smoke real.
+  Não substituir H43 0,939. Retomada: docs/AV009_DINO_ESTAVEL_STACK_PAREADO.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -104,8 +108,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
-  São Paulo, PENDING sem score, reconsultado na AV-008 (16/09 UTC).
-  Um envio na AV-005; nenhum novo na AV-006/007/008, não reenviar.
+  São Paulo, PENDING sem score, reconsultado na AV-009 (16/09 UTC).
+  Um envio na AV-005; nenhum novo na AV-006/007/008/009, não reenviar.
 - Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -213,7 +217,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-008; stack36 −10,35% tempo, CSV diverge; causa DINO reproduzida, correção exata só no replay; promoção suspensa |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_EXECUCAO — AV-009; correção DINO implementada; par estável serial134546480/prefetch134546487 RUNNING; promoção suspensa |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -484,3 +488,26 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Decisão: manter H43 0,939 e probe22 56263721 PENDING, sem reenviar.
   Não promover o prefetch nem alterar seleção final. Próximo: baseline DINO
   estável + comparação serial/prefetch no stack completo, com gates explícitos.
+
+### AV-009 — 15/09/2026 à noite (16/09 UTC) — DINO estável no par completo
+
+- Implementado h43_stable_rank.py: ranks médios duplicados somados em int64,
+  apenas 20 membros públicos com pesos unitários/12 alvos/cobertura completa.
+  Valida IDs, finitude, shapes, duplicatas e limite de acumulação. Não muda
+  _combine ponderado, native DINO, legacy-fold, A5, Rad, CoAt ou checkpoints.
+- Teste sobre captura real bate com replay independente em 20 permutações.
+  Builders serial/prefetch preservam todos os demais ramos e diferem somente
+  nas declarações de modo. São candidatos distintos do parent histórico.
+- 59 testes passaram, incluindo auditoria negativa de hash/modo/CSV.
+- Kernels privados v1: rsna-knee-stable36-serial ID 134546480 RUNNING e
+  rsna-knee-stable36-prefetch ID 134546487 RUNNING. Cada um offline/T4/teto
+  1.800s; mesmos 36 estudos/205 séries de treino, cinco ramos e lock56.
+- Auditor assess_h43_stable_fullstack.py preparado para comparar CSVs, inputs,
+  raw e composição. Paridade e ganho de tempo remotos ainda não demonstrados.
+  Não submeter estes benchmarks. V01 intacta; nenhum uso de dev/confirmation.
+- A API de cota oscilou: primeira leitura 6h permitidas/10,31h usadas;
+  duas seguintes 30h, com 19,69h livres antes do despacho. Gate exigiu ≥1h
+  para os dois tetos de 30min. Nenhum recurso pago habilitado.
+- Probe22 56263721 permanece PENDING; H43 0,939, H38 e seleção final preservados.
+  Nenhuma nova submissão/automação. Detalhes, hashes e comandos:
+  docs/AV009_DINO_ESTAVEL_STACK_PAREADO.md. Retomar os kernels existentes.
