@@ -2,6 +2,18 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-014 — 16/09/2026 — CoAt ordered exato; nova integração completa
+
+[Evidências e retomada](AV014_COAT_ORDENADO_E_INTEGRACAO.md).
+ABBA134608117 COMPLETE e auditado: inputs/ambiente iguais, ordered raw/ranks
+exatos nas2repetições. Completion variou248valores raw, delta máx0,0001143664;
+ranks/CSV iguais. Tempos116,51/113,98/115,88/115,71s, sem ganho de AUC alegado.
+
+Builder/auditor do par completo com a mesma cópia CoAt ordered implementados;
+só célula57 muda. **87 testes passaram**, V01 intacta. Iniciados serial134609177
+e prefetch134609181, v1, offline/T4/teto1.800s. Exigir gate completo e âncoras
+Raptor/CoAt; nenhum smoke ou novo envio. Melhor público0,941 preservado.
+
 ## AV-013 — 16/09/2026 — Raptor integrado; CoAt depende de investigação
 
 [Evidências e retomada](AV013_COAT_LOTES_E_GATE_COMPLETO.md).
