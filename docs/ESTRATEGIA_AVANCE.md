@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-017 (16/09): ref56281610 continua PENDING, sem novo score.
-L01 diagnóstico executado somente no treino299:3.588pares,169mudanças de
-sinal lexical e17discordâncias com professor; não são erros confirmados.
-102 testes passaram. Professor preservado; próximo passo V02 baseline próprio.
+Atualizado na AV-018 (16/09): ref56281610 continua PENDING, sem novo score.
+V02: cache treino299/897séries aprovado; piloto DINOv2 genérico com atenção
+iniciado no Kaggle, ID134631088 v1 RUNNING, ainda sem auditoria de saída.
+105 testes locais passaram. Professor preservado; nenhum baseline completo ainda.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,6 +71,20 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- Próxima ação AV-018: consultar jvlegend/rsna-knee-v02-generic-dino-pilot
+  v1 ID134631088, RUNNING. T4x2/offline/1.800s, piloto usa cuda:0 somente.
+  Não duplicar. Leitura de logs expirou; isso não prova falha do kernel.
+  Build reports/avance_av018_v02/v02_generic_pilot_v1.py SHAe310c754… .
+  Auditoria local cache PASSED_TRAIN_CACHE_PIXELS:299estudos/897séries/
+  2.691canais/94.557.531bytes, sem constantes/hash de pixels duplicado no treino.
+  Canais espaçados em quartis, gaps2a80, não adjacentes. Piloto seleciona12
+  estudos só por custo de pixels; deverá reconstruir36séries/108DICOMs iguais.
+  DINOv2 genérico oficial congelado, cabeça própria de atenção compartilhada,
+  teste16passos+checkpoint/retomada exata. Sem dev/confirmation ou AUC.
+  Após COMPLETE, baixar em reports/avance_av018_pilot_v1/ e rodar
+  scripts.assess_v02_pilot; comandos em docs/AV018_PREFLIGHT_V02_GENERICO.md.
+  Só após gate e custo planejar treino V02 completo299/dev250, seed2026/42.
+  105 testes locais passaram; gates CUDA ainda não confirmados.
 - AV-017 concluída: diagnóstico L01 em299estudos/296grupos de treino.
   3.588pares;169sinais mudam contra extrator legado,17/723discordam do professor.
   Apenas725pares recebem sinal definido;653sinais antigos passam à abstenção.
@@ -276,12 +290,12 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
-| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PENDENTE |
+| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PREFLIGHT EM EXECUÇÃO — AV-018; cache treino aprovado, piloto12 no Kaggle134631088; baseline completo/sementes pendentes |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
 | L04 / H-44 | Teacher atual versus consenso apenas nos casos discordantes, com abstenção se faltar evidência; regras ou LLM local já disponível | V01/V02; não repetir média irrestrita já negativa / alto | PENDENTE |
-| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | PENDENTE |
+| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | DIAGNÓSTICO CACHE V02 — AV-018; quartis com gaps2–80; ablação visual e outros loaders pendentes |
 | G02 / H-45 | Cache 16 versus 32 fatias com mesma banda; medir fatias únicas/gaps e treinar cada receita compatível | G01; ramo que de fato usa cache 16 / alto | PENDENTE |
 | G03 / H-45 | Banda central versus ampla mantendo densidade física semelhante; depois ablação da densidade com banda fixa | G01; contagem pode mudar para preservar densidade / alto | PENDENTE |
 | G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | PENDENTE |
@@ -770,3 +784,23 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Decisão: não substituir professor; L01 permanece parcial até revisão e
   comparação visual. Próximo V02 original/pretreino genérico, com preflight
   de pixels/cache/custo e checkpoint. Docs/AV017_AUDITORIA_L01_TREINO.md.
+
+### AV-018 — 16/09/2026 — cache V02 aprovado e piloto genérico iniciado
+
+- Submissão56281610 PENDING; não reenviada. Melhor0,941 e seleção final intactos.
+- Cache treino auditado em leitura serial:299estudos/897séries/2.691canais,
+  94.557.531bytes, formato/índices/variância/hashes válidos; nenhum array de
+  pixels duplicado dentro do treino. Gaps2–80: canais espaçados, não adjacentes.
+  Não atesta geometria completa ou ausência de pacientes duplicados entre splits.
+- Pretreino oficial metaresearch/dinov2/PyTorch/small/1, hash esperado conferido
+  contra LFS facebook/dinov2-small; worker deverá validar bin/config antes de
+  carregar. Nenhum peso/cabeça ajustado à competição no novo baseline.
+- Implementados builder, runtime e auditor piloto:12estudos/36séries só do
+  treino, reconstrução108DICOMs vs pixels do HD, DINO congelado fp32, atenção
+  compartilhada própria,16passos de engenharia e retomada de checkpoint.
+  Sem AUC/dev/confirmation;105testes locais. Manifesto/professor intactos.
+- Kernel134631088 v1 RUNNING, privado/offline/T4/teto1.800s, usa1das2GPUs.
+  Cota antes17,8690h. Logs expiraram na consulta; não concluir falha/sucesso.
+  Build SHAe310c754… em reports/avance_av018_v02/. Não duplicar.
+- Próximo: auditar outputs e custo antes de treino completo V02 com duas
+  sementes. Nenhuma nova submissão/automação. Docs/AV018_PREFLIGHT_V02_GENERICO.md.

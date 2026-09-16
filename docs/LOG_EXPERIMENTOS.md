@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-018 — 16/09/2026 — preflight do baseline próprio V02
+
+[Evidências e retomada](AV018_PREFLIGHT_V02_GENERICO.md).
+Cache299estudos/897séries aprovado,2.691canais; sem constantes/arrays de
+pixels exatamente duplicados no treino. Quartis com gaps2–80, não adjacentes.
+**105 testes locais passaram**, manifesto V01/professor intactos.
+
+Iniciado piloto privado134631088 v1, RUNNING, offline/T4/1.800s,12estudos
+de treino. DINOv2 genérico congelado, cabeça própria de atenção; testar pixels,
+treino e checkpoint antes do baseline completo. Logs ainda indisponíveis por
+timeout de leitura; gates GPU/custo pendentes. Não duplicar nem submeter piloto.
+56281610 segue PENDING; melhor0,941, nenhum novo envio. Próximo: auditar piloto.
+
 ## AV-017 — 16/09/2026 — auditoria L01 somente no treino
 
 [Evidências e retomada](AV017_AUDITORIA_L01_TREINO.md).
