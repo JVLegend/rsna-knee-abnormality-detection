@@ -10,9 +10,10 @@ componentes exatos, incluindo comparação com âncoras Raptor/CoAt. Etapas
 624,30→580,65s (**−6,99%**); subtotal Raptor/CoAt/fusão−13,57%, sem ganho AUC.
 
 Builder/auditor do smoke oficial preparado a partir do exato prefetch aprovado.
-**91 testes passaram**, V01 intacta. Kernel134610738 v1 iniciado, T4/offline/
-1.800s,3exemplos oficiais, saída smoke_predictions.csv; outerparent0,60.
-Próximo: auditar smoke antes de qualquer candidata de competição. Melhor0,941
+**91 testes passaram**, V01 intacta. Kernel134610738 v1 COMPLETE e smoke
+aprovado:3estudos/15séries,5ramos, raw/replay/IDs exatos, zero fallback.
+CSV SHA7d3b8bd4… igual ao piloto visível; etapas117,69s; outerparent0,60.
+Próximo: preparar candidata estável com presetprobe22 e gates de envio. Melhor0,941
 inalterado, nenhuma nova submissão ou seleção final.
 
 ## AV-014 — 16/09/2026 — CoAt ordered exato; nova integração completa

@@ -37,7 +37,7 @@ Não é intervalo de confiança nem ganho de AUC. Projeções com margem:
 7,4614h para1.322estudos hipotéticos,11,2585h para2.000; não confirmam
 tamanho do teste oculto ou garantia de respeitar9h. Revalidar regras no envio.
 
-## Smoke implementado e iniciado
+## Smoke implementado e concluído
 
 `prepare_h43_ordered_smoke.py` reaudita o par e deriva diretamente do build
 prefetch aprovado SHA11ddd8e5…, em vez de reutilizar o smoke antigo incompleto.
@@ -67,13 +67,24 @@ quando o contrato explicitado é18. Fixture não é contagem declarada do teste 
 Dev/confirmation intocados; sem seleção por labels ou novo treino.
 
 Kernel privado [Ordered Official Smoke](https://www.kaggle.com/code/jvlegend/rsna-knee-ordered-official-smoke),
-v1 **ID134610738**, iniciado offline/T4/teto1.800s. Cota antes18,0020h.
+v1 **ID134610738**, COMPLETE, offline/T4/teto1.800s. Cota antes18,0020h.
 Build: `reports/avance_av015_build/h43_ordered_official_smoke_v1.ipynb`.
 SHA `9ca08d0ab5465e7da77dd3459201901e7f2ea9ceb8ab64b70def386a428470e7`.
 
-## Retomada
+## Resultado do smoke confirmado na mesma rodada
 
-Consultar ID134610738, sem duplicar. Após COMPLETE:
+**PASSED_ORDERED_OFFICIAL_SMOKE**,3estudos/15séries. Cinco ramos e todos os
+IDs oficiais presentes; replay DINO/CoAt aprovado, sem fallback, root oficial.
+CSV SHA `7d3b8bd4e76b309171e2c44a58301e71da26104d1049cc9f8c445c17eee3c770`,
+igual ao piloto histórico visível. Isso não demonstra igualdade no oculto.
+Etapas: DINO33,0232s; A59,6749s; Rad9,5475s; Raptor/CoAt/fusão65,4402s;
+total117,6857s. Não extrapolar runtime do teste oculto a partir de3casos.
+Outputs em reports/avance_av015_smoke_v1/; auditoria em
+reports/avance_av015_audit/smoke_v1.json. Não repetir o kernel.
+
+## Retomada e reprodução da auditoria
+
+Comandos usados (outputs já baixados; não sobrescrever auditoria existente):
 
 ```sh
 uvx --from kaggle kaggle kernels output jvlegend/rsna-knee-ordered-official-smoke \
@@ -84,7 +95,8 @@ uv run --no-project --with numpy python -m scripts.assess_h43_ordered_smoke \
   --output reports/avance_av015_audit/smoke_v1.json
 ```
 
-Se passar, revisar preset/candidata de envio, regras vigentes, orçamento e
-duplicidade. Não submeter este smoke automaticamente;3exemplos verificam
+Próximo: preparar candidata de competição usando a receita estável e o preset
+probe22 já fixado, sem grid de pesos. Testar routing/pesos/IDs/recibos e revisar
+regras vigentes, orçamento e duplicidade. Não submeter este smoke de30min;3exemplos verificam
 integração, não AUC ou runtime oculto. Melhor público **0,941** preservado.
 Nenhuma nova submissão, seleção final, automação ou serviço pago nesta rodada.

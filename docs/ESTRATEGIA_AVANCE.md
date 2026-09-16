@@ -6,7 +6,8 @@ Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
 Atualizado na AV-015 (16/09): par completo aprovado, todos os componentes
 exatos e âncoras Raptor/CoAt preservadas. Tempo624,30→580,65s (−6,99%).
-Teste com3exemplos oficiais iniciado, ainda sem nova submissão.
+Smoke oficial também aprovado:3estudos/15séries, CSV igual à referência visível.
+Ainda sem nova submissão; próxima candidata usará o preset probe22 fixo.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -70,15 +71,18 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: E03 — consultar jvlegend/rsna-knee-ordered-official-smoke,
-  v1 ID134610738 RUNNING, privado/offline/T4/teto1.800s, lançado na AV-015.
-  Mesma receita validada, agora somente3exemplos oficiais. Não duplicar.
-  Após COMPLETE, baixar em reports/avance_av015_smoke_v1/ e executar
-  assess_h43_ordered_smoke. Saída smoke_predictions.csv, não submission.csv.
-  Checar IDs oficiais,5ramos/56hashes, raw/replay/ordem fixa, sem fallback.
-  Se passar, revisar a candidata de envio, preset e limite vigente/cota;
-  não submeter automaticamente nem tratar este smoke como score/OOF.
-  O smoke usa outer parent0,60; probe22 histórico0,941 continua separado.
+- Próxima ação: preparar candidata de competição a partir do smoke aprovado,
+  aplicando somente o preset probe22 já publicado/fixado (sem grid novo).
+  Preservar a receita estável validada, testar routing/pesos/IDs/recibos antes
+  do envio; revalidar regras, limite, cota e duplicidade. Máximo1novo envio
+  por AVANCE. Não usar diretamente o notebook de smoke/teto30min.
+  Smoke jvlegend/rsna-knee-ordered-official-smoke v1 ID134610738 COMPLETE,
+  PASSED_ORDERED_OFFICIAL_SMOKE. Outputs em reports/avance_av015_smoke_v1/;
+  auditoria em reports/avance_av015_audit/smoke_v1.json. Não repetir.
+  3estudos/15séries,5ramos/56hashes, IDs oficiais exatos, replay DINO/CoAt
+  aprovado e sem fallback. Saída smoke_predictions.csv; SHA7d3b8bd4…,
+  igual ao piloto histórico visível. Etapas117,6857s, sem extrapolar de3casos.
+  O smoke usa outerparent0,60; probe22 histórico0,941 continua separado.
   Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
 - Par ordered completo serial134609177/prefetch134609181 COMPLETE.
@@ -270,7 +274,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | PARIDADE_COMPLETA_APROVADA — AV-015; −6,99% tempo no benchmark; smoke oficial134610738 RUNNING, sem envio |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -678,7 +682,7 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   final, automação ou serviço pago. Melhor0,941 preservado.
   Comandos e hashes: docs/AV014_COAT_ORDENADO_E_INTEGRACAO.md.
 
-### AV-015 — 16/09/2026 — paridade completa aprovada; smoke oficial iniciado
+### AV-015 — 16/09/2026 — paridade completa e smoke oficial aprovados
 
 - Par ordered COMPLETE e auditado: todos os componentes/CSV/diagnósticos
   exatos, DINO raw/replay iguais, Raptor e CoAt iguais às âncoras isoladas.
@@ -696,7 +700,14 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   com replay independente, Raptor com cobertura/raw, sem fallback ou caminhos
   de benchmark. Leitor CoAt aceita número de estudos/series explícito,
   mantendo o contrato36/205 dos testes anteriores.
-- 91 testes passaram; V01 intacta. Kernel134610738 v1 iniciado,
+- 91 testes passaram; V01 intacta. Kernel134610738 v1 COMPLETE,
   privado/offline/T4/teto1.800s; cota antes18,0020h. Nenhum uso de dev/
   confirmation, novo envio, seleção final ou automação. Melhor0,941 preservado.
+- Smoke auditado PASSED_ORDERED_OFFICIAL_SMOKE:3estudos/15séries,
+  cinco ramos completos,56hashes, replay DINO/CoAt aprovado, sem fallback.
+  CSV SHA7d3b8bd4… igual ao piloto histórico visível; não prova paridade
+  no oculto. Total das etapas117,6857s, sem extrapolar a partir de3casos.
+  Auditoria: reports/avance_av015_audit/smoke_v1.json.
+- Próximo: candidata estável com preset probe22 fixo, após testes de routing,
+  regras vigentes, cota e duplicidade. Não submeter o smoke de30min.
   Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
