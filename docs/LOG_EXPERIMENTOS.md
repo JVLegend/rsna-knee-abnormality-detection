@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-012 — 16/09/2026 — probe22 0,941; par determinístico completo
+
+[Evidências e retomada](AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md).
+Probe22 ref56263721 COMPLETE **0,941**, +0,002 sobre parent0,939; nenhuma nova
+submissão. Reprodução pública, OOF independente indisponível, seleção intacta.
+Raptor36 repetiu inputs/raw/ranks/ambiente exatos em nova sessão,193,94s.
+
+Implementados builder/auditor completos: backend fixo no Raptor, restauração
+em finally, ordem native por ID e gate de todos os componentes preservado.
+**75 testes passaram**, V01 intacta. Par privado/offline/T4/1.800s iniciado:
+serial134588338/prefetch134588340, v1, mesmos36 estudos/205 séries do treino.
+Próximo: auditar resultados; smoke antigo precisa incorporar a receita validada.
+
 ## AV-011 — 15/09/2026 à noite (16/09 UTC) — Raptor determinístico aprovado na sessão
 
 [Evidências e retomada](AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md).

@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-011: H43 segue 0,939; probe22 ref 56263721 PENDING.
-Raptor36 determinístico aprovado dentro da sessão: raw/ranks/inputs idênticos,
-26,79% menos tempo com prefetch contra serial aquecido. Repetição iniciada
-em nova sessão; ainda sem promoção do stack ou nova submissão.
+Atualizado na AV-012 (16/09): probe22 ref 56263721 COMPLETE, **0,941**,
+novo melhor público (+0,002 sobre parent). Raptor36 determinístico repetiu
+inputs/raw/ranks exatos em nova sessão. Par completo determinístico iniciado;
+sem nova submissão nem alteração da seleção final.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -21,15 +21,16 @@ Melhorar o modelo de imagem para os 12 alvos, com experimentos comparáveis,
 submissões rastreáveis e custo medido. Trabalhar em três frentes:
 reprodução pública forte, treino próprio e combinação/eficiência.
 
-Melhor referência pública: H43 parent, público 0,939, ref 56253529.
+Melhor referência pública: H43A probe22, público **0,941**, ref 56263721.
+H43 parent 0,939, ref 56253529, permanece comparador histórico.
 H-38 0,929 e H-36 0,928 permanecem disponíveis; seleção final não alterada.
 H-42 terminou com 0,881 e não será promovida. Sua avaliação local de 0,995527
 já tinha exposição dos pesos ao gold; a queda no leaderboard não identifica,
 sozinha, qual componente causou a diferença.
 
 O parent público 0,939 foi reproduzido pela H43 na AV-005, superando H38.
-O preset probe22 relata 0,941 na fonte: esse ainda não é nosso resultado.
-Superar 0,94 continua sendo uma meta; ganho público não garante o privado.
+O preset probe22 reproduziu **0,941** na nossa submissão, confirmado na AV-012.
+Meta pública de superar 0,94 alcançada; ganho público não garante o privado.
 
 ## O que significa AVANCE neste projeto
 
@@ -69,7 +70,14 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: A02 — consultar a submissão probe22 ref 56263721, sem duplicar.
+- Próxima ação: E03 — consultar o par determinístico completo:
+  jvlegend/rsna-knee-deterministic36-serial v1 ID134588338 e
+  jvlegend/rsna-knee-deterministic36-prefetch v1 ID134588340.
+  Despachados na AV-012, privados/offline/T4/teto1.800s cada.
+  Após COMPLETE, baixar outputs em reports/avance_av012_serial_v1/ e
+  reports/avance_av012_prefetch_v1/, executar assess_h43_deterministic_fullstack.
+  Exigir todos os componentes (inclusive native), inputs/raw e ambiente iguais,
+  mais Raptor igual à repetição isolada. Nenhum smoke legado sem adaptar receita.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
 - E03 isolado jvlegend/rsna-knee-e03-prefetch-abba v1, ID 134542682 COMPLETE:
   12 estudos/70 séries, paridade exata; prefetch 63,73 s vs serial aquecido
@@ -93,17 +101,19 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ABBA: serial 287,49/240,80s; prefetch 177,11/175,46s. Média B 176,28s,
   −26,79% contra serial aquecido; inputs/raw/ranks exatos nas quatro passagens.
   Outputs: reports/avance_av010_raptor_determinism_v1/. Só Raptor, não stack.
-- Repetição em execução: jvlegend/rsna-knee-raptor36-deterministic-repeat v1
-  ID 134548619 RUNNING, offline/T4/teto1.800s; uma passagem prefetch, mesmos
-  36 estudos/205 séries, pesos e flags. Sessão nova; host físico não identificável.
-  Recuperar em reports/avance_av011_raptor_repeat_v1/, sem duplicar.
-- Próximo: assess_h43_raptor_repeat contra o ABBA aprovado; exigir ambiente,
-  modelos, IDs, inputs e raw/ranks iguais. Se passar, preparar par do stack
-  com a mesma receita determinística, preservando H43 histórica e sem promover.
+- Repetição jvlegend/rsna-knee-raptor36-deterministic-repeat v1 ID134548619
+  COMPLETE e PASSED_CROSS_SESSION_PARITY na AV-012. Mesmos36/205,
+  ambiente/modelos/IDs/inputs/raw/ranks exatos; 193,94s vs B2 175,46s.
+  Sessão nova; host físico não identificável. Não demonstra novo ganho de AUC.
+  Artefatos em reports/avance_av011_raptor_repeat_v1/; auditoria em
+  reports/avance_av012_audit/repeat_v1.json. Sem reexecução duplicada.
 - Native DINO classificado por teste isolado: diagnóstico preservado, enquanto
   o DINO público substitui o arquivo principal. Quatro variantes native não
   alteram a saída; público ausente/inválido falha. Não alteramos o gate completo.
-  Causa cuDNN não confirmada. Retomada: docs/AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md.
+  Na AV-012, soma weighted native ordenada por ID em ambos os modos para
+  remover dependência da conclusão dos workers. Não muda pesos nem exclui
+  diagnóstico do gate. Causa cuDNN não confirmada.
+  Retomada: docs/AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -120,9 +130,9 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
-  São Paulo, PENDING sem score, reconsultado na AV-011 (16/09 UTC).
-  Um envio na AV-005; nenhum novo na AV-006/007/008/009/010/011, não reenviar.
-- Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
+  São Paulo, COMPLETE **0,941**, confirmado via API na AV-012 (16/09).
+  Um envio na AV-005; nenhum novo na AV-006 até AV-012, não reenviar.
+- Melhor candidato confirmado: H43A probe22 0,941; parent0,939 e H380,929 preservados.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
 - A00: inventário estático concluído; não é reprodução do score público.
@@ -208,7 +218,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 |---|---|---|---|
 | A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
 | A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | REPRODUZIDA — AV-005; ref 56253529 COMPLETE 0,939, +0,010 vs H38 |
-| A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | EM_EXECUCAO — AV-005; probe22 íntegro, submissão 56263721 PENDING |
+| A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PENDENTE |
@@ -229,7 +239,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-011; ABBA36 determinístico aprovado, −26,79% tempo vs serial aquecido; repetição134548619 RUNNING; sem promoção |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-012; repetição isolada exata; par completo134588338/134588340 iniciado, gate estrito preservado |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -565,3 +575,27 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - 71 testes passaram; V01 intacta; nenhum novo uso de labels/dev/confirmation.
   Sem alteração do gate completo, serving, seleção final ou automação.
   H43 0,939, probe22 PENDING. Ver docs/AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md.
+
+### AV-012 — 16/09/2026 — probe22 0,941; integração determinística
+
+- API confirmou probe22 ref56263721 COMPLETE **0,941**, parent56253529
+  COMPLETE0,939. +0,002 absoluto; reprodução pública, OOF independente
+  indisponível. Seleção final oficial inalterada, nenhuma nova submissão.
+- Repetição Raptor36 ID134548619 passou: inputs/raw/ranks/ambiente/pesos
+  idênticos ao ABBA. Tempo193,9379s, contra175,4631s na referência B2.
+  Não confundir estabilidade com speedup entre sessões ou prova de causalidade.
+- Implementado par completo com CUBLAS antes do preflight e flags Raptor
+  após definição da fonte/antes do forward. Estado backend e RNG restaurados
+  em finally, inclusive se falhar. Ambiente/receita registrados no worker.
+  CUBLAS é ajuste de processo e herdado por filhos; não alegamos isolar
+  causalmente seu efeito no restante do stack.
+- Native weighted usa ordem fixa por ID em ambos os modos, mantendo pesos.
+  DINO público continua soma inteira exata. Receitas candidatas diferentes do
+  parent histórico; não comparar seu score como se já tivessem sido submetidas.
+  Gate inclui native e demais CSVs, raw/inputs, versões/flags e âncora isolada.
+- 75 testes passaram; manifesto V01 intacto; dev/confirmation não consultados.
+  Cota antes do despacho18,9291h. Par T4/offline/1.800s:
+  serial134588338, prefetch134588340, v1. Não é submissão, nunca enviar treino.
+- Próximo: auditar par; se passar e houver ganho, adaptar smoke à receita
+  realmente validada. Builder de smoke anterior não contém essas flags.
+  Detalhes/hashes/comandos: docs/AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md.
