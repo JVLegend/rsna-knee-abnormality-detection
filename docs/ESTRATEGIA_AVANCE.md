@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-009: H43 segue 0,939; probe22 ref 56263721 PENDING.
-Agregação DINO exata implementada em candidatos separados e testada localmente.
-Par stack36 serial/prefetch iniciado com a mesma regra; resultados pendentes.
-Sem promoção, alteração do serving aprovado ou nova submissão.
+Atualizado na AV-010: H43 segue 0,939; probe22 ref 56263721 PENDING.
+Stack36 serial/prefetch COMPLETE: CSV final idêntico, 14,65% menos tempo.
+Gate completo reprovado: raw Raptor e dois componentes intermediários divergem.
+Diagnóstico Raptor36 determinístico iniciado; sem promoção ou nova submissão.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -83,15 +83,21 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   Mesmas previsões + duas ordens históricas reproduzem exatamente ambos os
   CSVs DINO. Soma inteira de ranks duplicados é invariável em 20 permutações,
   mas altera 14 valores contra o legado: é candidata distinta, não paridade.
-- E03 par estável iniciado na AV-009: jvlegend/rsna-knee-stable36-serial v1
-  ID 134546480 RUNNING; jvlegend/rsna-knee-stable36-prefetch v1 ID 134546487
-  RUNNING. Cada um offline/T4/teto1.800s, cinco ramos/36 estudos/205 séries.
-  Mesma soma DINO inteira, uma diferença de modo Raptor; nunca submeter.
-- Próximo: recuperar ambos, sem relançar, em reports/avance_av009_serial_v1/
-  e reports/avance_av009_prefetch_v1/. Rodar assess_h43_stable_fullstack:
-  exigir replay independente do CSV DINO, raw DINO/Raptor, hashes de inputs,
-  todos os componentes e CSV final iguais. Medir tempo. Só depois smoke real.
-  Não substituir H43 0,939. Retomada: docs/AV009_DINO_ESTAVEL_STACK_PAREADO.md.
+- E03 par estável v1 serial134546480/prefetch134546487 COMPLETE: etapas
+  710,0229 → 605,9772s (−14,654%), CSV final idêntico; DINO público/raw exatos.
+  Outputs no HD em reports/avance_av009_serial_v1/ e avance_av009_prefetch_v1/.
+  Gate FAILED_STABLE_FULLSTACK_PARITY: Raptor raw1727/1728 valores diferentes
+  (máx0,0004003644), 2 ranks Baker's; native DINO2 valores Medial OA.
+  Imagens/máscaras Raptor idênticas. Não atribuir automaticamente ao prefetch.
+- Diagnóstico em execução: jvlegend/rsna-knee-raptor36-deterministic-abba v1
+  ID 134547620 RUNNING, offline/T4/teto1.800s. Raptor somente; 36 estudos/
+  205 séries, ABBA na mesma sessão, flags determinísticas explícitas.
+  Recuperar em reports/avance_av010_raptor_determinism_v1/, não duplicar.
+- Próximo: auditar com assess_h43_raptor_determinism; conferir ambiente,
+  hashes, inputs/raw/ranks e tempos nas quatro passagens. Se passar, ainda
+  será necessário testar repetibilidade entre workers e resolver/classificar
+  o diagnóstico native DINO. Causa cuDNN não confirmada. Smoke continua bloqueado.
+  Retomada: docs/AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -108,8 +114,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   ID 134536133 COMPLETE. T4x2/offline/9h, cinco pesos externos publicados,
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
-  São Paulo, PENDING sem score, reconsultado na AV-009 (16/09 UTC).
-  Um envio na AV-005; nenhum novo na AV-006/007/008/009, não reenviar.
+  São Paulo, PENDING sem score, reconsultado na AV-010 (16/09 UTC).
+  Um envio na AV-005; nenhum novo na AV-006/007/008/009/010, não reenviar.
 - Melhor candidato confirmado: H43 parent 0,939; H38 0,929 preservada.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -217,7 +223,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_EXECUCAO — AV-009; correção DINO implementada; par estável serial134546480/prefetch134546487 RUNNING; promoção suspensa |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-010; CSV final igual/−14,65% tempo, raw Raptor diverge; ABBA36 determinístico134547620 RUNNING; sem promoção |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -511,3 +517,25 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Probe22 56263721 permanece PENDING; H43 0,939, H38 e seleção final preservados.
   Nenhuma nova submissão/automação. Detalhes, hashes e comandos:
   docs/AV009_DINO_ESTAVEL_STACK_PAREADO.md. Retomar os kernels existentes.
+
+### AV-010 — 15/09/2026 à noite (16/09 UTC) — paridade final e variação Raptor
+
+- Par stable36 COMPLETE; CSV final SHA
+  87ee1ac74c3e58d7dadfef705634eb23745f2322ad002e7772b6d03bad2ee777 igual.
+  DINO público e raw alinhado idênticos; replay independente aprovado.
+  Etapas serial710,0229/prefetch605,9772s (−14,654%); subtotal Raptor/CoAt/
+  fusão421,6460/337,2915s (−20,006%). Workers distintos: não isola todo efeito.
+- Gate completo reprovado: Raptor raw1727/1728 valores mudam, máx0,0004003644;
+  2 ranks Baker's mudam. Imagens/máscaras são idênticas. CSV native DINO
+  muda2 Medial OA; demais componentes exceto _raptor.csv são idênticos.
+  Igualdade final nos 36 casos não permite ignorar deriva intermediária.
+- Raptor usa cudnn.benchmark=True e AMP fp16. Autotuning/backend é hipótese,
+  não causa comprovada. Iniciado Raptor36 ABBA determinístico, v1ID134547620,
+  offline/T4/1.800s: algoritmos determinísticos, benchmark/TF32 desligados,
+  CUBLAS_WORKSPACE_CONFIG antes do preflight, seed2026, versões registradas.
+  Não muda pesos/decode; flags mudam receita numérica, diagnóstico separado.
+- Auditoria ampliada com deltas raw e suporte explícito 12/36 mantendo default12.
+  Builder de smoke protegido implementado, mas gate real recusou a geração.
+  66 testes passaram; V01 intacta. Sem avaliação AUC/dev/confirmation.
+- Melhor0,939; probe22 PENDING, sem envio/seleção final/automação novos.
+  Artefatos e próximo passo: docs/AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md.

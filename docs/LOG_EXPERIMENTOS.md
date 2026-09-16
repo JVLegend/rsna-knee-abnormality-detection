@@ -2,6 +2,23 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-010 — 15/09/2026 à noite (16/09 UTC) — CSV igual, gate intermediário reprovado
+
+[Evidências e retomada](AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md).
+Stable36 serial134546480/prefetch134546487 COMPLETE. CSV final idêntico
+(SHA87ee1ac7…), DINO público/raw idênticos. Etapas710,02→605,98s (−14,65%);
+subtotal Raptor/CoAt/fusão−20,01%. Comparação entre workers não isola causalidade.
+
+Gate FAILED_STABLE_FULLSTACK_PARITY: raw Raptor1727/1728 diferenças,
+máx0,0004003644; dois ranks Baker's. Inputs idênticos. Native DINO muda dois
+Medial OA. Sem promoção apesar do CSV final igual. Builder de smoke preparado
+e testado contra a rejeição real; nenhum smoke gerado/enviado.
+
+Iniciado rsna-knee-raptor36-deterministic-abba v1 ID134547620 RUNNING,
+offline/T4/teto1.800s, ABBA36/205séries só Raptor. Flags determinísticas fixadas
+para testar hipótese de backend; causa cuDNN não confirmada. **66 testes passaram**.
+Probe22 56263721 PENDING; melhor H43 0,939 preservado. Nenhuma submissão nova.
+
 ## AV-009 — 15/09/2026 à noite (16/09 UTC) — par completo com DINO estável
 
 [Código, hashes e retomada](AV009_DINO_ESTAVEL_STACK_PAREADO.md). Regra exata

@@ -37,11 +37,11 @@ def adapt_raptor(source):
     return source
 
 
-def build(raw, selected, prefetch, runtime):
+def build(raw, selected, prefetch, runtime, study_count=12):
     if hashlib.sha256(raw).hexdigest() != PARENT_SHA:
         raise ValueError('Confirmed parent SHA drift')
-    if len(selected) != 12 or len(set(selected)) != 12:
-        raise ValueError('E03 requires exactly 12 distinct training studies')
+    if study_count not in (12, 36) or len(selected) != study_count or len(set(selected)) != study_count:
+        raise ValueError('E03 requires the selected 12 or 36 distinct training studies')
     parent = json.loads(raw)
     node = next(n for n in ast.parse(parent['cells'][48]['source']).body
                 if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == '_KE_SRC' for t in n.targets))
@@ -51,7 +51,7 @@ def build(raw, selected, prefetch, runtime):
         return {'cell_type': kind, 'metadata': {}, 'source': source,
                 **({'outputs': [], 'execution_count': None} if kind == 'code' else {})}
     cells = [cell('# E03 — Raptor serial vs one-ahead prefetch\n\n'
-        'Runtime-only on 12 V01 training studies. Never submit this notebook.\n'
+        f'Runtime-only on {study_count} V01 training studies. Never submit this notebook.\n'
         'No AUC. Parent models unchanged. Source: maverickss26/rsna-knee-0941-restructured.\n'
         + parent['cells'][0]['source'], 'markdown'),
         cell(parent['cells'][3]['source']), cell(benchmark_setup(selected)),

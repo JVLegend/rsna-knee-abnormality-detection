@@ -14,12 +14,13 @@ def require(condition, message):
         raise ValueError('E03 audit: ' + message)
 
 
-def evaluate_records(records, parity):
+def evaluate_records(records, parity, studies=12):
+    require(studies in (12, 36), 'supported study count')
     require(len(records) == 4, 'four runs required')
     for i, r in enumerate(records):
         require(r['index'] == i and r['mode'] == MODES[i], 'ABBA order')
         require(math.isfinite(r['seconds']) and r['seconds'] > 0, 'invalid time')
-        require(r['studies'] == 12 and r['prepared_recipe_studies'] == 36, 'coverage')
+        require(r['studies'] == studies and r['prepared_recipe_studies'] == 3 * studies, 'coverage')
     a = (records[0]['seconds'] + records[3]['seconds']) / 2
     b = (records[1]['seconds'] + records[2]['seconds']) / 2
     return {'serial_mean_seconds': a, 'prefetch_mean_seconds': b,
@@ -28,7 +29,7 @@ def evaluate_records(records, parity):
             'eligible_for_full_stack_test': bool(parity and min(a, records[3]['seconds']) / b >= 1.05)}
 
 
-def assess(directory):
+def assess(directory, studies=12, series=70):
     import numpy as np
     load = lambda name: json.loads((directory / name).read_text())
     pre = load('h43_preflight.json')
@@ -36,7 +37,7 @@ def assess(directory):
     require(pre['artifact_lock_entries'] == 56 and pre['gpus'] == ['Tesla T4'] * 2, 'hardware/lock')
     selection = load('h43_benchmark_selection.json')
     ids = selection['ids']
-    require(len(ids) == len(set(ids)) == 12 and selection['series'] == 70, 'sample identity/count')
+    require(studies in (12, 36) and len(ids) == len(set(ids)) == studies and selection['series'] == series, 'sample identity/count')
     require(selection['uses_labels_for_selection'] is False and selection['partition'] == 'V01 train only',
             'training-only contract')
     reports, arrays, contracts, comparisons = [], [], [], []
@@ -48,7 +49,7 @@ def assess(directory):
             require(set(f.files) == {'ids', 'arm_probs', 'ranks'}, 'array keys')
             a = {k: f[k].copy() for k in f.files}
         require(a['ids'].tolist() == ids, 'study ID order')
-        require(a['arm_probs'].shape == (4, 12, 12) and a['ranks'].shape == (12, 12), 'array shapes')
+        require(a['arm_probs'].shape == (4, studies, 12) and a['ranks'].shape == (studies, 12), 'array shapes')
         for name in ['arm_probs', 'ranks']:
             require(np.isfinite(a[name]).all() and ((a[name] >= 0) & (a[name] <= 1)).all(), 'prediction range')
         rows = r['inputs']
@@ -67,7 +68,7 @@ def assess(directory):
             'max_abs_probability_delta': float(np.max(np.abs(base['arm_probs'] - a['arm_probs'])))})
     parity = all(all(c[k] for k in ['ids_exact', 'inputs_exact', 'probabilities_exact', 'ranks_exact'])
                  for c in comparisons)
-    metrics = evaluate_records(reports, parity)
+    metrics = evaluate_records(reports, parity, studies=studies)
     remote = load('e03_comparison.json')
     require(remote['purpose'] == 'raptor_efficiency_only_no_auc_no_submission', 'purpose')
     require(remote['sequence'] == MODES and remote['comparisons'] == comparisons, 'remote parity summary')

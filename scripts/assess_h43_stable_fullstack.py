@@ -68,11 +68,18 @@ def assess(reference, candidate):
         raw_exact = set(x.files) == set(y.files) and all(np.array_equal(x[k], y[k]) for k in x.files)
         if not {'ids', 'arm_probs', 'ranks'} <= set(x.files) & set(y.files):
             raise ValueError('Missing Raptor raw arrays')
+        raw_differences = {}
+        for key in ['arm_probs', 'ranks']:
+            if x[key].shape != y[key].shape or not np.isfinite(x[key]).all() or not np.isfinite(y[key]).all():
+                raise ValueError('Raptor raw shape/finitude')
+            raw_differences[key] = {'changed_values': int(np.count_nonzero(x[key] != y[key])),
+                'total_values': int(x[key].size), 'max_abs_delta': float(np.max(np.abs(x[key] - y[key])))}
     components_exact = all(v['byte_identical'] for v in components.values())
     passed = result['exact_csv'] and np.array_equal(a, b) and inputs_exact and raw_exact and components_exact
     result.update(status='PASSED_STABLE_FULLSTACK_PARITY' if passed else 'FAILED_STABLE_FULLSTACK_PARITY',
                   stable_receipts=[serial, prefetch], dino_raw_predictions_exact=bool(np.array_equal(a, b)),
                   raptor_inputs_exact=inputs_exact, raptor_raw_exact=raw_exact,
+                  raptor_raw_differences=raw_differences,
                   components=components, all_components_byte_identical=components_exact,
                   eligible_for_real_test_smoke=bool(passed and result['times']['total']['time_reduction_pct'] > 0),
                   automatic_submission_authorized=False, legacy_recipe_changed=True,
