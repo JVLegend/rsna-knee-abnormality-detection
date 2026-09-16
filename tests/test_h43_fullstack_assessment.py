@@ -1,7 +1,10 @@
 """#RSNA #Kaggle #Testes — comparação completa rejeita deriva e tempo inválido."""
 import copy
+import csv
+from pathlib import Path
+import tempfile
 import unittest
-from scripts.assess_h43_fullstack import compare_rows, compare_times
+from scripts.assess_h43_fullstack import compare_rows, compare_times, compare_components
 from scripts.h43_integrity import H43_TARGETS
 
 
@@ -29,6 +32,25 @@ class FullStackAssessmentTests(unittest.TestCase):
         for bad in [{'a': 0}, {'a': float('nan')}, {'b': 1}]:
             with self.assertRaises(ValueError):
                 compare_times({'a': 100}, bad)
+
+    def test_inventory_and_typed_fold_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a, b = Path(tmp) / 'a', Path(tmp) / 'b'
+            a.mkdir(); b.mkdir()
+            for d in [a,b]:
+                for name in ['_raptor.csv', '_coat_arm.csv', 'submission_public_0899.csv']:
+                    with (d / name).open('w', newline='') as f:
+                        w = csv.DictWriter(f, fieldnames=['StudyInstanceUID'] + H43_TARGETS)
+                        w.writeheader(); w.writerow({'StudyInstanceUID': 'a', **dict.fromkeys(H43_TARGETS, .5)})
+                (d / 'legacy_fold_diagnostics.csv').write_text('ensemble_group,members\n' +
+                    ''.join(f'fold_{i},4\n' for i in range(5)))
+            result = compare_components(a,b)
+            self.assertTrue(all(v['byte_identical'] for v in result.values()))
+            self.assertEqual(result['legacy_fold_diagnostics.csv']['differences'], {})
+            (b / 'legacy_fold_diagnostics.csv').write_text('ensemble_group,members\nfold_0,3\n')
+            with self.assertRaisesRegex(ValueError, 'membership'): compare_components(a,b)
+            (b / 'legacy_fold_diagnostics.csv').unlink()
+            with self.assertRaisesRegex(ValueError, 'inventories'): compare_components(a,b)
 
 
 if __name__ == '__main__':

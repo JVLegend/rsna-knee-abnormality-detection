@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-012 (16/09): probe22 ref 56263721 COMPLETE, **0,941**,
-novo melhor público (+0,002 sobre parent). Raptor36 determinístico repetiu
-inputs/raw/ranks exatos em nova sessão. Par completo determinístico iniciado;
-sem nova submissão nem alteração da seleção final.
+Atualizado na AV-013 (16/09): melhor público **0,941** preservado.
+Par completo terminou: Raptor/DINO/native exatos; CoAt mudou71 probabilidades
+em2 estudos e2 ranks ACL. CSV final igual, mas gate reprovado; sem smoke/envio.
+Teste CoAt isolado com lotes de ordem fixa iniciado, sem alterar pesos/precisão.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -70,15 +70,29 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: E03 — consultar o par determinístico completo:
-  jvlegend/rsna-knee-deterministic36-serial v1 ID134588338 e
-  jvlegend/rsna-knee-deterministic36-prefetch v1 ID134588340.
-  Despachados na AV-012, privados/offline/T4/teto1.800s cada.
-  Após COMPLETE, baixar outputs em reports/avance_av012_serial_v1/ e
-  reports/avance_av012_prefetch_v1/, executar assess_h43_deterministic_fullstack.
-  Exigir todos os componentes (inclusive native), inputs/raw e ambiente iguais,
-  mais Raptor igual à repetição isolada. Nenhum smoke legado sem adaptar receita.
+- Próxima ação: E03 — consultar jvlegend/rsna-knee-coat36-order-abba,
+  v1 ID134608117 RUNNING, privado/offline/T4/teto1.800s, lançado na AV-013.
+  Quatro passagens CoAt36: completion/ordered/ordered/completion; mesmos3pesos,
+  fp16/micro8/batch2/205séries. Única mudança funcional: ordem de liberação
+  do preparo para os lotes. Instrumentação registra inputs, lotes e ambiente.
+  Após COMPLETE, baixar em reports/avance_av013_coat_order_v1/ e executar
+  assess_h43_coat_order. Não duplicar após queda. Detalhes em
+  docs/AV013_COAT_LOTES_E_GATE_COMPLETO.md.
+  Se duas repetições ordered forem exatas, testar integração completa antes
+  do smoke. Se não, registrar E03 inconclusiva e seguir V02; sem relaxar gate
+  nem nova rodada cega de flags/precisão. Smoke anterior não contém a receita.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
+- Par determinístico completo serial134588338/prefetch134588340 COMPLETE.
+  Auditoria AV-013: FAILED_DETERMINISTIC_FULLSTACK_PARITY. Total613,5509 →
+  602,0923s (−1,868%), Raptor/CoAt/fusão351,3457→320,2062s (−8,863%).
+  Raptor inputs/raw/ranks iguais entre os modos E à âncora isolada; DINO
+  público/raw e native iguais. CoAt:71/1296 valores raw, máx3,41088e−5,
+  só estudos de índices11/13 no shard0; inversão ACL no checkpoint e06,
+  dois valores finais CoAt mudam1/108. Demais CSVs e final idênticos.
+  Outputs em reports/avance_av012_serial_v1/ e avance_av012_prefetch_v1/;
+  auditorias fullstack_v1.json e coat_raw_v1.json em reports/avance_av013_audit/.
+  Não atribuir todo ganho ao prefetch nem declarar causalidade da ordem
+  histórica (lotes não registrados). Não promover só porque final coincidiu.
 - E03 isolado jvlegend/rsna-knee-e03-prefetch-abba v1, ID 134542682 COMPLETE:
   12 estudos/70 séries, paridade exata; prefetch 63,73 s vs serial aquecido
   86,11 s (25,99% menos tempo). Auditoria local independente aprovada.
@@ -113,7 +127,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   Na AV-012, soma weighted native ordenada por ID em ambos os modos para
   remover dependência da conclusão dos workers. Não muda pesos nem exclui
   diagnóstico do gate. Causa cuDNN não confirmada.
-  Retomada: docs/AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md.
+  Native ficou idêntico no par AV-012; agora a primeira divergência é CoAt.
+  Retomada: docs/AV013_COAT_LOTES_E_GATE_COMPLETO.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -131,7 +146,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
   São Paulo, COMPLETE **0,941**, confirmado via API na AV-012 (16/09).
-  Um envio na AV-005; nenhum novo na AV-006 até AV-012, não reenviar.
+  Um envio na AV-005; nenhum novo na AV-006 até AV-013, não reenviar.
 - Melhor candidato confirmado: H43A probe22 0,941; parent0,939 e H380,929 preservados.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -239,7 +254,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-012; repetição isolada exata; par completo134588338/134588340 iniciado, gate estrito preservado |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-013; Raptor/DINO exatos; CoAt impede gate; ABBA ordem de lotes134608117 RUNNING, sem promoção |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -599,3 +614,27 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Próximo: auditar par; se passar e houver ganho, adaptar smoke à receita
   realmente validada. Builder de smoke anterior não contém essas flags.
   Detalhes/hashes/comandos: docs/AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md.
+
+### AV-013 — 16/09/2026 — Raptor integrado; CoAt sob investigação
+
+- Dois kernels completos. CSV final SHA87ee1ac7… igual; Raptor raw/ranks
+  iguais aos dois modos e à âncora. DINO público e native agora exatos.
+  Gate reprovado por CoAt, não promovido:71/1296 diferenças raw em2estudos,
+  delta máx0,00003410876;2ranks ACL do e06 e2valores CoAt mudam.
+- Tempos de etapas613,5509→602,0923s (−1,868%); subtotal Raptor/CoAt/fusão
+  −8,863%. Workers distintos; não demonstra ganho robusto ou melhora de AUC.
+- Corrigido auditor local: legacy_fold_diagnostics.csv é recibo de5folds×4,
+  não matriz de previsões. Valida schema/conteúdo/bytes; inventários CSV devem
+  coincidir. Nenhum arquivo de previsão excluído, tolerância continua zero.
+- Fonte CoAt baixada no HD (49.679bytes), SHA b11e58f8… igual ao preflight.
+  Código consome FIRST_COMPLETED e forma batch2 com ordem de preparo variável.
+  Lotes podem alterar microblocos e padding em fp16. Hipótese, não causa
+  retrospectiva comprovada; teste CPU do loop real mostra pares diferentes.
+- Experimento isolado134608117 v1: completion/ordered/ordered/completion,
+  mesma amostra36/205 e3checkpoints. Ordered aguarda menor índice pendente;
+  mantém preparo concorrente limitado, pesos, inferência e flags originais.
+  Inputs/batches/ambiente capturados, sem treino ou labels. Teto1.800s,
+  cota antes do despacho18,5429h. Auditor independente preparado.
+- 83 testes passaram; V01 intacta; dev/confirmation intocados. Melhor0,941,
+  nenhuma nova submissão/seleção final/automação. Registro e comandos em
+  docs/AV013_COAT_LOTES_E_GATE_COMPLETO.md.

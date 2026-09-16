@@ -32,17 +32,29 @@ def compare_times(reference, candidate):
 
 
 def compare_components(reference, candidate):
-    names = {p.name for p in reference.glob('*.csv')} & {p.name for p in candidate.glob('*.csv')}
+    reference_names = {p.name for p in reference.glob('*.csv')}
+    candidate_names = {p.name for p in candidate.glob('*.csv')}
+    if reference_names != candidate_names:
+        raise ValueError('Different component CSV inventories')
+    names = reference_names
     if not {'_raptor.csv', '_coat_arm.csv', 'submission_public_0899.csv'} <= names:
         raise ValueError('Missing component outputs')
     result = {}
     for name in sorted(names):
         with (reference / name).open(newline='') as f: a = list(csv.DictReader(f))
         with (candidate / name).open(newline='') as f: b = list(csv.DictReader(f))
+        if name == 'legacy_fold_diagnostics.csv':
+            # This is the five-fold membership receipt, NOT a prediction matrix.
+            expected = [{'ensemble_group': f'fold_{i}', 'members': '4'} for i in range(5)]
+            if a != expected or b != expected:
+                raise ValueError('Invalid legacy fold membership receipt')
+            differences = {}
+        else:
+            differences = compare_rows(a, b, [r['StudyInstanceUID'] for r in a])
         result[name] = {'reference_sha256': h43_sha(reference / name),
             'candidate_sha256': h43_sha(candidate / name),
             'byte_identical': (reference / name).read_bytes() == (candidate / name).read_bytes(),
-            'differences': compare_rows(a, b, [r['StudyInstanceUID'] for r in a])}
+            'differences': differences}
     return result
 
 

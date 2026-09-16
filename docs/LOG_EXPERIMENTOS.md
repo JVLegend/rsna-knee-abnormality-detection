@@ -2,6 +2,20 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-013 — 16/09/2026 — Raptor integrado; CoAt depende de investigação
+
+[Evidências e retomada](AV013_COAT_LOTES_E_GATE_COMPLETO.md).
+Par completo COMPLETE:613,55→602,09s (−1,868%); CSV final igual.
+Raptor raw/ranks/inputs iguais entre modos e âncora; DINO e native iguais.
+CoAt muda71probabilidades em2estudos, delta máx3,41088e−5;2ranks ACL e2valores
+CoAt divergentes. Gate estrito reprovado, sem smoke/envio. Melhor0,941.
+
+Fonte revela lotes formados por ordem de conclusão do preparo. Hipótese
+testável, não causalidade comprovada. Iniciado ABBA CoAt36 completion/ordered/
+ordered/completion, v1 ID134608117, T4/offline/1.800s. Novo código/auditor,
+**83 testes passaram**, V01 intacta. Próximo: auditar repetição ordered;
+se não passar, suspender E03 e seguir V02. Nenhuma seleção final alterada.
+
 ## AV-012 — 16/09/2026 — probe22 0,941; par determinístico completo
 
 [Evidências e retomada](AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md).
