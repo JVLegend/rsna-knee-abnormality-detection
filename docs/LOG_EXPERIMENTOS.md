@@ -2,6 +2,24 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-008 — 15/09/2026 à noite (16/09 UTC) — fullstack e empates DINO
+
+[Evidências e retomada](AV008_FULLSTACK_E_EMPATES_DINO.md). Stack36 v1
+ID 134543253 COMPLETE: 598,60 vs 667,72 s, **10,35% menos tempo**; cinco ramos
+íntegros, mas seis valores do CSV mudaram. Não promover. Raptor/CoAt idênticos;
+a divergência começa no DINO público e foi reproduzida sem executar prefetch.
+
+Captura DINO36 v1 ID 134544795 COMPLETE: replay das mesmas previsões nas duas
+ordens históricas reproduz exatamente os dois CSVs DINO. Soma float64 dependente
+da conclusão das GPUs altera empates que o rank final amplifica.
+Soma exata de ranks duplicados passou em 20 permutações; muda 14 valores vs
+legado, portanto é correção candidata a validar, não reprodução idêntica.
+**47 testes passaram**, V01 intacta. Nenhum ganho de AUC medido.
+
+Probe22 56263721 segue PENDING; melhor público H43 **0,939**. Nenhuma nova
+submissão/seleção final/automação. Próximo: stack36 serial/prefetch com a mesma
+agregação estável; preservar baseline e aguardar probe22 sem duplicar.
+
 ## AV-007 — 15/09/2026 à noite (16/09 UTC) — prefetch isolado aprovado
 
 [Evidências](AV007_E03_GANHO_E_FULLSTACK.md). E03 ABBA v1 ID 134542682 COMPLETE:
