@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-015 — 16/09/2026 — paridade completa aprovada; smoke oficial
+
+[Evidências e retomada](AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md).
+Par ordered COMPLETE: **PASSED_ORDERED_FULLSTACK_PARITY**, todos os CSVs e
+componentes exatos, incluindo comparação com âncoras Raptor/CoAt. Etapas
+624,30→580,65s (**−6,99%**); subtotal Raptor/CoAt/fusão−13,57%, sem ganho AUC.
+
+Builder/auditor do smoke oficial preparado a partir do exato prefetch aprovado.
+**91 testes passaram**, V01 intacta. Kernel134610738 v1 iniciado, T4/offline/
+1.800s,3exemplos oficiais, saída smoke_predictions.csv; outerparent0,60.
+Próximo: auditar smoke antes de qualquer candidata de competição. Melhor0,941
+inalterado, nenhuma nova submissão ou seleção final.
+
 ## AV-014 — 16/09/2026 — CoAt ordered exato; nova integração completa
 
 [Evidências e retomada](AV014_COAT_ORDENADO_E_INTEGRACAO.md).

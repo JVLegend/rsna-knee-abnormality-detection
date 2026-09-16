@@ -10,10 +10,11 @@ from scripts.h43_integrity import h43_sha, h43_validate_rows, H43_TARGETS
 from scripts.h43_coat_order import COAT_SOURCE_SHA, patch_coat
 
 
-def load_run(directory, ids, name, preflight):
+def load_run(directory, ids, name, preflight, expected_series=205):
+    n = len(ids)
     r = json.loads((directory / 'coat_resgated_ep10_top3_submission_receipt.json').read_text())
     if (r['status'] != 'VALID_COAT_RESGATED_EP10_TOP3_RANK_SUBMISSION'
-            or (r['models'], r['studies'], r['series']) != (3,36,205)
+            or (r['models'], r['studies'], r['series']) != (3,n,expected_series)
             or r['gpu_names'] != ['Tesla T4']*2 or r['failures'] or r['fallback_studies'] != 0
             or r['gpu_batch_studies'] != 2 or r['backbone_micro_images'] != 8
             or r['serving_precision'] != 'float16' or r['cudnn_benchmark'] is not False
@@ -32,7 +33,7 @@ def load_run(directory, ids, name, preflight):
     if set(arr) != {'study_uids','raw_probabilities','checkpoint_percentile_ranks','rank_ensemble'}:
         raise ValueError('Unexpected CoAt arrays')
     if arr['study_uids'].tolist() != ids: raise ValueError('Study order drift')
-    for k,shape in [('raw_probabilities',(3,36,12)),('checkpoint_percentile_ranks',(3,36,12)),('rank_ensemble',(36,12))]:
+    for k,shape in [('raw_probabilities',(3,n,12)),('checkpoint_percentile_ranks',(3,n,12)),('rank_ensemble',(n,12))]:
         a = arr[k]
         if a.shape != shape or not np.isfinite(a).all() or not ((a>=0)&(a<=1)).all():
             raise ValueError('CoAt raw shape/finitude/range')
@@ -48,7 +49,7 @@ def load_run(directory, ids, name, preflight):
     expected_start = 0
     for i,(p,s) in enumerate(zip(r['processes'], r['shards'])):
         start,stop = s['start'],s['stop']
-        if start != expected_start or not start < stop <= 36 or [start,stop] != r['parallel_bounds'][i]:
+        if start != expected_start or not start < stop <= n or [start,stop] != r['parallel_bounds'][i]:
             raise ValueError('CoAt shard coverage gap')
         if (p['start'],p['stop']) != (start,stop): raise ValueError('CoAt process bounds drift')
         with np.load(directory / f'coat_top3_part{i}.npz', allow_pickle=False) as shard:
@@ -57,7 +58,7 @@ def load_run(directory, ids, name, preflight):
             if not np.array_equal(shard['prediction'],arr['raw_probabilities'][:,start:stop]):
                 raise ValueError('Shard/merged raw mismatch')
         expected_start = stop
-    if expected_start != 36: raise ValueError('Incomplete CoAt shards')
+    if expected_start != n: raise ValueError('Incomplete CoAt shards')
     return r, arr
 
 

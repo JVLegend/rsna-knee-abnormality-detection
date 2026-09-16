@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-014 (16/09): melhor público **0,941** preservado.
-CoAt com lotes fixos repetiu raw/ranks exatos; modo antigo variou248 valores
-raw. ABBA auditado, sem ganho de AUC alegado. Correção integrada a novo par
-completo serial/prefetch em execução; sem smoke ou nova submissão.
+Atualizado na AV-015 (16/09): par completo aprovado, todos os componentes
+exatos e âncoras Raptor/CoAt preservadas. Tempo624,30→580,65s (−6,99%).
+Teste com3exemplos oficiais iniciado, ainda sem nova submissão.
+Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -70,19 +70,26 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: E03 — consultar o par completo com CoAt ordenado:
-  jvlegend/rsna-knee-ordered36-serial v1 ID134609177 e
-  jvlegend/rsna-knee-ordered36-prefetch v1 ID134609181.
-  Lançados na AV-014, privados/offline/T4/teto1.800s cada.
-  Baixar após COMPLETE em reports/avance_av014_serial_v1/ e
-  reports/avance_av014_prefetch_v1/; executar assess_h43_ordered_fullstack.
-  Exigir gate completo anterior mais CoAt raw/inputs/lotes/ambiente iguais
-  à âncora ordered do ABBA (run1), sem tolerância. Não duplicar após queda.
-  Se passar e houver ganho de tempo, adaptar smoke à receita efetivamente
-  validada. Se continuar divergindo, registrar E03 inconclusiva e seguir V02,
-  sem nova rodada cega de flags/precisão. Smoke anterior não contém a receita.
-  Retomada: docs/AV014_COAT_ORDENADO_E_INTEGRACAO.md.
+- Próxima ação: E03 — consultar jvlegend/rsna-knee-ordered-official-smoke,
+  v1 ID134610738 RUNNING, privado/offline/T4/teto1.800s, lançado na AV-015.
+  Mesma receita validada, agora somente3exemplos oficiais. Não duplicar.
+  Após COMPLETE, baixar em reports/avance_av015_smoke_v1/ e executar
+  assess_h43_ordered_smoke. Saída smoke_predictions.csv, não submission.csv.
+  Checar IDs oficiais,5ramos/56hashes, raw/replay/ordem fixa, sem fallback.
+  Se passar, revisar a candidata de envio, preset e limite vigente/cota;
+  não submeter automaticamente nem tratar este smoke como score/OOF.
+  O smoke usa outer parent0,60; probe22 histórico0,941 continua separado.
+  Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
   Nunca submeter o piloto de 30 minutos nem o benchmark com casos de treino.
+- Par ordered completo serial134609177/prefetch134609181 COMPLETE.
+  PASSED_ORDERED_FULLSTACK_PARITY na AV-015, sem relaxamento do gate.
+  Todos os CSVs/diagnósticos exatos, DINO raw/replay iguais; Raptor inputs/raw/
+  ranks iguais à âncora; CoAt raw/ranks/inputs/lotes/ambiente iguais ao run1 ABBA.
+  Etapas624,3039→580,6483s (−6,9927%); Raptor/CoAt/fusão358,8682→310,1589s
+  (−13,573%). Workers distintos: ganho observado, não atribuição causal total.
+  Projeção7,4614h para1.322estudos hipotéticos;11,2585h para2.000. Tamanho
+  oculto desconhecido. Arquivos em reports/avance_av014_{serial,prefetch}_v1/;
+  auditoria em reports/avance_av015_audit/fullstack_v1.json.
 - CoAt36 ABBA v1 ID134608117 COMPLETE, PASSED_ORDERED_REPEAT na AV-014.
   Inputs/ambiente iguais nas4 passagens; ordered raw/ranks exatos, delta0.
   Completion A1/A2:248/1296 valores raw diferentes, máx0,0001143664,
@@ -137,7 +144,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   remover dependência da conclusão dos workers. Não muda pesos nem exclui
   diagnóstico do gate. Causa cuDNN não confirmada.
   Native ficou idêntico no par AV-012; agora a primeira divergência é CoAt.
-  Retomada: docs/AV014_COAT_ORDENADO_E_INTEGRACAO.md.
+  Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
 - Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1, ID 134328295:
   COMPLETE, PASSED_PARENT_INTEGRITY; 3/3 estudos, cinco ramos, gate em 289,22 s.
 - Benchmark v1 ID 134423935 COMPLETE: 36 estudos / 205 séries, todos os ramos,
@@ -155,7 +162,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   mesmas células de inferência; comparação pareada aprovada, último log 248,28 s.
 - Submissão A02: ref 56263721, scriptVersionId 350168027, 15/09/2026 19:51
   São Paulo, COMPLETE **0,941**, confirmado via API na AV-012 (16/09).
-  Um envio na AV-005; nenhum novo na AV-006 até AV-014, não reenviar.
+  Um envio na AV-005; nenhum novo na AV-006 até AV-015, não reenviar.
 - Melhor candidato confirmado: H43A probe22 0,941; parent0,939 e H380,929 preservados.
 - Depois da confirmação A02, seguir outra família (V02 ou E03 conforme cota),
   sem grade de pesos no leaderboard; A03 permanece alternativa se houver bloqueio.
@@ -263,7 +270,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
-| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | EM_VALIDACAO — AV-014; CoAt ordered isolado exato; novo par completo134609177/134609181 iniciado, sem promoção |
+| E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | PARIDADE_COMPLETA_APROVADA — AV-015; −6,99% tempo no benchmark; smoke oficial134610738 RUNNING, sem envio |
 | E04 / eficiência | Destilar o ensemble aprovado em DINOv2-S ou CNN menor; comparar AUC, tempo e memória | E01 aprovado; teacher sem exposição ao fold avaliado / alto | PENDENTE |
 | X01 / exploração | Head auxiliar de dependência entre alvos versus cabeça atual, com regularização; relações aprendidas apenas no treino | V02/M01; rótulos suficientes / alto | PENDENTE |
 | X02 / exploração | Pré-treino auto-supervisionado nas imagens de treino de cada fold; depois fine-tuning com labels fixos | baseline próprio em plateau e orçamento disponível / alto | PENDENTE |
@@ -670,3 +677,26 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Cota antes18,3958h; nenhum uso de dev/confirmation, novo envio, seleção
   final, automação ou serviço pago. Melhor0,941 preservado.
   Comandos e hashes: docs/AV014_COAT_ORDENADO_E_INTEGRACAO.md.
+
+### AV-015 — 16/09/2026 — paridade completa aprovada; smoke oficial iniciado
+
+- Par ordered COMPLETE e auditado: todos os componentes/CSV/diagnósticos
+  exatos, DINO raw/replay iguais, Raptor e CoAt iguais às âncoras isoladas.
+  CoAt inclui inputs/lotes/ambiente exatos. Nenhum gate excluído ou tolerância.
+- Tempos624,3039→580,6483s (−6,9927%); subtotal Raptor/CoAt/fusão−13,573%.
+  Ganho observado em36estudos/205séries; não é intervalo estatístico ou AUC.
+  CSV final SHA87ee1ac7… igual. Cenários7,4614h/11,2585h para1.322/2.000
+  estudos hipotéticos com margem; não comprovam tamanho/runtime ocultos.
+- Builder smoke deriva do exato build prefetch aprovado, SHA11ddd8e5… .
+  Remove seleção de treino e restaura descoberta dos inputs oficiais.
+  Mesmos modelos/flags/ranks/prefetch/CoAt ordenado; saída não submetível.
+  Os nomes dos protocolos nos recibos preservam a origem validada; o recibo
+  smoke registra root/IDs/contagem reais. Outerparent0,60, não probe22.
+- Auditor smoke preparado:3IDs oficiais, todos5ramos/56hashes, DINO e CoAt
+  com replay independente, Raptor com cobertura/raw, sem fallback ou caminhos
+  de benchmark. Leitor CoAt aceita número de estudos/series explícito,
+  mantendo o contrato36/205 dos testes anteriores.
+- 91 testes passaram; V01 intacta. Kernel134610738 v1 iniciado,
+  privado/offline/T4/teto1.800s; cota antes18,0020h. Nenhum uso de dev/
+  confirmation, novo envio, seleção final ou automação. Melhor0,941 preservado.
+  Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
