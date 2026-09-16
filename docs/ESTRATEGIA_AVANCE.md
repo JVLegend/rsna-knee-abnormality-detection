@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-015 (16/09): par completo aprovado, todos os componentes
-exatos e âncoras Raptor/CoAt preservadas. Tempo624,30→580,65s (−6,99%).
-Smoke oficial também aprovado:3estudos/15séries, CSV igual à referência visível.
-Ainda sem nova submissão; próxima candidata usará o preset probe22 fixo.
+Atualizado na AV-016 (16/09): candidata estável com preset probe22 aprovada
+nos exemplos oficiais e enviada: ref56281610, PENDING, sem score ainda.
+Componentes/raw preservados; CSV visível igual ao probe22 histórico.
+97 testes passaram. Par completo anterior:624,30→580,65s (−6,99%).
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,12 +71,22 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação: preparar candidata de competição a partir do smoke aprovado,
-  aplicando somente o preset probe22 já publicado/fixado (sem grid novo).
-  Preservar a receita estável validada, testar routing/pesos/IDs/recibos antes
-  do envio; revalidar regras, limite, cota e duplicidade. Máximo1novo envio
-  por AVANCE. Não usar diretamente o notebook de smoke/teto30min.
-  Smoke jvlegend/rsna-knee-ordered-official-smoke v1 ID134610738 COMPLETE,
+- Próxima ação: consultar submissão AV-016 **56281610**, PENDING, enviada
+  16/09/2026 12:00:59 São Paulo; scriptVersionId350342219. Não reenviar.
+  Comparar com probe22 histórico56263721 (0,941), sem mudar seleção final.
+  Enquanto aguarda, seguir V02/L01 com validação própria, sem grade de pesos.
+  Kernel jvlegend/rsna-knee-ordered-probe22-submission v1 ID134618609
+  COMPLETE, T4/offline/32.400s. Build
+  reports/avance_av016_build/h43_ordered_probe22_v1.ipynb, SHAfcf4ec54… .
+  PASSED_ORDERED_PROBE22_CANDIDATE:3estudos/15séries, componentes/raw iguais
+  ao smoke, replay da fusão aprovado. CSV SHAff848c73… igual ao probe22
+  visível histórico; não prova paridade oculta ou AUC. Etapas114,5048s.
+  Outputs reports/avance_av016_candidate_v1/; auditoria
+  reports/avance_av016_audit/candidate_v1.json. 97 testes passaram.
+  Regras9h revalidadas; cota antes do envio17,8690h; após envio1usado/
+  4disponíveis hoje. Único envio desta rodada. Melhor0,941 inalterado.
+  Retomada: docs/AV016_CANDIDATA_ESTAVEL_PROBE22.md.
+- Smoke jvlegend/rsna-knee-ordered-official-smoke v1 ID134610738 COMPLETE,
   PASSED_ORDERED_OFFICIAL_SMOKE. Outputs em reports/avance_av015_smoke_v1/;
   auditoria em reports/avance_av015_audit/smoke_v1.json. Não repetir.
   3estudos/15séries,5ramos/56hashes, IDs oficiais exatos, replay DINO/CoAt
@@ -711,3 +721,23 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Próximo: candidata estável com preset probe22 fixo, após testes de routing,
   regras vigentes, cota e duplicidade. Não submeter o smoke de30min.
   Retomada: docs/AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md.
+
+### AV-016 — 16/09/2026 — candidata estável probe22 enviada
+
+- Builder herda o smoke validado, altera apenas células3/4/5/61, preserva
+  toda inferência e fixa preset probe22 já publicado. Gate confere RUN inteiro.
+  Captura os ranks dos dois lados da mistura para replay independente.
+- Auditor verifica componentes/CSVs e raw DINO/Raptor/CoAt contra smoke,
+  cinco ramos/56hashes/T4x2, receita, IDs, zero fallback e replay da fusão.
+  97 testes passaram; V01 intacta; dev/confirmation não consultados.
+- Kernel jvlegend/rsna-knee-ordered-probe22-submission v1 ID134618609,
+  COMPLETE offline/T4/32.400s. Build SHAfcf4ec54… . Regras notebook/9h
+  revalidadas via API; cota antes17,9238h e cinco envios disponíveis.
+- PASSED_ORDERED_PROBE22_CANDIDATE:3estudos/15séries, componentes/raw iguais
+  ao smoke, replay aprovado; CSV SHAff848c73… igual ao probe22 histórico
+  visível. Etapas114,5048s; não inferir AUC/runtime ocultos a partir de3casos.
+- Envio único ref56281610, scriptVersionId350342219,16/09 12:00:59 São Paulo.
+  PENDING, sem score/erro. Cota antes do envio17,8690h; após envio1hoje/4restantes.
+  Melhor0,941 histórico não é score desta receita. Seleção final preservada.
+  Próximo: acompanhar sem duplicar e seguir V02/L01, sem grade de pesos.
+  Detalhes: docs/AV016_CANDIDATA_ESTAVEL_PROBE22.md.

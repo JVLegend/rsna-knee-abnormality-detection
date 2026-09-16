@@ -53,6 +53,13 @@ def assess(directory, sample, series_file):
         raise ValueError('Smoke prediction hash mismatch')
     if h43_sha(final) != h43_sha(directory/'submission_0939_parent_exact.csv'):
         raise ValueError('Unexpected parent outer routing')
+    result = validate_components(directory, ids, len(series), receipt)
+    return dict(result, status='PASSED_ORDERED_OFFICIAL_SMOKE', prediction_sha256=h43_sha(final))
+
+
+def validate_components(directory, ids, series_count, receipt):
+    """Shared numerical/recipe gates; callers separately validate publication/routing."""
+    load = lambda name: json.loads((directory/name).read_text())
     for name in ['_raptor.csv','_coat_arm.csv','submission_public_0899.csv',
                  'submission_e10_v2.csv','submission_native_v38.csv','submission_legacy_fold_blend.csv']:
         read_rows(directory/name,ids)
@@ -60,7 +67,7 @@ def assess(directory, sample, series_file):
     if load('h43_ordered_coat_recipe.json') != recipe() or h43_sha(directory/'h43_coat_ordered_runtime.py') != ORDERED_SHA:
         raise ValueError('Smoke CoAt recipe drift')
     if 'PACKED FALLBACK' in (directory/'h43_coat_worker.log').read_text(): raise ValueError('CoAt microbatch fallback')
-    coat,_ = load_run(directory,ids,'_coat_arm.csv',receipt['preflight'],expected_series=len(series))
+    coat,_ = load_run(directory,ids,'_coat_arm.csv',receipt['preflight'],expected_series=series_count)
     for shard in coat['shards']: batch_contract(shard,'ordered',ids)
     dino = load('dino_stable_receipt.json')
     capture = directory/'dino_stable_inputs.npz'
@@ -88,8 +95,8 @@ def assess(directory, sample, series_file):
     timings = receipt['timings_seconds']
     if set(timings) != {'dino','a5','rad','raptor_coat_fusion'} or any(not math.isfinite(v) or v<=0 for v in timings.values()):
         raise ValueError('Smoke timings incomplete')
-    return {'status':'PASSED_ORDERED_OFFICIAL_SMOKE','studies':len(ids),'series':len(series),
-        'prediction_sha256':h43_sha(final),'timings_seconds':timings,'all_five_stages_present':True,
+    return {'studies':len(ids),'series':series_count,
+        'timings_seconds':timings,'all_five_stages_present':True,
         'dino_independent_replay':True,'coat_independent_replay':True,'official_ids_exact':True,
         'automatic_submission_authorized':False,'auc_measured':False,
         'limitations':['Three visible examples do not measure AUC or hidden-test runtime.',

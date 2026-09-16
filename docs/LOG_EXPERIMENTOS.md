@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-016 — 16/09/2026 — probe22 estável enviado
+
+[Evidências e retomada](AV016_CANDIDATA_ESTAVEL_PROBE22.md).
+Kernel134618609 v1 COMPLETE, offline/T4/9h. Candidata herda smoke aprovado,
+fixa probe22 sem novo grid; auditor confirma componentes/raw idênticos,
+replay da fusão,3estudos/15séries e56hashes. **97 testes passaram**.
+CSV SHAff848c73… igual ao probe22 visível histórico; etapas114,5048s.
+
+Enviado **56281610**, scriptVersionId350342219,16/09 12:00:59 São Paulo.
+PENDING, sem score/erro. Único envio desta rodada;1hoje/4restantes.
+Melhor0,941 e seleção final preservados; V01/dev/confirmation intocados.
+Próximo: consultar esse ID sem duplicar; seguir V02/L01 enquanto aguarda.
+
 ## AV-015 — 16/09/2026 — paridade completa aprovada; smoke oficial
 
 [Evidências e retomada](AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md).
