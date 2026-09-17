@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-019 (16/09 à noite): ref56281610 COMPLETE, público0,941.
-V02 v1 falhou na paridade de pixels; reconstrução local108DICOMs/36séries
-coincide exatamente com cache. v2 de diagnóstico iniciada no mesmo kernel
-134631088; sem relaxar gate nem iniciar treino completo. Professor preservado.
+Atualizado na AV-020 (17/09): piloto V02 v3 COMPLETE e auditado.
+Divergência causada por precisão dos percentis reproduzida e corrigida;
+36séries/108DICOMs iguais ao cache no Kaggle, treino/retomada exata aprovados.
+136testes/44subtestes passaram. Baseline completo ainda não treinado.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,7 +71,23 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-019: submissão56281610 COMPLETE0,941, empata com histórico; não reenviar.
+- AV-020 concluída: piloto134631088 v3 COMPLETE, PASSED_V02_PILOT_AUDIT.
+  Não repetir piloto nem submetê-lo. Build SHA212fb597… em
+  reports/avance_av020_v02/v02_fixed_v3.py; outputs reports/avance_av020_pilot_v3/.
+  Auditoria reports/avance_av020_v02/pilot_audit_v3.json.36séries/108DICOMs
+  exatos, features12x3x384 finitas, cabeça treinada e checkpoint retomado
+  exatamente na mesma sessão GPU. Sem AUC/dev/confirmation; não é baseline.
+  Causa v2: NumPy2.0.2 percentis com posição float32, reproduzida localmente.
+  Correção float64/limites float32 preserva36/36séries nos dois ambientes;
+  receita antiga32/36 no NumPy2.0.2. Helper histórico/cache/teacher intactos.
+  Busca de anexos sem percorrer DICOM:0,001893s; reconstrução3,2128s,
+  encoder0,8088s,total medido6,8730s (fora imports). Pico alocado153MiB.
+  Projeção inicial treino299+dev250/20épocas:377,48s com margem2x, não garantia.
+  Próximo: congelar protocolo/custo do baseline; auditar cache completo treino/dev,
+  implementar299treino/250dev com professor original, seeds2026/42.
+  Confirmação150fechada; teto inicial1.800s por execução e sem grade pelo LB.
+  136testes/44subtestes passaram; docs/AV020_CORRECAO_PERCENTIS_V02.md.
+- Histórico AV-019: submissão56281610 COMPLETE0,941, empata com histórico; não reenviar.
   Piloto134631088 v1 ERROR por pixels diferentes do cache. Reconstrução local
   das36séries/108DICOMs passou, artefato reports/avance_av019_v02/local_rebuild_v1.json.
   Versão2 de diagnóstico no mesmo kernel, T4/offline/1.800s, salva versões e
@@ -299,7 +315,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
-| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | DIAGNÓSTICO DE PARIDADE — AV-019; v1 falhou no worker,36/36séries reconstruídas localmente iguais; v2 instrumentada134631088; baseline/sementes pendentes |
+| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PILOTO GPU APROVADO — AV-020 v3;36séries exatas,features/treino/retomada auditados; baseline299/dev250/sementes ainda pendentes |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -829,3 +845,20 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Build SHA2b174453…; outputs reports/avance_av019_pilot_v2/.
   Próximo: comparar estágios, corrigir causa, repetir gate e só então treinar.
   Nenhum dev/confirmation lido. Docs/AV019_PARIDADE_PIXELS_V02.md.
+
+### AV-020 — 17/09/2026 — precisão corrigida e piloto GPU aprovado
+
+- V2 ERROR na série axial do primeiro estudo. DICOM/raw iguais; NumPy2.0.2
+  calcula percentil99=297,65234375 vs297,6499938964844 no cache,125pixels
+  finais diferentes. Reproduzido localmente com mesmas versões; resize exato.
+- Correção isolada V02: percentis lineares float64, limites float32, hashes
+  congelados preservados.36/36séries exatas tanto NumPy2.0.2 quanto2.5.3;
+  código antigo32/36 no2.0.2. Teste adicional limita/poda descoberta de anexos.
+- Kernel134631088 v3 COMPLETE e PASSED_V02_PILOT_AUDIT.12estudos/36séries/
+  108DICOMs iguais; features válidas; treino/checkpoint/retomada exata.
+  Descoberta0,001893s; processamento6,8730s sem imports; pico alocado153MiB.
+  Não comparar esses6,9s diretamente aos710s de log v2 como speedup causal.
+- 136testes/44subtestes passaram. Nenhuma AUC/dev/confirmation ou novo envio.
+  Baseline completo ainda pendente. Próximo: protocolo/cache train299/dev250,
+  sementes2026/42, orçamento1.800s por execução; confirmação150fechada.
+  Evidências: docs/AV020_CORRECAO_PERCENTIS_V02.md.

@@ -3,6 +3,7 @@ import ast
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -13,6 +14,39 @@ from scripts.prepare_v02_pilot import validate,build
 
 
 class V02Tests(unittest.TestCase):
+    def runtime_function(self,name):
+        tree=ast.parse(Path('scripts/v02_pilot_runtime.py').read_text())
+        nodes=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name==name]
+        namespace={'np':np,'Path':Path,'os':os}
+        exec(compile(ast.Module(body=nodes,type_ignores=[]),'<runtime-unit>','exec'),namespace)
+        return namespace[name]
+
+    def test_explicit_percentile_precision(self):
+        normalize=self.runtime_function('normalize_cache_compatible')
+        x=np.arange(65536,dtype=np.float32).reshape(256,256)
+        out,low,high=normalize(x)
+        self.assertEqual(low,float(np.float32(655.35)))
+        self.assertEqual(high,float(np.float32(64879.65)))
+        self.assertEqual(out.dtype,np.float32)
+        self.assertTrue(np.isfinite(out).all())
+        for x in [np.full((3,3),np.nan),np.full((3,3),7),np.zeros((3,3))]:
+            self.assertTrue((normalize(x)[0]==0).all())
+        mixed=np.array([[np.nan,np.inf],[-np.inf,3]],dtype=np.float32)
+        self.assertTrue(np.isfinite(normalize(mixed)[0]).all())
+        with self.assertRaises(ValueError):normalize(np.ones(3))
+        with self.assertRaises(ValueError):normalize(np.ones((3,3)),99,1)
+
+    def test_discovery_prunes_dicom_trees_and_limits_work(self):
+        discover=self.runtime_function('discover_inputs')
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);competition=root/'competitions'/'rsna';series=competition/'train_series'
+            series.mkdir(parents=True);(competition/'train_series.csv').touch()
+            hidden=series/'ignored';hidden.mkdir();(hidden/'pytorch_model.bin').touch()
+            model=root/'models'/'meta'/'dino'/'pytorch'/'small'/'1';model.mkdir(parents=True)
+            (model/'pytorch_model.bin').touch()
+            self.assertEqual(discover(root),([model/'pytorch_model.bin'],[competition]))
+            with self.assertRaisesRegex(ValueError,'budget'):discover(root,max_directories=1)
+
     def test_pixels_indices_and_size(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp)/'array.npz';image=np.arange(3*224*224,dtype=np.uint8).reshape(3,224,224)

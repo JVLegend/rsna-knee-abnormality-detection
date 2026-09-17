@@ -22,6 +22,41 @@ def sha(path):
     with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
 
+def normalize_cache_compatible(pixels,lower=1.,upper=99.):
+    """Explicit float64 quantiles, rounded to cache float32 intensity bounds.
+
+    NumPy 2.0 computes scalar q/100 in input dtype: q=.99f32 changes the
+    order-statistic position. Never compensate by accepting changed images.
+    The unchanged cache SHA remains the authority for each rebuilt series.
+    """
+    values=np.asarray(pixels,dtype=np.float32)
+    if values.ndim!=2:raise ValueError('Expected 2D slice')
+    if not 0<=lower<upper<=100:raise ValueError('Invalid percentile bounds')
+    finite=values[np.isfinite(values)]
+    if not finite.size:return np.zeros(values.shape,dtype=np.float32),0.,0.
+    bounds=np.percentile(finite.astype(np.float64),[float(lower),float(upper)],method='linear')
+    low,high=(float(np.float32(x)) for x in bounds)
+    if not np.isfinite(low) or not np.isfinite(high) or high<=low:
+        low,high=float(finite.min()),float(finite.max())
+    if high<=low:return np.zeros(values.shape,dtype=np.float32),low,high
+    normalized=np.clip((values-np.float32(low))/np.float32(high-low),0.,1.)
+    normalized[~np.isfinite(normalized)]=0.
+    return normalized.astype(np.float32),low,high
+
+
+def discover_inputs(root,max_directories=256):
+    """Find markers without walking the competition's large DICOM trees."""
+    models=[];competitions=[]
+    def fail(error):raise error
+    for count,(directory,dirs,files) in enumerate(os.walk(root,onerror=fail),1):
+        if count>max_directories:raise ValueError('Input discovery directory budget exceeded')
+        path=Path(directory)
+        if 'pytorch_model.bin' in files:models.append(path/'pytorch_model.bin')
+        if 'train_series.csv' in files and 'train_series' in dirs:competitions.append(path)
+        dirs[:]=sorted(d for d in dirs if d not in {'train_series','test_series','kaggle_test_series'})
+    return sorted(models),sorted(competitions)
+
+
 def rebuild_series(root,study,series,helper,pydicom,output):
     """Keep exact parity; persist stage evidence before failing, never fallback."""
     channels=[];stages=[];arrays={}
@@ -94,7 +129,11 @@ def main():
     torch.backends.cudnn.benchmark=False;torch.backends.cudnn.deterministic=True
     torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False
     torch.use_deterministic_algorithms(True)
-    roots=[p.parent for p in Path('/kaggle/input').rglob('pytorch_model.bin') if p.stat().st_size==88297097]
+    discovery_start=time.perf_counter()
+    model_files,competition_roots=discover_inputs(Path('/kaggle/input'))
+    discovery_seconds=time.perf_counter()-discovery_start
+    print('input discovery seconds',discovery_seconds,flush=True)
+    roots=[p.parent for p in model_files if p.stat().st_size==88297097]
     valid=[p for p in roots if sha(p/'pytorch_model.bin')==MODEL_SHA]
     if len(valid)!=1:raise ValueError('Exactly one official pretrained model required')
     model_dir=valid[0]
@@ -103,7 +142,8 @@ def main():
     if config.hidden_size!=384 or config.patch_size!=14 or config.num_hidden_layers!=12:raise ValueError('Wrong encoder')
     helper={'__name__':'v02_cache_helper','__file__':'/kaggle/working/v02_cache_helper.py'}
     exec(compile(CACHE_SOURCE,'<local-cache-helper>','exec'),helper)
-    roots=[p.parent for p in Path('/kaggle/input').rglob('train_series.csv') if (p.parent/'train_series').is_dir()]
+    helper['normalize_slice']=normalize_cache_compatible
+    roots=competition_roots
     if len(roots)!=1:raise ValueError('Expected one official competition root')
     root=roots[0]
     rebuild_start=time.perf_counter();images=[];pixel_receipts=[]
@@ -165,7 +205,7 @@ def main():
         'features_sha256':sha(feature_path),'features_shape':list(x.shape),'checkpoint_sha256':sha(path),
         'checkpoint_step':8,'resume_exact':True,'mask_invariance':True,'encoder_frozen':True,
         'training_losses_first8':losses,'continued_losses':continued,'resumed_losses':resumed,
-        'timings_seconds':{'rebuild':rebuild_seconds,'forward':forward_seconds,'head_steps':steps,'total':time.perf_counter()-start},
+        'timings_seconds':{'input_discovery':discovery_seconds,'rebuild':rebuild_seconds,'forward':forward_seconds,'head_steps':steps,'total':time.perf_counter()-start},
         'cuda_peak_allocated_bytes':torch.cuda.max_memory_allocated(),
         'versions':{'torch':torch.__version__,'transformers':transformers.__version__,'numpy':np.__version__,
                     'pydicom':pydicom.__version__,'pillow':PIL.__version__},

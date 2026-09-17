@@ -2,6 +2,21 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-020 — 17/09/2026 — percentis corrigidos e piloto V02 aprovado
+
+[Causa, testes e retomada](AV020_CORRECAO_PERCENTIS_V02.md).
+Falha v2 reproduzida no NumPy2.0.2: posição do percentil float32 altera
+normalização; DICOM/raw/resize não divergem no caso diagnosticado.
+Correção explícita float64/limites float32:36/36séries iguais ao cache em
+dois ambientes, contra32/36 da receita antiga no2.0.2. Cache/teacher preservados.
+**136 testes e44subtestes passaram**.
+
+Piloto134631088 v3 COMPLETE; **PASSED_V02_PILOT_AUDIT**, pixels/features/
+treino/retomada exata aprovados. Descoberta0,001893s, total medido6,8730s
+fora imports;153MiB pico alocado. Não é baseline completo nem ganho de AUC.
+Nenhum novo envio. Próximo: baseline299treino/250dev, confirmação150fechada,
+duas sementes/protocolo congelado/cache completo; teto1.800s por execução.
+
 ## AV-019 — 16/09/2026 à noite — candidata0,941 e diagnóstico V02
 
 [Evidências e retomada](AV019_PARIDADE_PIXELS_V02.md).

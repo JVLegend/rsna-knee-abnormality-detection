@@ -31,6 +31,7 @@ def build(audit,helper,runtime):
     pilot=validate(audit)
     payload={'manifest_sha256':MANIFEST_SHA,'config_sha256':CONFIG_SHA,'pilot':pilot,
         'input_contract':{'image_size':224,'channels':'quantiles_0.25_0.50_0.75',
+            'pixel_normalization':'linear percentiles float64 then bounds float32; exact frozen cache SHA required',
             'plane_order':list(PLANES),'normalization':'uint8/255 then ImageNet mean/std',
             'encoder':'official DINOv2-S/14 frozen fp32 CLS, no competition head',
             'head':'shared study attention 384->64->1, classifier384->12',
