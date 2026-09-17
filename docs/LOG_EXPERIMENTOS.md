@@ -8,8 +8,13 @@
 Implementados preflight train299/dev250, runtime20épocas/2sementes2026/42,
 checkpoint recuperável, seleção por softBCE dev e comparador prior de treino.
 Auditor independente de BCE/logits/heads/IDs/checkpoints. **141testes e
-44subtestes passaram**. Auditoria serial dos1.647arrays em andamento;
-treino remoto ainda não despachado. Confirmação150fechada, nenhuma submissão.
+44subtestes passaram**. Cache549estudos/1.647arrays e reconstrução GPU exatos.
+Kernel134788472 v1 COMPLETE; **PASSED_V02_BASELINE_AUDIT**.
+Prior softBCE0,65707840;seed2026época10=0,62607019 e seed42época6=0,63189521.
+Ambas melhores que prior; época20 piora dev. Baker's piora nas duas sementes.
+Features164,57s,total175,04s sem imports; replay logits até1,04e−6.
+Aceito como referência para M01 (média vs atenção por alvo), não submissão.
+Confirmação150fechada, melhor público0,941; sem novo envio.
 
 ## AV-020 — 17/09/2026 — percentis corrigidos e piloto V02 aprovado
 

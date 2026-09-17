@@ -89,3 +89,49 @@ submissão automática nem abertura imediata da confirmação.
 
 Melhor público preservado0,941. Nenhuma nova submissão autorizada por este
 baseline sem pipeline de inferência e gates próprios de elegibilidade.
+
+## Execução identificada
+
+Auditoria local **PASSED_BASELINE_CACHE**:549estudos/1.647séries; sem
+hashes de imagens exatamente iguais entre treino e desenvolvimento.
+Manifesto V01/professor continuam com os hashes originais. Sem pixels da
+confirmação. Cache congelado SHA129389226d6a270ca86690bfca509c7da4a8c31cca1b5d05896378da55112211.
+
+Código e protocolo publicados no commit69876d6 antes da avaliação.
+Build privado de879.561bytes, SHA0049a9b0dd59285a621eab8fd54af776a85b68a5d4220bbbf6d4a7a4bf19ef85.
+Kernel **jvlegend/rsna-knee-v02-frozen-dino-baseline**, ID134788472 v1,
+**COMPLETE e PASSED_V02_BASELINE_AUDIT**. Cota antes6,491713h. Não repetir.
+Saídas privadas em reports/avance_av021_baseline_v1/; auditoria independente
+em reports/avance_av021_v02/baseline_audit_v1.json.
+
+## Resultado e decisão
+
+| Comparador/modelo | Época selecionada | SoftBCE dev (menor melhor) | Delta vs prior |
+|---|---:|---:|---:|
+| Prior só do treino | — | 0,65707840 | — |
+| Atenção compartilhada,seed2026 | 10 | **0,62607019** | −0,03100821 |
+| Atenção compartilhada,seed42 | 6 | **0,63189521** | −0,02518320 |
+
+Ambas as sementes melhoram o comparador; redução relativa aproximada4,7%/3,8%.
+Não é ensemble das sementes nem ganho de leaderboard. O protocolo foi
+mantido:20épocas em ambos os treinos, seleção prospectiva pelo mínimo dev.
+Na época20, dev piorou para0,64938283/0,66013783; perdas de treino finais
+0,51534088/0,51295165. Isso sinaliza risco de sobreajuste; não ampliar épocas
+automaticamente com base na queda da perda de treino.
+
+Contra o prior,11/12alvos melhoram na seed2026 e7/12na seed42. Baker's piora
+em ambas (+0,014923/+0,018990); maiores reduções repetidas ocorrem em Effusion,
+Lateral OA e PF OA. Esses achados são diagnósticos dos rótulos fracos, não
+prova de erro clínico do professor ou causa anatômica da diferença.
+
+Todos os1.647hashes de pixels passaram no worker antes do treino. Features
+549x3x384, IDs e checkpoints íntegros; replay independente NumPy dos logits
+melhor/último divergiu no máximo1,04e−6, bem abaixo da tolerância predefinida.
+Features164,57s,total medido175,04s (~2,9min, fora imports), pico alocado153MiB.
+Modelos/otimizadores/RNG/histórico foram preservados para retomada.
+
+**Decisão:** aceitar como referência de desenvolvimento para ablações, não
+como nova candidata de submissão. Próximo M01: controle com média dos3planos
+versus atenção por alvo, mesmos embeddings/splits/labels/seeds/orçamento,
+sem reextrair DICOMs. Depois G01 para amostragem adjacente. Não ajustar pesos
+por alvo pelo leaderboard; confirmação150segue fechada. Melhor público0,941.

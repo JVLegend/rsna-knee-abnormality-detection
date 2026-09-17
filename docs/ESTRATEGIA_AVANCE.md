@@ -5,9 +5,10 @@
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
 Atualizado na AV-021 (17/09): baseline próprio implementado e protocolo fixado.
-141testes/44subtestes passaram; cache treino/dev em auditoria serial no HD.
-Piloto V02 v3 permanece aprovado; baseline completo ainda não executado.
-Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
+141testes/44subtestes passaram; cache549estudos/1.647séries aprovado.
+Baseline134788472 v1 COMPLETE e auditado:softBCE dev0,62607/0,63190 contra
+prior0,65708. Referência própria aceita para ablações; sem nova submissão.
+Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -70,14 +71,27 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-021 em execução: protocolo prospectivo V02 congelado antes de avaliar dev.
+- AV-021 concluída: V02 próprio treinado e PASSED_V02_BASELINE_AUDIT.
+  Prior softBCE0,65707840; seed2026época10=0,62607019;
+  seed42época6=0,63189521. Ambas melhoram; época20 piora dev. Baker's piora
+  nos dois modelos. Não é AUC clínica nem melhoria confirmada de leaderboard.
+  Features164,57s,total175,04s fora imports; pico153MiB; replay logits até1,04e−6.
+  Próximo M01: média dos3planos como controle vs atenção por alvo, usando
+  mesmas features/splits/teacher/seeds e20épocas; registrar antes de avaliar.
+  Não reextrair imagens à toa nem abrir confirmação. G01 fica na sequência.
+  Cache PASSED_BASELINE_CACHE, SHA12938922…; fonte SHA0049a9b0… em
+  reports/avance_av021_v02/baseline_v1.py. Código/protocolo commit69876d6.
+  Kernel jvlegend/rsna-knee-v02-frozen-dino-baseline ID134788472 v1
+  COMPLETE, não repetir. Saídas reports/avance_av021_baseline_v1/;
+  auditoria reports/avance_av021_v02/baseline_audit_v1.json.
+  Protocolo prospectivo preservado; docs/AV021_BASELINE_PROPRIO_V02.md.
   Treino299/dev250 da V01; confirmação150fechada. DINOv2-S genérico congelado,
   entrada/cabeça do piloto, duas sementes2026/42,20épocas,batch4,AdamWlr0,001/
   decay0,0001. Escolher menor softBCE média dev, primeira época em empate.
   Comparador: constante por alvo igual à média dos softlabels do treino.
   Não binarizar0,5 nem alegar AUC clínica; dev seleciona época, não é teste final.
-  Auditar1.647arrays no HD e igualdade exata na reconstrução Kaggle antes do
-  treino. Um job privado/offline/T4/1.800s para as duas sementes, checkpoint
+  Auditados1.647arrays no HD e igualdade exata na reconstrução Kaggle antes do
+  treino. Um job privado/offline/T4/teto1.800s executou as duas sementes, checkpoint
   a cada época, features preservadas; nenhuma submissão automática do baseline.
   Código prepare_v02_baseline/v02_baseline_runtime/assess_v02_baseline.
 - AV-020 concluída: piloto134631088 v3 COMPLETE, PASSED_V02_PILOT_AUDIT.
@@ -324,7 +338,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
-| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PILOTO GPU APROVADO — AV-020 v3;36séries exatas,features/treino/retomada auditados; baseline299/dev250/sementes ainda pendentes |
+| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -871,3 +885,22 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Baseline completo ainda pendente. Próximo: protocolo/cache train299/dev250,
   sementes2026/42, orçamento1.800s por execução; confirmação150fechada.
   Evidências: docs/AV020_CORRECAO_PERCENTIS_V02.md.
+
+### AV-021 — 17/09/2026 — primeiro baseline próprio completo no split V01
+
+- Protocolo commit69876d6 registrado antes de avaliar;299treino/250dev,
+  professor original, DINO genérico congelado, atenção compartilhada,
+  duas sementes2026/42,20épocas,menor softBCE dev com primeira época em empate.
+- Auditoria local549estudos/1.647arrays aprovada; mesmos4.941DICOMs/pixels
+  reconstruídos no worker. Confirmação150sem pixels lidos ou avaliação;
+  V01/teacher intactos (metadados dos splits usados apenas para integridade).
+- Kernel134788472 v1 COMPLETE e PASSED_V02_BASELINE_AUDIT; buildSHA0049a9b0… .
+  Prior0,65707840;seed2026época10=0,62607019;seed42época6=0,63189521.
+  Epoch20dev0,64938283/0,66013783: não estender treino automaticamente.
+  Baker's piora nas duas sementes; ganhos repetidos maiores em Effusion/OA.
+- 141testes/44subtestes. Independente replay NumPy logits até1,04e−6;
+  features164,57s,total175,04s fora imports,153MiB pico alocado.
+- Referência aceita para ablações, não nova submissão. M01 primeiro(média
+  vs atenção por alvo, mesmas features); G01 em seguida. Nenhum score clínico
+  ou LB inferido de softBCE. Melhor público0,941 e seleção final intactos.
+  Evidências/retomada: docs/AV021_BASELINE_PROPRIO_V02.md.
