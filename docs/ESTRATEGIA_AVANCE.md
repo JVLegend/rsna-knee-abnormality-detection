@@ -4,10 +4,9 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-020 (17/09): piloto V02 v3 COMPLETE e auditado.
-Divergência causada por precisão dos percentis reproduzida e corrigida;
-36séries/108DICOMs iguais ao cache no Kaggle, treino/retomada exata aprovados.
-136testes/44subtestes passaram. Baseline completo ainda não treinado.
+Atualizado na AV-021 (17/09): baseline próprio implementado e protocolo fixado.
+141testes/44subtestes passaram; cache treino/dev em auditoria serial no HD.
+Piloto V02 v3 permanece aprovado; baseline completo ainda não executado.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,6 +70,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-021 em execução: protocolo prospectivo V02 congelado antes de avaliar dev.
+  Treino299/dev250 da V01; confirmação150fechada. DINOv2-S genérico congelado,
+  entrada/cabeça do piloto, duas sementes2026/42,20épocas,batch4,AdamWlr0,001/
+  decay0,0001. Escolher menor softBCE média dev, primeira época em empate.
+  Comparador: constante por alvo igual à média dos softlabels do treino.
+  Não binarizar0,5 nem alegar AUC clínica; dev seleciona época, não é teste final.
+  Auditar1.647arrays no HD e igualdade exata na reconstrução Kaggle antes do
+  treino. Um job privado/offline/T4/1.800s para as duas sementes, checkpoint
+  a cada época, features preservadas; nenhuma submissão automática do baseline.
+  Código prepare_v02_baseline/v02_baseline_runtime/assess_v02_baseline.
 - AV-020 concluída: piloto134631088 v3 COMPLETE, PASSED_V02_PILOT_AUDIT.
   Não repetir piloto nem submetê-lo. Build SHA212fb597… em
   reports/avance_av020_v02/v02_fixed_v3.py; outputs reports/avance_av020_pilot_v3/.

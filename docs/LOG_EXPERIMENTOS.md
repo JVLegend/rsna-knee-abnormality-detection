@@ -2,6 +2,15 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-021 — 17/09/2026 — baseline V02 e protocolo prospectivo
+
+[Protocolo e execução](AV021_BASELINE_PROPRIO_V02.md).
+Implementados preflight train299/dev250, runtime20épocas/2sementes2026/42,
+checkpoint recuperável, seleção por softBCE dev e comparador prior de treino.
+Auditor independente de BCE/logits/heads/IDs/checkpoints. **141testes e
+44subtestes passaram**. Auditoria serial dos1.647arrays em andamento;
+treino remoto ainda não despachado. Confirmação150fechada, nenhuma submissão.
+
 ## AV-020 — 17/09/2026 — percentis corrigidos e piloto V02 aprovado
 
 [Causa, testes e retomada](AV020_CORRECAO_PERCENTIS_V02.md).
