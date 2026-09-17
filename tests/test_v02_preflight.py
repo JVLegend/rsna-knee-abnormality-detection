@@ -1,10 +1,12 @@
 """#RSNA #Kaggle #Testes — bounded cache and train-only pilot gates."""
 import ast
 import copy
+import hashlib
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from types import SimpleNamespace
 import numpy as np
 from scripts.preflight_v02_cache import check_image, MANIFEST_SHA, PLANES
 from scripts.prepare_v02_pilot import validate,build
@@ -48,6 +50,37 @@ class V02Tests(unittest.TestCase):
         self.assertIn('weights_only=True',s)
         self.assertIn("'resume_exact':True",s)
         self.assertIn('Rebuilt pixels differ from HD cache',s)
+
+    def test_pixel_mismatch_persists_evidence_and_stops(self):
+        tree=ast.parse(Path('scripts/v02_pilot_runtime.py').read_text())
+        functions=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in {'sha','rebuild_series'}]
+        namespace={'np':np,'json':json,'hashlib':hashlib,'Path':Path}
+        exec(compile(ast.Module(body=functions,type_ignores=[]),'<pixel-gate>','exec'),namespace)
+        pixels=np.arange(16,dtype=np.float32).reshape(4,4)
+        channel=np.arange(224*224,dtype=np.uint8).reshape(224,224)
+        helper={'PIXEL_TAGS':(),'_pixel_array':lambda ds:ds,
+                'normalize_slice':lambda x:(x/15,0.,15.),'resize_slice':lambda x,size:channel}
+        reader=SimpleNamespace(dcmread=lambda *args,**kwargs:pixels)
+        expected=np.stack([channel]*3);digest=hashlib.sha256(expected.tobytes()).hexdigest()
+        series={'series_uid':'series','selected_files':['a.dcm','b.dcm','c.dcm'],'image_sha256':digest}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);data=root/'train_series'/'train-study'/'series';data.mkdir(parents=True)
+            for name in series['selected_files']:(data/name).write_bytes(b'synthetic fixture, not DICOM')
+            output=root/'diagnostic'
+            image,receipt=namespace['rebuild_series'](root,'train-study',series,helper,reader,output)
+            np.testing.assert_array_equal(image,expected)
+            self.assertEqual(receipt['sha256'],digest);self.assertFalse(output.exists())
+            series['image_sha256']='wrong'
+            with self.assertRaisesRegex(ValueError,'Rebuilt pixels differ'):
+                namespace['rebuild_series'](root,'train-study',series,helper,reader,output)
+            evidence=json.loads((output/'v02_pixel_mismatch.json').read_text())
+            self.assertEqual(evidence['status'],'FAILED_EXACT_PIXEL_PARITY')
+            self.assertEqual(evidence['observed_sha256'],digest)
+            self.assertEqual(len(evidence['stages']),3)
+            with np.load(output/'v02_pixel_mismatch.npz',allow_pickle=False) as archive:
+                self.assertEqual(len(archive.files),7)
+                np.testing.assert_array_equal(archive['pixels_0'],pixels)
+            self.assertFalse((output/'v02_pilot_features.npz').exists())
 
 
 if __name__=='__main__':unittest.main()

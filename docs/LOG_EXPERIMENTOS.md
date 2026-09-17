@@ -2,6 +2,16 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-019 — 16/09/2026 à noite — candidata0,941 e diagnóstico V02
+
+[Evidências e retomada](AV019_PARIDADE_PIXELS_V02.md).
+56281610 COMPLETE0,941, empata com histórico. Nenhuma nova submissão.
+Piloto134631088 v1 falhou na igualdade de pixels; local108DICOMs/36séries
+reconstruídos exatamente. Versão2 instrumentada RUNNING no mesmo kernel,
+sem tolerância/fallback; evidencia estágios antes de qualquer treino.
+**134 testes e44subtestes passaram**. Dev/confirmation/professor preservados.
+Próximo: comparar artefatos remotos, corrigir causa e repetir gate estrito.
+
 ## AV-018 — 16/09/2026 — preflight do baseline próprio V02
 
 [Evidências e retomada](AV018_PREFLIGHT_V02_GENERICO.md).

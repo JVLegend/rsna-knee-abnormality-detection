@@ -4,10 +4,10 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-018 (16/09): ref56281610 continua PENDING, sem novo score.
-V02: cache treino299/897séries aprovado; piloto DINOv2 genérico com atenção
-iniciado no Kaggle, ID134631088 v1 RUNNING, ainda sem auditoria de saída.
-105 testes locais passaram. Professor preservado; nenhum baseline completo ainda.
+Atualizado na AV-019 (16/09 à noite): ref56281610 COMPLETE, público0,941.
+V02 v1 falhou na paridade de pixels; reconstrução local108DICOMs/36séries
+coincide exatamente com cache. v2 de diagnóstico iniciada no mesmo kernel
+134631088; sem relaxar gate nem iniciar treino completo. Professor preservado.
 Melhor público **0,941** preservado; estabilidade/velocidade não são novo score.
 
 
@@ -71,7 +71,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- Próxima ação AV-018: consultar jvlegend/rsna-knee-v02-generic-dino-pilot
+- AV-019: submissão56281610 COMPLETE0,941, empata com histórico; não reenviar.
+  Piloto134631088 v1 ERROR por pixels diferentes do cache. Reconstrução local
+  das36séries/108DICOMs passou, artefato reports/avance_av019_v02/local_rebuild_v1.json.
+  Versão2 de diagnóstico no mesmo kernel, T4/offline/1.800s, salva versões e
+  arrays/hashes intermediários antes de falhar. Build SHA2b174453… .
+  Comparar saídas em reports/avance_av019_pilot_v2/ antes de alterar receita.
+  Não afrouxar igualdade exata nem substituir cache esperado; sem dev/confirmation.
+  134testes/44subtestes passaram. V2 RUNNING na última consulta.
+  Retomada e evidências: docs/AV019_PARIDADE_PIXELS_V02.md.
+- Histórico AV-018 (superado pela AV-019): jvlegend/rsna-knee-v02-generic-dino-pilot
   v1 ID134631088, RUNNING. T4x2/offline/1.800s, piloto usa cuda:0 somente.
   Não duplicar. Leitura de logs expirou; isso não prova falha do kernel.
   Build reports/avance_av018_v02/v02_generic_pilot_v1.py SHAe310c754… .
@@ -95,7 +104,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   Próximo trabalho: V02 com pretreino genérico e professor original. Verificar
   pixels/cache/proveniência/custo e checkpoint antes do treino; a revisão L01
   não bloqueia o baseline. Retomada: docs/AV017_AUDITORIA_L01_TREINO.md.
-- Próxima ação: consultar submissão AV-016 **56281610**, PENDING, enviada
+- Submissão AV-016 **56281610**, agora COMPLETE0,941 (AV-019), enviada
   16/09/2026 12:00:59 São Paulo; scriptVersionId350342219. Não reenviar.
   Comparar com probe22 histórico56263721 (0,941), sem mudar seleção final.
   Enquanto aguarda, seguir V02/L01 com validação própria, sem grade de pesos.
@@ -290,7 +299,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
-| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | PREFLIGHT EM EXECUÇÃO — AV-018; cache treino aprovado, piloto12 no Kaggle134631088; baseline completo/sementes pendentes |
+| V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | DIAGNÓSTICO DE PARIDADE — AV-019; v1 falhou no worker,36/36séries reconstruídas localmente iguais; v2 instrumentada134631088; baseline/sementes pendentes |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -804,3 +813,19 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Build SHAe310c754… em reports/avance_av018_v02/. Não duplicar.
 - Próximo: auditar outputs e custo antes de treino completo V02 com duas
   sementes. Nenhuma nova submissão/automação. Docs/AV018_PREFLIGHT_V02_GENERICO.md.
+
+### AV-019 — 16/09/2026 à noite — 0,941 confirmada e diagnóstico de pixels V02
+
+- 56281610 COMPLETE0,941: empate com probe22 histórico, sem novo melhor,
+  sem prova de igualdade das predições ocultas. Nenhum envio ou seleção alterada.
+- Piloto134631088 v1 ERROR no gate exato de pixels, antes do treino.
+  Rebuild local serial108DICOMs/36séries coincide com cache; controle da primeira
+  série com versões NumPy2.0.2/Pillow11.3.0/pydicom3.0.2 também coincide.
+  Causa por estágio ainda não demonstrada; não afrouxar o gate.
+- Instrumentados hashes/arrays intermediários e ambiente; encoder carregado
+  após o gate de pixels. Teste de regressão da falha/evidências incluído.
+  Suíte completa134testes/44subtestes passou; gates GPU continuam pendentes.
+- Mesmo kernel v2 privado/offline/T4/1.800s, RUNNING; cota antes12,1254h.
+  Build SHA2b174453…; outputs reports/avance_av019_pilot_v2/.
+  Próximo: comparar estágios, corrigir causa, repetir gate e só então treinar.
+  Nenhum dev/confirmation lido. Docs/AV019_PARIDADE_PIXELS_V02.md.

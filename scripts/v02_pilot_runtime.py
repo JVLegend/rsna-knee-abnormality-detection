@@ -22,6 +22,34 @@ def sha(path):
     with Path(path).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
 
 
+def rebuild_series(root,study,series,helper,pydicom,output):
+    """Keep exact parity; persist stage evidence before failing, never fallback."""
+    channels=[];stages=[];arrays={}
+    for index,name in enumerate(series['selected_files']):
+        path=root/'train_series'/study/series['series_uid']/name
+        ds=pydicom.dcmread(path,specific_tags=helper['PIXEL_TAGS'],force=False)
+        pixels=helper['_pixel_array'](ds)
+        normalized,low,high=helper['normalize_slice'](pixels)
+        channel=helper['resize_slice'](normalized,224)
+        channels.append(channel)
+        arrays.update({f'pixels_{index}':pixels,f'normalized_{index}':normalized})
+        stages.append({'file':name,'dicom_sha256':sha(path),'shape':list(pixels.shape),
+            'pixel_sha256':hashlib.sha256(pixels.tobytes()).hexdigest(),
+            'normalized_sha256':hashlib.sha256(normalized.tobytes()).hexdigest(),
+            'resized_sha256':hashlib.sha256(channel.tobytes()).hexdigest(),
+            'low':low,'high':high})
+    image=np.stack(channels);observed=hashlib.sha256(image.tobytes()).hexdigest()
+    if observed!=series['image_sha256']:
+        output.mkdir(parents=True,exist_ok=True)
+        arrays['image']=image
+        np.savez_compressed(output/'v02_pixel_mismatch.npz',**arrays)
+        evidence={'status':'FAILED_EXACT_PIXEL_PARITY','study':study,'series':series['series_uid'],
+            'expected_sha256':series['image_sha256'],'observed_sha256':observed,'stages':stages}
+        (output/'v02_pixel_mismatch.json').write_text(json.dumps(evidence,indent=2))
+        raise ValueError('Rebuilt pixels differ from HD cache; stage evidence saved')
+    return image,{'study':study,'series':series['series_uid'],'sha256':observed}
+
+
 class StudyAttention(nn.Module):
     def __init__(self,dim=384):
         super().__init__()
@@ -56,6 +84,10 @@ def main():
     from transformers import Dinov2Model,Dinov2Config
     import transformers,pydicom,PIL
     start=time.perf_counter()
+    environment={'torch':torch.__version__,'transformers':transformers.__version__,
+        'numpy':np.__version__,'pydicom':pydicom.__version__,'pillow':PIL.__version__}
+    Path('/kaggle/working/v02_environment.json').write_text(json.dumps(environment,indent=2))
+    print('environment',json.dumps(environment),flush=True)
     if torch.cuda.device_count()!=2 or any(torch.cuda.get_device_name(i)!='Tesla T4' for i in range(2)):
         raise ValueError('Expected T4x2 allocation; pilot uses only cuda:0')
     torch.manual_seed(2026);torch.cuda.manual_seed_all(2026)
@@ -69,9 +101,6 @@ def main():
     if sha(model_dir/'config.json')!=V02_PILOT['config_sha256']:raise ValueError('Official config drift')
     config=Dinov2Config.from_json_file(str(model_dir/'config.json'))
     if config.hidden_size!=384 or config.patch_size!=14 or config.num_hidden_layers!=12:raise ValueError('Wrong encoder')
-    encoder=Dinov2Model(config)
-    encoder.load_state_dict(torch.load(model_dir/'pytorch_model.bin',map_location='cpu',weights_only=True),strict=True)
-    encoder=encoder.eval().requires_grad_(False).cuda()
     helper={'__name__':'v02_cache_helper','__file__':'/kaggle/working/v02_cache_helper.py'}
     exec(compile(CACHE_SOURCE,'<local-cache-helper>','exec'),helper)
     roots=[p.parent for p in Path('/kaggle/input').rglob('train_series.csv') if (p.parent/'train_series').is_dir()]
@@ -80,18 +109,14 @@ def main():
     rebuild_start=time.perf_counter();images=[];pixel_receipts=[]
     for study in V02_PILOT['pilot']:
         for series in study['series']:
-            channels=[]
-            for name in series['selected_files']:
-                path=root/'train_series'/study['StudyInstanceUID']/series['series_uid']/name
-                ds=pydicom.dcmread(path,specific_tags=helper['PIXEL_TAGS'],force=False)
-                normalized,_,_=helper['normalize_slice'](helper['_pixel_array'](ds))
-                channels.append(helper['resize_slice'](normalized,224))
-            image=np.stack(channels);observed=hashlib.sha256(image.tobytes()).hexdigest()
-            if observed!=series['image_sha256']:raise ValueError('Rebuilt pixels differ from HD cache')
+            image,pixel_receipt=rebuild_series(root,study['StudyInstanceUID'],series,helper,pydicom,Path('/kaggle/working'))
             images.append(image)
-            pixel_receipts.append({'study':study['StudyInstanceUID'],'series':series['series_uid'],'sha256':observed})
+            pixel_receipts.append(pixel_receipt)
         print('rebuilt',len(images)//3,'/12 studies',flush=True)
     rebuild_seconds=time.perf_counter()-rebuild_start
+    encoder=Dinov2Model(config)
+    encoder.load_state_dict(torch.load(model_dir/'pytorch_model.bin',map_location='cpu',weights_only=True),strict=True)
+    encoder=encoder.eval().requires_grad_(False).cuda()
     tensor=torch.from_numpy(np.stack(images)).float().div_(255)
     tensor=(tensor-torch.tensor([.485,.456,.406])[None,:,None,None])/torch.tensor([.229,.224,.225])[None,:,None,None]
     forward_start=time.perf_counter();features=[]
