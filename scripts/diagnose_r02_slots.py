@@ -66,7 +66,16 @@ def priority(runs):
             'prioritize_slot_dropout_trial': bool(planes)}
 
 
-def diagnose(directory, manifest, audit, build, output):
+def verify_geometry_order(geometry, rows):
+    # Development metadata intentionally has no series in V03: its features
+    # come from G01. Validate against that pinned geometry, not guessed axes.
+    expected = [(row['StudyInstanceUID'], plane) for row in rows for plane in PLANES]
+    observed = [(s['study'], s['plane']) for s in geometry['series']]
+    if observed != expected:
+        raise ValueError('Geometry identity/plane order changed')
+
+
+def diagnose(directory, manifest, audit, build, geometry, output):
     """Consume private, already-audited V03 artifacts; never retrain or submit."""
     if output.exists():
         raise FileExistsError(output)
@@ -88,8 +97,9 @@ def diagnose(directory, manifest, audit, build, output):
     ids = [row['StudyInstanceUID'] for row in m['development']]
     if len(ids) != 250 or len(set(ids)) != 250:
         raise ValueError('Development identity changed')
-    if any([s['plane'] for s in row['series']] != PLANES for row in m['development']):
-        raise ValueError('Plane order changed')
+    if digest(geometry) != r['spec']['geometry_sha256']:
+        raise ValueError('Reference geometry changed')
+    verify_geometry_order(json.loads(geometry.read_text()), m['train'][:299]+m['development'])
     with np.load(path, allow_pickle=False) as data:
         if data['development_ids'].tolist() != ids or str(data['contract_hash']) != contract:
             raise ValueError('Feature IDs/contract changed')
@@ -128,6 +138,7 @@ def diagnose(directory, manifest, audit, build, output):
         'source_sha256': digest(Path(__file__)), 'audit_sha256': digest(audit),
         'manifest_sha256': digest(manifest), 'build_sha256': digest(build),
         'feature_sha256': r['feature_sha256'], 'contract_hash': contract,
+        'reference_geometry_sha256': digest(geometry),
         'development_studies': 250, 'planes': PLANES, 'runs': runs,
         'decision': priority(runs), 'confirmation_evaluated': False,
         'submission_eligible': False, 'training_performed': False,
@@ -144,7 +155,7 @@ def diagnose(directory, manifest, audit, build, output):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ['directory', 'manifest', 'audit', 'build', 'output']:
+    for name in ['directory', 'manifest', 'audit', 'build', 'geometry', 'output']:
         parser.add_argument('--'+name, type=Path, required=True)
     args = parser.parse_args()
-    diagnose(args.directory, args.manifest, args.audit, args.build, args.output)
+    diagnose(args.directory, args.manifest, args.audit, args.build, args.geometry, args.output)

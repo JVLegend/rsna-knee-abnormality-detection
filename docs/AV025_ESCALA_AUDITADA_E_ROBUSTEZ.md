@@ -57,12 +57,18 @@ python -m scripts.diagnose_r02_slots \
   --manifest data/processed/validation_weak_v3_scale1000/manifest.json \
   --audit reports/avance_av024_v03/v03_audit_v1.json \
   --build reports/avance_av024_v03/v03_v1.py \
+  --geometry reports/avance_av023_g01_v1/g01_geometry.json \
   --output reports/avance_av025_r02/diagnostic_v1.json
 ```
 
 ## Estado antes de avaliar
 
 V03 promovido. R02 implementado, diagnóstico real ainda não executado.
+Protocolo207544e. Primeira tentativa parou antes de qualquer métrica de
+estresse: desenvolvimento V03 não contém séries, pois herda features G01.
+Correção: exigir geometria G01 original por hash e validar todos IDs/planos
+na ordem dos299treino+250dev; teste de regressão inclui esse esquema.
+Sem alterar dados, modelo, regra de decisão ou relaxar a verificação.
 Dropout de slots e ruído de aquisição ainda não testados. Estresse sintético
 em exames completos não demonstra qualidade em pacientes com protocolo
 incompleto. Nenhum CSV/novo envio; melhor público confirmado0,941 preservado.

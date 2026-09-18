@@ -7,7 +7,7 @@ import pytest
 import torch
 from torch import nn
 
-from scripts.diagnose_r02_slots import PLANES, priority, stress
+from scripts.diagnose_r02_slots import PLANES, priority, stress, verify_geometry_order
 from scripts.assess_v02_baseline import loss, replay
 
 
@@ -83,3 +83,14 @@ def test_incomplete_stress_matrix_blocked(bad):
     if bad == 'duplicate': r[0]['scenarios'][0] = r[0]['scenarios'][1].copy()
     if bad == 'nan': r[0]['scenarios'][0]['delta_vs_intact'] = float('nan')
     with pytest.raises(ValueError): priority(r)
+
+
+def test_development_without_series_uses_pinned_geometry_order():
+    rows = [{'StudyInstanceUID': 'a'}, {'StudyInstanceUID': 'b'}]
+    geometry = {'series': [{'study': r['StudyInstanceUID'], 'plane': p}
+                           for r in rows for p in PLANES]}
+    verify_geometry_order(geometry, rows)
+    geometry['series'][0], geometry['series'][1] = geometry['series'][1], geometry['series'][0]
+    with pytest.raises(ValueError, match='order'): verify_geometry_order(geometry, rows)
+    geometry['series'].pop()
+    with pytest.raises(ValueError, match='order'): verify_geometry_order(geometry, rows)
