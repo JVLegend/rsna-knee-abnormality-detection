@@ -63,4 +63,45 @@ não alterar validação nem excluir estudos problemáticos silenciosamente.
 
 ## Estado
 
-G01 auditado. Manifesto e execução V03 em implementação.
+G01 auditado e adjacentes promovidos. V03 implementado;168testes+44subtestes
+passaram. Código/protocolo commit549b33e antes de observar resultado V03.
+Manifesto congelado:
+data/processed/validation_weak_v3_scale1000/manifest.json, SHA256
+cba46e58d8665ae37e1949d2eef68a34a60f299c1ffda75e890d26a6857bc715.
+1.000treino/954grupos,299originais+701novos,3.890elegíveis. Excluídos455
+ligados à validação/confirmação e62ligados ao gold (inclui laudos repetidos).
+Sem arrays adjacentes idênticos por hash entre treino/dev originais.
+
+Build reports/avance_av024_v03/v03_v1.py,773.265bytes,SHA256
+3ae4654579db73f31779962b8ea25a620be67ec257522973ce0c36947e57088b.
+Kernel `jvlegend/rsna-knee-v03-scale1000`,ID134854744,versão1,RUNNING.
+Quota imediatamente antes do envio:2.745,679s; gate conservador exigiu2×1.200s.
+Anexos competição + DINOv2-S oficial + saída privadaG01. Sem outros pesos.
+Último log extra_features2/701 em32,60s de log; não estimar desempenho a partir
+disso. Nenhuma perda V03 observada ainda, nenhuma nova submissão.
+
+## Retomada e auditoria
+
+Não duplicar execução. Consultar status e baixar versão1 em
+reports/avance_av024_v03_v1/ quando COMPLETE (ou logs em ERROR).
+Auditor independente implementado, mas ainda não executado sobre saída V03:
+
+```sh
+python -m scripts.assess_v03_scale \
+  --directory reports/avance_av024_v03_v1 \
+  --build reports/avance_av024_v03/v03_v1.py \
+  --manifest data/processed/validation_weak_v3_scale1000/manifest.json \
+  --baseline reports/avance_av023_g01_v1 \
+  --output reports/avance_av024_v03/v03_audit_v1.json
+```
+
+Usar PYTHONPATH=src:. e dependências NumPy/Pandas/PyTorch. O auditor recusa
+sobrescrever relatórios, recompõe seleção por grupos e confere fontes.
+Exige features antigas idênticas, reprodução do controle G01 adjacente,
+geometria/amostragem/IDs e ausência de colisão exata de pixels novos com dev.
+Refaz logits/BCE em NumPy e verifica checkpoints/histórico/época selecionada.
+
+Implementação: scripts/prepare_v03_scale.py, scripts/v03_scale_runtime.py,
+scripts/assess_v03_scale.py e tests/test_v03_scale.py. Laudos não entram no
+código enviado; apenas IDs/hashes/labels necessários e metadados de série.
+Protocolo e retomada registrados primeiro no vault, conforme skill Obsidian.

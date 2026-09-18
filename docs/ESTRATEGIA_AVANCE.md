@@ -4,11 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-023 (17/09): nova pesquisa Kaggle + G01 implementado.
-162testes/44subtestes passaram; kernel134798342 v1 RUNNING.
-Último log verificado:100/549estudos com geometria/pixels aprovados; ainda
-sem resultado de treino. Conferir execução, baixar e auditar antes de repetir.
-Depois G01, priorizar escala do treino V03; nenhuma nova submissão.
+Atualizado na AV-024 (18/09): G01 auditado, adjacentes vencem nas duas sementes.
+Perda média0,628983→0,625189; nova referência própria, não score Kaggle.
+V03 implementado:1.000treino/954grupos,299originais+701novos;168testes/
+44subtestes passaram. Kernel134854744 v1 RUNNING, sem resultado V03 ainda.
+Não duplicar; recuperar/auditar a execução. Nenhuma nova submissão.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -73,6 +73,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 ## Cursor de retomada
 
 - AV-024 iniciada18/09: G01 COMPLETE e PASSED_G01_AUDIT.
+  V03: kernel jvlegend/rsna-knee-v03-scale1000 ID134854744 v1 RUNNING.
+  Fonte reports/avance_av024_v03/v03_v1.py SHA3ae46545…,773.265bytes;
+  protocolo/código commit549b33e.168testes+44subtestes passaram.
+  Manifesto data/processed/validation_weak_v3_scale1000/manifest.json
+  SHAcba46e58…:1.000treino/954grupos,701novos;3.890elegíveis.
+  Excluídos455por IDs/grupos reservados e62por gold/grupo gold.
+  Último log confirma extra_features2/701; ainda sem métrica de treino.
+  Retomar status; se COMPLETE, baixar versão1 em reports/avance_av024_v03_v1/
+  e rodar scripts.assess_v03_scale com baseline reports/avance_av023_g01_v1/.
+  Não submeter este kernel. Atualizar perdas/decisão só após auditoria.
   Adjacentes0,62426164/0,62611569 vencem controle0,62607019/0,63189521
   nas duas sementes; nova referência própria=physical_adjacent. Quartis
   físicos0,62624314/0,63235150 não melhoram controle. Não é ganho de LB.
@@ -87,7 +97,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   contra dev, sem ler pixels de confirmação. Sem submissão automática.
   Quota observada0,78639h; teto1.200s T4, abortar antes do limite com checkpoints.
   Protocolo completo: docs/AV024_ESCALA_TREINO_V03.md. Ainda sem resultado V03.
-- AV-023 iniciada17/09: revisão Kaggle solicitada + implementação G01.
+- Histórico AV-023 (concluída e auditada na AV-024): revisão Kaggle + G01.
   Kernel jvlegend/rsna-knee-g01-physical-adjacency ID134798342 v1 lançado;
   não duplicar. Fonte localg01_v2.py SHA986a3ffb… (buildv1 recusado >1MB,
   sem job criado). Protocolo commitb769ee4; transporte corrigido6183f46.
@@ -402,12 +412,12 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
-| V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | NOVA PRIORIDADE AV-023 — ainda não implementada/treinada; congelar subconjuntos e custos antes de avaliar |
+| V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | EM_EXECUCAO AV-024 —1.000treino/954grupos; kernel134854744 v1; aguarda auditoria,168testes/44subtestes |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
 | L04 / H-44 | Teacher atual versus consenso apenas nos casos discordantes, com abstenção se faltar evidência; regras ou LLM local já disponível | V01/V02; não repetir média irrestrita já negativa / alto | PENDENTE |
-| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | EM_EXECUCAO AV-023 — controle/quartis físicos/adjacentes, kernel134798342 v1; sem métrica nova ainda |
+| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | CONCLUÍDA/AUDITADA AV-024 — adjacentes0,624262/0,626116 vencem controle nas duas sementes; nova referência própria,sem AUC/LB |
 | G02 / H-45 | Cache 16 versus 32 fatias com mesma banda; medir fatias únicas/gaps e treinar cada receita compatível | G01; ramo que de fato usa cache 16 / alto | PENDENTE |
 | G03 / H-45 | Banda central versus ampla mantendo densidade física semelhante; depois ablação da densidade com banda fixa | G01; contagem pode mudar para preservar densidade / alto | PENDENTE |
 | G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | PENDENTE |
@@ -1008,3 +1018,23 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Próximo: recuperar e auditar G01; depois ampliar treino V03, antes de
   microtuning adicional. Rótulos fracos não validam acurácia clínica.
   Fontes, hashes, comandos e continuidade: docs/AV023_PESQUISA_E_GEOMETRIA_G01.md.
+
+### AV-024 — 18/09/2026 — geometria promovida e escala V03 iniciada
+
+- G01 COMPLETE e PASSED_G01_AUDIT. Adjacentes0,62426164/0,62611569
+  versus controle0,62607019/0,63189521; deltas−0,00180855/−0,00577952.
+  Média0,62518867 vs0,62898270. Quartis físicos pioram ambas sementes.
+  Regra prospectiva promove adjacentes como referência própria, não submissão.
+- Gap mediano3,5mm vs26,4mm;597,66s totais/549,01s pré-processamento.
+  Controle reproduzido, logits/checkpoints/BCE auditados. Zero arrays
+  adjacentes idênticos entre treino/dev por hash; duplicatas aproximadas
+  ou de paciente não excluídas por esse teste.
+- Novo protocolo549b33e:expandir para1.000treino(954grupos),701novos;
+  pool3.890elegíveis,455excluídos por grupos reservados e62por gold/grupo.
+  Professor/validação preservados; mais dados também aumenta passos.
+- Kernel134854744 v1 RUNNING,T4/offline/teto1.200s; quota antes do lançamento
+  2.745,679s. Build3ae46545…,773.265bytes.168testes+44subtestes passaram.
+  Último log extra_features2/701; ainda sem resultado de performance V03.
+- Fontes/manifesto/features/checkpoints privados no HD, código no GitHub;
+  sem nova submissão/alteração de finalistas. Retomada no cursor e
+  docs/AV024_ESCALA_TREINO_V03.md. Confirmar/auditar antes de novo treino.

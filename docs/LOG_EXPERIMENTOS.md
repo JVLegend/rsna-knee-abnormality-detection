@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-024 — 18/09/2026 — ganho G01 auditado e V03 escala1000
+
+[Protocolo, artefatos e retomada](AV024_ESCALA_TREINO_V03.md).
+G01 COMPLETE/PASSED_G01_AUDIT. Adjacentes0,62426164/0,62611569 vencem
+controle0,62607019/0,63189521; promovidos como referência própria conforme
+regra anterior. Média0,62518867vs0,62898270; não é melhora de leaderboard.
+V03 aumenta299→1.000treino/954grupos,701novos;455excluídos por IDs/grupos
+reservados e62por gold/grupo. Preserva professor/dev250/confirmation150.
+Protocolo/código549b33e.168testes+44subtestes passaram. Kernel134854744 v1
+RUNNING,build3ae46545…,T4/offline/teto1.200s. Último log extra_features2/701;
+sem resultado V03 ainda. Auditor implementado, aguarda outputs completos.
+Sem CSV ou novo envio; melhor público confirmado0,941 do ensemble preservado.
+
 ## AV-023 — 17/09/2026 — pesquisa Kaggle e G01 em execução
 
 [Fontes, protocolo e retomada](AV023_PESQUISA_E_GEOMETRIA_G01.md).

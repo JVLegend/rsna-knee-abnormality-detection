@@ -81,6 +81,16 @@ o ensemble público. A skill Obsidian mantém fontes e protocolo no vault.
 
 ## Estado
 
+**Encerramento18/09/2026:** kernel134798342 v1 COMPLETE e PASSED_G01_AUDIT.
+Adjacentes0,62426164/0,62611569 vencem controle0,62607019/0,63189521
+nas duas sementes; promovidos como referência própria conforme protocolo.
+Quartis físicos0,62624314/0,63235150 não melhoram o controle.
+597,66s total,549,01s pré-processamento; gap mediano3,5mm vs26,4mm.
+Confirmação não avaliada; nenhum score clínico/LB inferido.
+Auditoria em reports/avance_av023_g01/g01_audit_v1.json.
+Continuação: [V03/AV-024](AV024_ESCALA_TREINO_V03.md).
+O texto abaixo preserva o histórico do lançamento em17/09.
+
 Protocolo/código inicial commitb769ee4.160testes+44subtestes passaram.
 Buildlocalv1SHA cbe7ec84…(1.107.464bytes) recusado pela API:
 HTTP400, fonte precisa ter menos de1MB. Nenhum kernel/treino criado.
