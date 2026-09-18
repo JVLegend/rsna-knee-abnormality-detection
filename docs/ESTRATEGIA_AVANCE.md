@@ -4,11 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-024 (18/09): G01 auditado, adjacentes vencem nas duas sementes.
-Perda média0,628983→0,625189; nova referência própria, não score Kaggle.
-V03 implementado:1.000treino/954grupos,299originais+701novos;168testes/
-44subtestes passaram. Kernel134854744 v1 RUNNING, sem resultado V03 ainda.
-Não duplicar; recuperar/auditar a execução. Nenhuma nova submissão.
+Atualizado na AV-025 (18/09): V03 COMPLETE/PASSED_V03_AUDIT.
+Treino1.000 melhora as duas sementes; média0,625189→0,612147.
+Referência própria promovida para expanded, não é ganho medido no Kaggle.
+Próximo nesta rodada: diagnóstico R02 de plano ausente usando checkpoints
+congelados, sem treino, DICOM novo ou GPU. Nenhuma nova submissão.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -72,7 +72,27 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-024 iniciada18/09: G01 COMPLETE e PASSED_G01_AUDIT.
+- AV-025 iniciada18/09: V03 kernel134854744 v1 COMPLETE e auditoria
+  reports/avance_av024_v03/v03_audit_v1.json PASSED_V03_AUDIT.
+  Controle299=0,624261641/0,626115689; expanded1000=0,611192285/0,613102226
+  nas seeds2026/42. Épocas8/14; expanded promovido pela regra prévia.
+  Total962,71s, features916,98s; controle reproduzido, features antigas
+  idênticas e checkpoints/logits/BCE auditados. Confirmação150não avaliada.
+  Quota observada0,48499hGPU; nenhum novo job iniciado nesta rodada.
+  R02 diagnóstico PRÉ-DEFINIDO antes da avaliação de estresse: usar apenas
+  os dois melhores checkpoints expanded e dev250 congelados. Para cada
+  plano Sagittal/Coronal/Axial, retirar o slot da atenção (máscara correta)
+  e, separadamente, zerar sua feature mantendo-o presente (controle de
+  implementação inadequada; não representa ruído real de aquisição).
+  Reproduzir logits intactos primeiro. Registrar BCE/delta global e por alvo
+  para todos os cenários, sem selecionar novas épocas, heads ou labels.
+  Priorizar teste futuro de dropout de slots se qualquer plano ausente
+  causar deltaBCE>0,01 nas DUAS sementes. Limiar operacional, não teste de
+  significância. Não promover modelo com este diagnóstico nem abrir
+  confirmação; os casos completos com slot removido são estresse sintético,
+  não validação de pacientes com protocolo incompleto. Treino dropout e
+  ruído real continuam pendentes. Registrar relatório privado no HD.
+- Histórico AV-024 (concluída e auditada na AV-025): G01 auditado e V03 lançado.
   V03: kernel jvlegend/rsna-knee-v03-scale1000 ID134854744 v1 RUNNING.
   Fonte reports/avance_av024_v03/v03_v1.py SHA3ae46545…,773.265bytes;
   protocolo/código commit549b33e.168testes+44subtestes passaram.
@@ -412,7 +432,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
-| V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | EM_EXECUCAO AV-024 —1.000treino/954grupos; kernel134854744 v1; aguarda auditoria,168testes/44subtestes |
+| V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | CONCLUÍDA/AUDITADA AV-025 —1.000treino;0,611192/0,613102 vencem controle nas duas sementes; expanded promovido,sem AUC/LB |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -427,7 +447,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
 | R01 / robustez | Normalização por volume/série versus receita atual, com MONOCHROME1, rescale e paridade de intensidade verificados | V02; preservar contrato dos pesos públicos / alto | PENDENTE |
-| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | PENDENTE |
+| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO EM ANDAMENTO AV-025 — checkpoints V03; planos ausentes/zero-feature; treino dropout e ruído real pendentes |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
 | E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
