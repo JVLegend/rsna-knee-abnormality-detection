@@ -72,6 +72,24 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-023 iniciada17/09: revisão Kaggle solicitada + implementação G01.
+  Novos códigos consultados: Geometry to6Slots (Xiaolei Lian), The bee's knees
+  (Prvsiyan, revisão17/09) e Labeling Deathmatch (Joshua Ziel, revisão17/09).
+  Fontes/código preservados em reports/avance_av023_sources/. Resultados
+  negativos recentes desaconselham prometer salto com blend/intensidade/LLM.
+  Teste prospectivo: controle V02 congelado; quartis em ordem física;
+  adjacentes físicos centro±1. Comparar ordem física vs controle, depois
+  adjacência vs quartis físicos. Mesmos3planos/1view por plano/3canais/224px,
+  mesma normalização por fatia, encoder congelado, shared,teacher299/250,
+  seeds2026/42,20épocas,batch4,AdamW0,001/0,0001. Confirmação150fechada.
+  Não mudar crop, contraste, número de slots ou labels junto com geometria.
+  Gate geométrico: todos headers finitos/consistentes, projeções distintas;
+  não preencher metadados ausentes silenciosamente. Verificar pixels V02
+  dos mesmos arquivos por hash; não sobrescrever o cache original.
+  Reproduzir controle e auditar logits/BCE. Promover apenas melhora >2e−6
+  nas duas sementes versus V02; registrar também delta pareado entre braços.
+  Orçamento1jobT4/offline/1.800s, sem CSV ou submissão automática.
+  Protocolo antes de avaliar: docs/AV023_PESQUISA_E_GEOMETRIA_G01.md.
 - AV-022 concluída (17/09): PASSED_M01_AUDIT; protocolo prévio commit538a0e9.
   Controle shared reproduz AV-021. SoftBCE seeds2026/42:
   shared0,626070/0,631895;mean0,627338/0,624486;target0,633160/0,624731.
