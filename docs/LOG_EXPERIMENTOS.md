@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-022 — 17/09/2026 — M01 pooling, sem promoção
+
+[Protocolo e resultados](AV022_ABLACAO_POOLING_M01.md).
+Protocolo commit538a0e9 antes de treinar3cabeças×2seeds com features V02
+congeladas. Kernel134795832 v1 COMPLETE; PASSED_M01_AUDIT, shared reproduzido.
+SoftBCE2026/42:shared0,62607019/0,63189521;mean0,62733778/0,62448577;
+target0,63315980/0,62473064. Mean tem melhor média0,62591178, mas nenhuma
+alternativa melhora ambas sementes; regra prévia mantém shared como referência.
+Mean em reserva; sem alegar ganho clínico/LB. 146testes+44subtestes passaram.
+Replay NumPy dos12checkpoints até1,21e−6;36,02s sem imports,76,74MiB
+pico alocado. Nenhum DICOM reextraído/confirmation avaliada/novo envio.
+Melhor público0,941 mantido. Próximo G01, geometria sem mudar cabeça/teacher.
+
 ## AV-021 — 17/09/2026 — baseline V02 e protocolo prospectivo
 
 [Protocolo e execução](AV021_BASELINE_PROPRIO_V02.md).

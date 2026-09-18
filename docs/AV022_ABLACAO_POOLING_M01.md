@@ -52,6 +52,65 @@ gates de features/proveniência, seleção prospectiva). Build privado
 reports/avance_av022_m01/m01_v1.py SHA
 `5a93e1ebc90df370514b74a9c5225166f9ad3baf5dc6d6af3fbcd845bbb62a6c`.
 Quota consultada antes do lançamento:5,2438horas GPU disponíveis.
-Nenhum resultado M01 observado ainda; execução remota pendente.
+Suíte completa:146testes+44subtestes passaram. Código/protocolo commit538a0e9
+antes de avaliar. Kernel `jvlegend/rsna-knee-m01-pooling-ablation`,v1
+ID134795832 COMPLETE com anexo privado aceito. Auditoria PASSED_M01_AUDIT.
 O uso da skill Obsidian mantém o protocolo/cursor canônico no vault antes
 do espelho operacional e dos resultados.
+
+## Resultados auditados
+
+SoftBCE nos250estudos dev, menor melhor; prior de treino0,657078403.
+Entre parênteses, época selecionada. Não é AUC nem score de competição.
+
+| Cabeça | Seed2026 | Seed42 | Média das sementes |
+|---|---:|---:|---:|
+| Shared (controle) | 0,62607019 (10) | 0,63189521 (6) | 0,62898270 |
+| Mean (média simples) | 0,62733778 (7) | 0,62448577 (7) | 0,62591178 |
+| Target (atenção por alvo) | 0,63315980 (6) | 0,62473064 (9) | 0,62894522 |
+
+Delta versus shared por semente2026/42:
+mean +0,00126759/−0,00740944;target +0,00708961/−0,00716457.
+Mean melhora a média cerca de0,49%, mas piora2026. Nenhuma alternativa
+atinge a regra prospectiva de melhorar AMBAS sementes por >2e−6.
+Decisão: manter shared como referência; mean em reserva, não descartar
+o sinal favorável nem promovê-lo sem replicação. Não ajustar pesos por alvo.
+
+Última época20:shared0,64938284/0,66013784;
+mean0,64053301/0,65124329;target0,65783177/0,66395749.
+Todos pioram comparados à melhor época, sem justificar estender treino.
+
+Controle shared reproduziu as mesmas épocas, perdas e logits da AV-021.
+Auditor recalculou logits melhor/último de todos os12checkpoints em NumPy,
+BCE/perdas por alvo, identidade de estudos, hashes e estado do otimizador.
+Maior diferença numérica1,20515e−6, abaixo da tolerância fixada.
+Tempo36,0247s fora imports; pico alocado76,74MiB, não reserva total da GPU.
+Sem reextração de imagens. HardwareT4x2, apenas cuda:0 utilizado.
+
+Dados e resultados completos permanecem privados:
+
+- reports/avance_av022_m01_v1/:recibo,6NPZs,12checkpoints e log.
+- reports/avance_av022_m01/m01_audit_v1.json:auditoria independente e
+  métricas por alvo, épocas, regra de seleção e limitações.
+- reports/avance_av022_m01/m01_v1.py:fonte congelada enviada ao Kaggle.
+
+Nenhuma nova submissão; melhor público conhecido0,941 preservado.
+Não abrir confirmação nem alegar ganho clínico com rótulos do professor.
+Próximo G01: comparar cortes adjacentes com espaçados, mantendo centros,
+views, encoder e shared. Registrar geometria antes de extrair novo cache;
+preservar V02 original e não mudar teacher/cabeça junto com os cortes.
+
+## Reproduzir auditoria
+
+Com dependências NumPy/Pandas/PyTorch e PYTHONPATH=src:.:
+
+```sh
+python -m scripts.assess_m01_ablation \
+  --directory reports/avance_av022_m01_v1 \
+  --build reports/avance_av022_m01/m01_v1.py \
+  --baseline reports/avance_av021_baseline_v1 \
+  --output reports/avance_av022_m01/m01_audit_recheck.json
+```
+
+O auditor recusa sobrescrever saída. Conferir resultado existente antes
+de repetir qualquer treino; este kernel não produz CSV elegível.

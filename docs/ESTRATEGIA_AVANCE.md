@@ -4,10 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-021 (17/09): baseline próprio implementado e protocolo fixado.
-141testes/44subtestes passaram; cache549estudos/1.647séries aprovado.
-Baseline134788472 v1 COMPLETE e auditado:softBCE dev0,62607/0,63190 contra
-prior0,65708. Referência própria aceita para ablações; sem nova submissão.
+Atualizado na AV-022 (17/09): M01 pooling treinado e auditado, seis combinações.
+146testes/44subtestes passaram; controle AV-021 reproduzido.
+Média simples teve menor softBCE média0,625912, mas não venceu nas duas
+sementes; atenção por alvo também inconsistente. Referência shared mantida.
+Próximo G01: cortes adjacentes versus espaçados; sem nova submissão.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -71,21 +72,23 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-022 iniciada (17/09), protocolo M01 fixado antes dos resultados.
-  Reutilizar features549x3x384 auditadas da AV-021, sem reextrair DICOM.
-  Comparar mean pooling+linear, atenção compartilhada (controle de reprodução)
-  e atenção específica por alvo384→64→12 com classificador por alvo.
-  Mesmos299treino/250dev/teacher/seeds2026,42/20épocas/batch4/AdamW.
-  Seleção menor softBCE dev, primeira época em empate; sem tuning pelo LB.
-  Controle compartilhado deve reproduzir logits AV-021 (atol1e−4,rtol1e−5),
-  perdas até2e−6 e mesmas épocas. Falha impede conclusão comparativa.
-  Decisão prospectiva: só promover nova cabeça a referência se melhorar
-  atenção compartilhada nas duas sementes por >2e−6; se ambas melhorarem,
-  escolher menor média das duas sementes, empate favorece mean pooling.
-  Diferenças incluem capacidade/inicialização; não isolam só mecanismo de atenção.
-  Três planos sempre presentes; máscara implementada, sem simular plano ausente
-  nem introduzir posição física nova. Confirmação150fechada; sem submissão.
-  Protocolo detalhado: docs/AV022_ABLACAO_POOLING_M01.md no HD externo.
+- AV-022 concluída (17/09): PASSED_M01_AUDIT; protocolo prévio commit538a0e9.
+  Controle shared reproduz AV-021. SoftBCE seeds2026/42:
+  shared0,626070/0,631895;mean0,627338/0,624486;target0,633160/0,624731.
+  Mean tem menor média0,625912, mas ambas alternativas pioram seed2026.
+  Critério pré-registrado não atingido; manter shared, mean em reserva.
+  Não é evidência de ganho clínico/LB nem prova de inutilidade da atenção.
+  Kernel jvlegend/rsna-knee-m01-pooling-ablation ID134795832 v1 COMPLETE;
+  seis treinos em36,02s sem imports,76,74MiB pico alocado, zero DICOM reextraído.
+  146testes+44subtestes passaram; replay NumPy até1,21e−6.
+  Outputs reports/avance_av022_m01_v1/; auditoria
+  reports/avance_av022_m01/m01_audit_v1.json; buildm01_v1.py SHA5a93e1eb… .
+  Não repetir nem submeter este kernel. Sem CSV/avaliação confirmation150.
+  Próximo G01: registrar adjacentes versus espaçados com mesmos centros,
+  número de views, crop, encoder e referência shared. Medir índices/gaps/
+  orientação antes; reconstruir cache alternativo separado, sem sobrescrever
+  V02. Não misturar mudança de geometria com cabeça/teacher novos.
+  Protocolo/resultados: docs/AV022_ABLACAO_POOLING_M01.md no HD externo.
 - AV-021 concluída: V02 próprio treinado e PASSED_V02_BASELINE_AUDIT.
   Prior softBCE0,65707840; seed2026época10=0,62607019;
   seed42época6=0,63189521. Ambas melhoram; época20 piora dev. Baker's piora
@@ -363,7 +366,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | G03 / H-45 | Banda central versus ampla mantendo densidade física semelhante; depois ablação da densidade com banda fixa | G01; contagem pode mudar para preservar densidade / alto | PENDENTE |
 | G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | PENDENTE |
 | G05 / H-45 | Global 140 mm versus crop anatômico menor de 100–110 mm, resolução fixa; avaliar periferia e estruturas finas | V02; definir centro reproduzível / alto | PENDENTE |
-| M01 / H-46 | Média de grupos versus atenção aprendida por alvo, preservando posição física e máscara de presença | V02; pesos treinados para cada cabeça / alto | PENDENTE |
+| M01 / H-46 | Média de grupos versus atenção aprendida por alvo, preservando posição física e máscara de presença | V02; pesos treinados para cada cabeça / alto | TESTADA AV-022 no V02 — mean/shared/target,2sementes; sem ganho consistente, shared mantida; coordenadas físicas novas fora desta rodada |
 | M02 / H-46 | Especialista público Renta somente em Medial Meniscus, com peso fixado antes da avaliação e 11 colunas preservadas | A00; fonte/receita própria auditada / médio | PENDENTE |
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
@@ -919,3 +922,22 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   vs atenção por alvo, mesmas features); G01 em seguida. Nenhum score clínico
   ou LB inferido de softBCE. Melhor público0,941 e seleção final intactos.
   Evidências/retomada: docs/AV021_BASELINE_PROPRIO_V02.md.
+
+### AV-022 — 17/09/2026 — ablação M01 concluída sem promoção
+
+- Protocolo commit538a0e9 antes dos resultados; features549x3x384/IDs/labels
+  congelados,299treino/250dev,3arquiteturas×2seeds×20épocas. Sem reextrair
+  DICOM, consultar confirmação ou mudar geometria/otimizador/teacher.
+- Kernel134795832 v1 COMPLETE e PASSED_M01_AUDIT. Controle shared reproduz
+  AV-021; replay NumPy até1,21e−6, checkpoints/seleção/BCE/IDs verificados.
+- SoftBCE2026/42:shared0,62607019/0,63189521;
+  mean0,62733778/0,62448577;target0,63315980/0,62473064.
+  Médias entre sementes0,62898270/0,62591178/0,62894522 respectivamente.
+  Mean melhora a média mas não ambas sementes; target também inconsistente.
+- Regra anterior aos resultados mantém shared; mean em reserva como controle
+  simples promissor, não ganho confirmado. Diferenças incluem capacidade e
+  inicialização; dev seleciona épocas, não é teste final. Nenhuma AUC/LB inferida.
+- 146testes+44subtestes;36,02s sem imports,76,74MiB pico alocado.
+  Código GitHub, artefatos privados no HD; melhor público0,941 inalterado,
+  nenhuma submissão/final selection alterada. Próximo G01, geometria isolada.
+  Evidências: docs/AV022_ABLACAO_POOLING_M01.md.
