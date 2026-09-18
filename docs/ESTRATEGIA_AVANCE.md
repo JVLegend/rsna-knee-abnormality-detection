@@ -72,6 +72,21 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-024 iniciada18/09: G01 COMPLETE e PASSED_G01_AUDIT.
+  Adjacentes0,62426164/0,62611569 vencem controle0,62607019/0,63189521
+  nas duas sementes; nova referência própria=physical_adjacent. Quartis
+  físicos0,62624314/0,63235150 não melhoram controle. Não é ganho de LB.
+  Estratégia V03: ampliar treino299→aproximadamente1.000, grupos inteiros,
+  mantendo teacher/dev250/confirmation150/gold excluídos; sem novas mudanças
+  de encoder/cabeça/normalização. Seleção por hash fixo20260918, não métricas.
+  Controle299 e expandido usam mesmas features adjacentes nos dados antigos.
+  Seeds2026/42,20épocas,batch4,AdamW0,001/0,0001; menor softBCE dev,
+  primeira época em empate. Promoção só se melhor nas duas sementes >2e−6.
+  Mais dados também implica mais passos; não alegar efeito puro de tamanho.
+  Reusar features G01, extrair só novos estudos; checar duplicatas de pixels
+  contra dev, sem ler pixels de confirmação. Sem submissão automática.
+  Quota observada0,78639h; teto1.200s T4, abortar antes do limite com checkpoints.
+  Protocolo completo: docs/AV024_ESCALA_TREINO_V03.md. Ainda sem resultado V03.
 - AV-023 iniciada17/09: revisão Kaggle solicitada + implementação G01.
   Kernel jvlegend/rsna-knee-g01-physical-adjacency ID134798342 v1 lançado;
   não duplicar. Fonte localg01_v2.py SHA986a3ffb… (buildv1 recusado >1MB,
