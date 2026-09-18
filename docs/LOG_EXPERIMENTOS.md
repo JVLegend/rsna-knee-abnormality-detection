@@ -2,6 +2,20 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-023 — 17/09/2026 — pesquisa Kaggle e G01 em execução
+
+[Fontes, protocolo e retomada](AV023_PESQUISA_E_GEOMETRIA_G01.md).
+Revisados25notebooks por atividade recente e quatro fontes baixadas; relatos
+negativos de ensemble/intensidade/LLMs não sustentam atalho garantido.
+Implementados ordem física estrita, quartis físicos e adjacentes, com controle
+V02 e auditor NumPy.162testes+44subtestes passaram. Protocolo b769ee4.
+Buildlocalv1 recusado >1MB; contagens compactadas6183f46 sem mudar receita.
+Buildlocalv2SHA986a3ffb…, kernel134798342 v1 RUNNING,T4/offline/1.800s.
+Último log:100/549estudos passaram geometria/pixels; sem resultado de treino.
+Não duplicar; outputs previstos reports/avance_av023_g01_v1/. V03 escala de
+treino priorizada após auditoria G01, ainda não implementada. Nenhum novo
+envio; score confirmado0,941 permanece do ensemble anterior.
+
 ## AV-022 — 17/09/2026 — M01 pooling, sem promoção
 
 [Protocolo e resultados](AV022_ABLACAO_POOLING_M01.md).

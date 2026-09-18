@@ -88,6 +88,50 @@ Correção de transporte: contagens em vetor alinhado ao manifesto, eliminando
 UIDs repetidos; mesmo experimento/dados, fonte legível sem código comprimido.
 Builder passa a bloquear >1.000.000bytes. Resultados ainda não observados.
 
+Correção commit6183f46. Buildlocalv2,888.413bytes,SHA256
+986a3ffbb16bc3cb489e320496cb93346703e32e616ff70e32c39883dc23fbc3.
+Kaggle kernel `jvlegend/rsna-knee-g01-physical-adjacency`,ID134798342,
+versão1,RUNNING. Anexos: competição, DINOv2-S oficial e outputs privados
+da baselineAV-021. Internetoff,T4x2,teto1.800s; quota anterior4,667horas.
+Último log consultado:100/549estudos aprovados,136,52s de log. Não estimar
+tempo total só com esse trecho; nenhuma perda G01 observada ainda.
+Suíte final:162testes+44subtestes passaram. Código/protocolo no GitHub.
+
+Implementação:
+
+- src/rsna_knee_baseline/physical_triplets.py:projeção/consistência/índices/gaps.
+- scripts/prepare_g01_ablation.py:manifesto congelado e limite de fonte.
+- scripts/g01_ablation_runtime.py:geometria de todas séries antes do treino,
+  reprodução de hashes V02, features e três braços×duas sementes.
+- scripts/assess_g01_ablation.py:replay NumPy, identidade, seleção,
+  máscara de escopo, comparação e decisão pré-especificada.
+
+## Retomada
+
+Não lançar duplicata. Consultar status do kernel; em COMPLETE baixar versão1
+para reports/avance_av023_g01_v1/. Em ERROR baixar inclusive logs e eventual
+g01_failure.json; não afrouxar o gate para forçar ganho.
+
+Auditoria, com dependências NumPy/Pandas/PyTorch e PYTHONPATH=src:.:
+
+```sh
+python -m scripts.assess_g01_ablation \
+  --directory reports/avance_av023_g01_v1 \
+  --build reports/avance_av023_g01/g01_v2.py \
+  --baseline reports/avance_av021_baseline_v1 \
+  --output reports/avance_av023_g01/g01_audit_v1.json
+```
+
+Kernel não é submissão, mesmo se terminar com sucesso. Promoção exige
+auditoria dos três braços e das duas sementes; melhor confirmado0,941
+continua pertencendo ao ensemble público anterior.
+
+Após auditoria: nova prioridade V03, aumentar número de estudos de treino
+sem tocar nos250dev/150confirmação nem seus grupos/gold. Primeiro inventariar
+labels e dados disponíveis, congelar seleção e custo. Depois fine-tuning
+parcial em experiência separada. V03 ainda não implementada nesta rodada.
+Manifestos maiores devem ir em anexo privado, não inflar o código >1MB.
+
 Hashes das fontes baixadas (SHA256; não são nossos modelos):
 
 - bees:08ad918d5d470abe8b37fa20de738cae41aebbd7b48956b53e6f70d4bce64407

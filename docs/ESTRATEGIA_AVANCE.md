@@ -4,11 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-022 (17/09): M01 pooling treinado e auditado, seis combinações.
-146testes/44subtestes passaram; controle AV-021 reproduzido.
-Média simples teve menor softBCE média0,625912, mas não venceu nas duas
-sementes; atenção por alvo também inconsistente. Referência shared mantida.
-Próximo G01: cortes adjacentes versus espaçados; sem nova submissão.
+Atualizado na AV-023 (17/09): nova pesquisa Kaggle + G01 implementado.
+162testes/44subtestes passaram; kernel134798342 v1 RUNNING.
+Último log verificado:100/549estudos com geometria/pixels aprovados; ainda
+sem resultado de treino. Conferir execução, baixar e auditar antes de repetir.
+Depois G01, priorizar escala do treino V03; nenhuma nova submissão.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -73,6 +73,18 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 ## Cursor de retomada
 
 - AV-023 iniciada17/09: revisão Kaggle solicitada + implementação G01.
+  Kernel jvlegend/rsna-knee-g01-physical-adjacency ID134798342 v1 lançado;
+  não duplicar. Fonte localg01_v2.py SHA986a3ffb… (buildv1 recusado >1MB,
+  sem job criado). Protocolo commitb769ee4; transporte corrigido6183f46.
+  Retomar outputs em reports/avance_av023_g01_v1/ e auditoria própria G01.
+  Última consulta RUNNING,100/549estudos de geometria/pixels em136,52s de log;
+  não é tempo total/projeção garantida.162testes+44subtestes passaram.
+  Ao COMPLETE: baixar versão1, executar scripts.assess_g01_ablation com
+  --build reports/avance_av023_g01/g01_v2.py e baselineAV-021.
+  Se ERROR, baixar logs/g01_failure.json antes de qualquer correção.
+  Sem resultado de performance ainda. Após auditoria, priorizar V03:
+  ampliar treino mantendo dev/confirmation/grupos congelados, antes de
+  nova rodada de pequenos ajustes de pooling. Não abrir confirmação.
   Novos códigos consultados: Geometry to6Slots (Xiaolei Lian), The bee's knees
   (Prvsiyan, revisão17/09) e Labeling Deathmatch (Joshua Ziel, revisão17/09).
   Fontes/código preservados em reports/avance_av023_sources/. Resultados
@@ -375,11 +387,12 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | A03 / H-43B | Se o stack integral bloquear, testar Native384Dense com sua receita nativa como alternativa ao MaxSpan H-36 | A00; pesos disponíveis e receita compatível / médio | PENDENTE |
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
+| V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | NOVA PRIORIDADE AV-023 — ainda não implementada/treinada; congelar subconjuntos e custos antes de avaliar |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
 | L04 / H-44 | Teacher atual versus consenso apenas nos casos discordantes, com abstenção se faltar evidência; regras ou LLM local já disponível | V01/V02; não repetir média irrestrita já negativa / alto | PENDENTE |
-| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | DIAGNÓSTICO CACHE V02 — AV-018; quartis com gaps2–80; ablação visual e outros loaders pendentes |
+| G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | EM_EXECUCAO AV-023 — controle/quartis físicos/adjacentes, kernel134798342 v1; sem métrica nova ainda |
 | G02 / H-45 | Cache 16 versus 32 fatias com mesma banda; medir fatias únicas/gaps e treinar cada receita compatível | G01; ramo que de fato usa cache 16 / alto | PENDENTE |
 | G03 / H-45 | Banda central versus ampla mantendo densidade física semelhante; depois ablação da densidade com banda fixa | G01; contagem pode mudar para preservar densidade / alto | PENDENTE |
 | G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | PENDENTE |
@@ -959,3 +972,24 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Código GitHub, artefatos privados no HD; melhor público0,941 inalterado,
   nenhuma submissão/final selection alterada. Próximo G01, geometria isolada.
   Evidências: docs/AV022_ABLACAO_POOLING_M01.md.
+
+### AV-023 — 17/09/2026 — pesquisa atualizada e G01 em execução
+
+- API oficial consultada por execução recente (25notebooks); quatro fontes
+  baixadas/inspecionadas como texto. The bee's knees e Head and shoulders,
+  atualizados17/09, explicitam origem herdada e cinco variações sem superar
+  0,940; não atribuir seus resultados ao nosso modelo. Labeling Deathmatch
+  também não sustenta ganho claro com prompts/LLMs mais caros.
+- Geometry to6Slots e discussões735826/735154 orientaram implementação
+  própria de ordem física estrita e amostragem adjacente pareada. Não copiar
+  simultaneamente crop, janela por volume, slots ou thresholds do EDA.
+- Protocolo b769ee4 antes de avaliar; buildv1 recusado >1MB, sem treino.
+  Compactação de metadados6183f46 preserva experimento e fonte legível.
+  Buildlocalv2 SHA986a3ffb…(888.413bytes), kernel134798342 v1 RUNNING,
+ 100/549estudos aprovados no último log consultado; nenhuma métrica nova.
+- 162testes+44subtestes passaram; auditor independente de geometria,
+  features/checkpoints/logits/BCE implementado. Confirmação150fechada,
+  professor/cacheoriginais preservados; sem CSV ou nova submissão.
+- Próximo: recuperar e auditar G01; depois ampliar treino V03, antes de
+  microtuning adicional. Rótulos fracos não validam acurácia clínica.
+  Fontes, hashes, comandos e continuidade: docs/AV023_PESQUISA_E_GEOMETRIA_G01.md.
