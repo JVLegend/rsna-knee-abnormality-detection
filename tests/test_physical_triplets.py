@@ -48,3 +48,26 @@ def test_oblique_projection_not_patient_z():
     p=physical_plan(r,['0.dcm']*3)
     np.testing.assert_allclose(p['normal'],[1,0,0])
     assert p['ordered_files']==['0.dcm','1.dcm','2.dcm']
+
+
+def test_build_limit_and_frozen_counts():
+    from scripts.prepare_g01_ablation import assemble, literal
+    source=assemble();spec=literal(source,'G01')
+    assert len(source.encode())<1_000_000
+    assert len(spec['series_counts'])==1647
+    assert all(isinstance(n,int) and n>0 for n in spec['series_counts'])
+    assert spec['confirmation_evaluated'] is False
+    assert spec['submission_eligible'] is False
+    assert 'submission.csv' not in source
+
+
+def test_decision_requires_both_seeds():
+    from scripts.assess_g01_ablation import decide
+    rows=[{'arm':a,'seed':s,'mean_soft_bce':.6} for a in
+          ['control','physical_quartiles','physical_adjacent'] for s in [2026,42]]
+    assert decide(rows)=='control'
+    rows[4]['mean_soft_bce']=.5
+    assert decide(rows)=='control'
+    rows[5]['mean_soft_bce']=.55
+    assert decide(rows)=='physical_adjacent'
+    with pytest.raises(ValueError):decide(rows[:-1])

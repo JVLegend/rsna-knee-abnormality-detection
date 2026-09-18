@@ -49,7 +49,7 @@ def assess(directory,build,baseline,output):
         if (g['study'],g['series'],g['plane'],g['original_files'],g['original_pixel_sha256'])!=(
             row['StudyInstanceUID'],s['series_uid'],s['plane'],s['selected_files'],s['image_sha256']):
             raise ValueError('Geometry identity/original pixel drift')
-        n=spec['series_counts'][g['study']+'/'+g['series']]
+        n=spec['series_counts'][i]
         distances=np.asarray(g['positions_mm']);names=g['ordered_files']
         if (g['n_slices']!=n or len(names)!=n or len(set(names))!=n or distances.shape!=(n,)
             or not np.isfinite(distances).all() or (n>1 and np.min(np.diff(distances))<=1e-4)):

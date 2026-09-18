@@ -41,10 +41,10 @@ def main():
     # Hold <0.5 GiB uint8 images. No model evaluation until every geometry/pixel gate passes.
     for study_index,study in enumerate(rows):
         guard();study_images={arm:[] for arm in images}
-        for series in study['series']:
+        for series_index,series in enumerate(study['series']):
             folder=root/'train_series'/study['StudyInstanceUID']/series['series_uid']
             files=sorted(folder.glob('*.dcm'))
-            if len(files)!=G01['series_counts'][study['StudyInstanceUID']+'/'+series['series_uid']]:
+            if len(files)!=G01['series_counts'][study_index*3+series_index]:
                 raise ValueError('Series file count drift')
             headers=[(p.name,pydicom.dcmread(p,stop_before_pixels=True,
                        specific_tags=['ImageOrientationPatient','ImagePositionPatient'])) for p in files]

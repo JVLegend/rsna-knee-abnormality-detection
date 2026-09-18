@@ -81,4 +81,16 @@ o ensemble público. A skill Obsidian mantém fontes e protocolo no vault.
 
 ## Estado
 
-Implementação iniciada; resultados ainda não observados.
+Protocolo/código inicial commitb769ee4.160testes+44subtestes passaram.
+Buildlocalv1SHA cbe7ec84…(1.107.464bytes) recusado pela API:
+HTTP400, fonte precisa ter menos de1MB. Nenhum kernel/treino criado.
+Correção de transporte: contagens em vetor alinhado ao manifesto, eliminando
+UIDs repetidos; mesmo experimento/dados, fonte legível sem código comprimido.
+Builder passa a bloquear >1.000.000bytes. Resultados ainda não observados.
+
+Hashes das fontes baixadas (SHA256; não são nossos modelos):
+
+- bees:08ad918d5d470abe8b37fa20de738cae41aebbd7b48956b53e6f70d4bce64407
+- heads:7adebc548a11281954b61700ee5106ed1750c7c7b373d962efe9a5e0b0937d5c
+- geometry:296df1d993d85ae9bc49d39fe9dce4e37c668b1826aab6a9de65e69d2d528448
+- labels:22f6cdd6fef1f81d2c29fae77ad5d2eb417efd9805a8ede04dac78207d15b345

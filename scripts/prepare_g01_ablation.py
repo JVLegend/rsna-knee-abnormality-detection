@@ -18,8 +18,10 @@ def assemble():
     if digest(cache) != '129389226d6a270ca86690bfca509c7da4a8c31cca1b5d05896378da55112211':
         raise ValueError('Audited cache manifest changed')
     records = json.loads(cache.read_text())['splits']
-    counts = {r['StudyInstanceUID']+'/'+s['series_uid']: s['slices_recorded']
+    lookup = {r['StudyInstanceUID']+'/'+s['series_uid']: s['slices_recorded']
               for rows in records.values() for r in rows for s in r['series']}
+    counts = [lookup[r['StudyInstanceUID']+'/'+s['series_uid']]
+              for split in ['train','development'] for r in payload['splits'][split] for s in r['series']]
     geometry = Path('src/rsna_knee_baseline/physical_triplets.py').read_text()
     runtime = Path('scripts/g01_ablation_runtime.py').read_text()
     spec = {'name': 'G01_physical_adjacency_v1',
@@ -48,6 +50,8 @@ from torch import nn
               + '\nCACHE_SOURCE = '+repr(literal(original, 'CACHE_SOURCE'))+'\n'
               + '\n\n'.join(selected)+'\n'+geometry+'\n'+runtime)
     ast.parse(source)
+    if len(source.encode()) >= 1_000_000:
+        raise ValueError('Kaggle source exceeds conservative 1 MB limit')
     return source
 
 
