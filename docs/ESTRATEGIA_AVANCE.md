@@ -71,6 +71,21 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-022 iniciada (17/09), protocolo M01 fixado antes dos resultados.
+  Reutilizar features549x3x384 auditadas da AV-021, sem reextrair DICOM.
+  Comparar mean pooling+linear, atenção compartilhada (controle de reprodução)
+  e atenção específica por alvo384→64→12 com classificador por alvo.
+  Mesmos299treino/250dev/teacher/seeds2026,42/20épocas/batch4/AdamW.
+  Seleção menor softBCE dev, primeira época em empate; sem tuning pelo LB.
+  Controle compartilhado deve reproduzir logits AV-021 (atol1e−4,rtol1e−5),
+  perdas até2e−6 e mesmas épocas. Falha impede conclusão comparativa.
+  Decisão prospectiva: só promover nova cabeça a referência se melhorar
+  atenção compartilhada nas duas sementes por >2e−6; se ambas melhorarem,
+  escolher menor média das duas sementes, empate favorece mean pooling.
+  Diferenças incluem capacidade/inicialização; não isolam só mecanismo de atenção.
+  Três planos sempre presentes; máscara implementada, sem simular plano ausente
+  nem introduzir posição física nova. Confirmação150fechada; sem submissão.
+  Protocolo detalhado: docs/AV022_ABLACAO_POOLING_M01.md no HD externo.
 - AV-021 concluída: V02 próprio treinado e PASSED_V02_BASELINE_AUDIT.
   Prior softBCE0,65707840; seed2026época10=0,62607019;
   seed42época6=0,63189521. Ambas melhoram; época20 piora dev. Baker's piora
