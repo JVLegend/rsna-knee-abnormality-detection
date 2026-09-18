@@ -2,6 +2,27 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-025 — 18/09/2026 — escala aprovada e diagnóstico de robustez
+
+[Auditoria, estresse e próximo ensaio](AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md).
+V03 COMPLETE/PASSED_V03_AUDIT: treino1000=0,611192285/0,613102226 versus
+controle299=0,624261641/0,626115689 nas seeds2026/42. Média0,612147256
+versus0,625188665; expanded promovido. Épocas8/14. Fracture piora ambas;
+sem seleção por alvo. Features antigas idênticas, controle reproduzido;
+checkpoints/logits/BCE auditados.962,71s totais/916,98s features.
+Protocolo R02 commit207544e; falha de esquema antes de métricas corrigida
+fce369b (metadados de dev herdados da geometria G01 por hash). Diagnóstico
+CPU concluído sem treino: deltaBCE semaxial+0,038457/+0,047711;
+semsagital+0,021992/+0,027067; semcoronal+0,016185/+0,006770.
+Axial/sagital ultrapassam0,01 nas duas: priorizar R02b dropout25%uniforme,
+receita/critério registrados; ainda não implementado/lançado. Zerar vetor
+com slot presente é controle distinto, não correção nem ruído real.
+Quota observada29,10minGPU, compartilhada; nenhum novo job/CSV/envio.
+Confirmação150fechada. Melhor público confirmado0,941 permanece do ensemble;
+estes resultados próprios medem acordo com labels fracos, não AUC clínica/LB.
+Verificação final:181testes+44subtestes passaram; vault/espelho sincronizados,
+outputs/features/checkpoints privados e ignorados pelo Git no HD externo.
+
 ## AV-024 — 18/09/2026 — ganho G01 auditado e V03 escala1000
 
 [Protocolo, artefatos e retomada](AV024_ESCALA_TREINO_V03.md).

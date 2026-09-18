@@ -63,6 +63,12 @@ não alterar validação nem excluir estudos problemáticos silenciosamente.
 
 ## Estado
 
+Desfecho auditado na AV-025 (18/09): kernel134854744 v1 COMPLETE,
+PASSED_V03_AUDIT. Expanded1000=0,611192285/0,613102226 versus
+controle299=0,624261641/0,626115689; promovido nas duas sementes pela regra
+prévia. Sem submissão. Detalhes em [AV-025](AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md).
+Os parágrafos a seguir preservam o estado histórico do lançamento AV-024.
+
 G01 auditado e adjacentes promovidos. V03 implementado;168testes+44subtestes
 passaram. Código/protocolo commit549b33e antes de observar resultado V03.
 Manifesto congelado:
@@ -84,7 +90,8 @@ disso. Nenhuma perda V03 observada ainda, nenhuma nova submissão.
 
 Não duplicar execução. Consultar status e baixar versão1 em
 reports/avance_av024_v03_v1/ quando COMPLETE (ou logs em ERROR).
-Auditor independente implementado, mas ainda não executado sobre saída V03:
+Auditor abaixo executado e aprovado na AV-025. Relatório já existe; não
+sobrescrevê-lo. Comando preservado para rastreabilidade da auditoria:
 
 ```sh
 python -m scripts.assess_v03_scale \

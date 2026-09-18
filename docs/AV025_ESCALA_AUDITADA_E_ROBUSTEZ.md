@@ -61,9 +61,9 @@ python -m scripts.diagnose_r02_slots \
   --output reports/avance_av025_r02/diagnostic_v1.json
 ```
 
-## Estado antes de avaliar
+## Histórico de implementação
 
-V03 promovido. R02 implementado, diagnóstico real ainda não executado.
+V03 promovido. R02 registrado antes de executar o diagnóstico real.
 Protocolo207544e. Primeira tentativa parou antes de qualquer métrica de
 estresse: desenvolvimento V03 não contém séries, pois herda features G01.
 Correção: exigir geometria G01 original por hash e validar todos IDs/planos
@@ -72,3 +72,55 @@ Sem alterar dados, modelo, regra de decisão ou relaxar a verificação.
 Dropout de slots e ruído de aquisição ainda não testados. Estresse sintético
 em exames completos não demonstra qualidade em pacientes com protocolo
 incompleto. Nenhum CSV/novo envio; melhor público confirmado0,941 preservado.
+
+## Resultado R02 — concluído
+
+Protocolo207544e, correção de esquema fce369b, ambos antes das métricas.
+reports/avance_av025_r02/diagnostic_v1.json:
+COMPLETE_R02_SYNTHETIC_DIAGNOSTIC_NOT_TRAINING. Maior delta do replay
+intacto9,664e−7; métricas intactas reproduzem V03. Sem reextrair DICOMs.
+
+Delta de softBCE versus exame completo (positivo=piora):
+
+| Cenário | Plano | Seed2026 | Seed42 |
+|---|---|---:|---:|
+| Removido da atenção | Sagittal | +0,021992 | +0,027067 |
+| Removido da atenção | Coronal | +0,016185 | +0,006770 |
+| Removido da atenção | Axial | +0,038457 | +0,047711 |
+| Feature zerada, presente | Sagittal | +0,011438 | +0,008778 |
+| Feature zerada, presente | Coronal | +0,008938 | +0,001686 |
+| Feature zerada, presente | Axial | +0,021752 | +0,018713 |
+
+Axial e sagital ultrapassam o limiar operacional0,01 nas duas sementes.
+Coronal não ultrapassa nas duas. Menor queda com vetor zero NÃO demonstra
+correção: é outra perturbação, altera o pooling/calibração e não valida
+pacientes incompletos. Não trocar máscara por zeros nem excluir planos
+com base neste resultado. Deltas por alvo preservados no relatório privado.
+
+Fontes do diagnóstico: scriptSHA712ffb9e…; auditoriaV03SHA5260e807…;
+featuresV03SHAbbc34ca6…; geometriaG01SHA349b57f4…; os hashes completos
+constam do JSON. Checkpoints, features, rótulos e IDs não enviados ao GitHub.
+
+## Próximo ensaio R02b — ainda não implementado/lançado
+
+Controle V03 versus dropout de UM plano escolhido uniformemente em25%dos
+estudos de treino. Não escolher planos pela queda observada. Duas sementes,
+mesmos1000treino/dev250/features/labels/20épocas/batch4/AdamW; RNG de dropout
+separado, mantendo shuffle do controle. Nunca remover todos os planos.
+Escolher época somente por menor BCE intacta, sem seletor por alvo/cenário.
+
+Promover apenas se BCE intacta melhorar >2e−6 nas duas sementes E a média
+dos três cenários mascarados melhorar nas duas sementes. Se houver somente
+ganho de robustez, registrar trade-off e manter V03 para submissão futura.
+Registrar fonte antes do teste, reproduzir controle e auditar tudo.
+Reusar features; teto previsto600sT4/offline, checar quota livre >=1200s
+imediatamente antes do lançamento. Não migrar treino pesado para o Mac.
+Confirmação150permanece fechada. R02b não é promessa de ganho no leaderboard.
+
+## Verificação final
+
+181testes e44subtestes passaram, incluindo13testes R02 (máscara real,
+preservação dos inputs, rejeição de entradas inválidas, matriz completa,
+limiar estrito nas duas sementes e esquema herdado de geometria).
+Relatórios/features/checkpoints continuam ignorados pelo Git no HD externo.
+Vault canônico e espelho conferidos; nenhum novo job desta rodada pendente.

@@ -7,8 +7,10 @@ transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
 Atualizado na AV-025 (18/09): V03 COMPLETE/PASSED_V03_AUDIT.
 Treino1.000 melhora as duas sementes; média0,625189→0,612147.
 Referência própria promovida para expanded, não é ganho medido no Kaggle.
-Próximo nesta rodada: diagnóstico R02 de plano ausente usando checkpoints
-congelados, sem treino, DICOM novo ou GPU. Nenhuma nova submissão.
+R02 diagnóstico concluído: ausência axial/sagital ultrapassa deltaBCE0,01
+nas duas sementes. Priorizar ensaio de dropout uniforme, ainda não treinado.
+Sem DICOM novo/GPU/avaliação de confirmação nesta rodada. Nenhum novo envio.
+Verificação final:181testes e44subtestes passaram; artefatos privados no HD.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -72,13 +74,35 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-025 iniciada18/09: V03 kernel134854744 v1 COMPLETE e auditoria
+- AV-025 concluída18/09: V03 kernel134854744 v1 COMPLETE e auditoria
   reports/avance_av024_v03/v03_audit_v1.json PASSED_V03_AUDIT.
   Controle299=0,624261641/0,626115689; expanded1000=0,611192285/0,613102226
   nas seeds2026/42. Épocas8/14; expanded promovido pela regra prévia.
   Total962,71s, features916,98s; controle reproduzido, features antigas
   idênticas e checkpoints/logits/BCE auditados. Confirmação150não avaliada.
   Quota observada0,48499hGPU; nenhum novo job iniciado nesta rodada.
+  R02 concluído: reports/avance_av025_r02/diagnostic_v1.json,
+  COMPLETE_R02_SYNTHETIC_DIAGNOSTIC_NOT_TRAINING; código/protocolo207544e,
+  correção de esquema fce369b antes de métricas. Ordem de planos verificada
+  contra geometria G01 por hash; paridade com máscara real da StudyAttention.
+  DeltaBCE seeds2026/42: semSagittal+0,021992/+0,027067;
+  semCoronal+0,016185/+0,006770; semAxial+0,038457/+0,047711.
+  Axial e sagital passam limiar operacional nas duas sementes. Zerar vetor
+  com slot presente dá quedas diferentes; não adotar como máscara correta.
+  Próximo AVANCE: implementar R02b, controle V03 versus dropout de UM plano
+  uniforme em25%dos estudos de treino, nunca removendo os três. Manter
+  features1000/dev250/teacher, seeds2026/42,20épocas/batch4/AdamW fixos;
+  RNG de dropout separado para preservar shuffle do controle. Sem busca
+  de probabilidade/plano por dev. Época selecionada só pela BCE intacta.
+  Promoção exige melhora intacta >2e−6 nas duas sementes E melhora da média
+  dos três cenários mascarados nas duas. Se só robustez melhorar, manter
+  V03 como referência para submissão futura e registrar trade-off.
+  Registrar build antes do treino, reproduzir controle e auditar heads/
+  máscaras/seleção. Reusar features, teto previsto600sT4/offline, exigir
+  quota livre >=2×600s antes do envio. Ainda NÃO implementado/lançado.
+  Sem mudar finalistas/ensemble0,941; V03 e R02 não geram CSV elegível.
+  Verificação final AV-025:181testes+44subtestes passaram. Nenhum job pendente
+  desta rodada; executar R02b somente em próximo comando, após checar quota.
   R02 diagnóstico PRÉ-DEFINIDO antes da avaliação de estresse: usar apenas
   os dois melhores checkpoints expanded e dev250 congelados. Para cada
   plano Sagittal/Coronal/Axial, retirar o slot da atenção (máscara correta)
@@ -447,7 +471,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
 | R01 / robustez | Normalização por volume/série versus receita atual, com MONOCHROME1, rescale e paridade de intensidade verificados | V02; preservar contrato dos pesos públicos / alto | PENDENTE |
-| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO EM ANDAMENTO AV-025 — checkpoints V03; planos ausentes/zero-feature; treino dropout e ruído real pendentes |
+| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO CONCLUÍDO AV-025 — semaxial/sagital piora >0,01 nas duas sementes; R02b dropout25%priorizado; treino e ruído real pendentes |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
 | E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
@@ -1058,3 +1082,25 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Fontes/manifesto/features/checkpoints privados no HD, código no GitHub;
   sem nova submissão/alteração de finalistas. Retomada no cursor e
   docs/AV024_ESCALA_TREINO_V03.md. Confirmar/auditar antes de novo treino.
+
+### AV-025 — 18/09/2026 — escala1000 promovida e fragilidade por plano
+
+- V03 COMPLETE/PASSED_V03_AUDIT: controle299=0,624261641/0,626115689;
+  expanded1000=0,611192285/0,613102226. Média0,625188665→0,612147256,
+  redução relativa2,09%. Épocas8/14, expanded promovido pela regra prévia.
+  Fracture piora nas duas; não escolher modelos por alvo. Confirmação fechada.
+- Controle reproduzido e features antigas idênticas; maior replay <1e−6.
+  Total962,71s,features916,98s. Quota observada29,10min, compartilhada.
+- R02 protocolo207544e; leitura do esquema corrigida fce369b antes de obter
+  métricas, usando geometria G01 original por hash. Diagnóstico CPU sem treino.
+  DeltaBCE2026/42: Sagittal+0,021992/+0,027067; Coronal+0,016185/+0,006770;
+  Axial+0,038457/+0,047711. Axial/sagital excedem0,01 em ambas sementes.
+  Controle zero-feature é diferente de máscara e não simula ruído real.
+- Decisão: priorizar R02b dropout uniforme de um slot em25%do treino;
+  receita/critério no cursor. Ainda não implementado ou treinado. Não abrir
+  confirmação para guiar hiperparâmetros; dev já seleciona checkpoints.
+- Artefatos privados no HD, fonte/doc públicos; sem GPU novo/CSV/submissão.
+  Melhor público confirmado0,941 não é a métrica deste modelo próprio.
+  Detalhes: docs/AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md.
+- Verificação final:181testes+44subtestes passaram; fonte/protocolo/resultados
+  versionados no repositório, vault e espelho sincronizados.
