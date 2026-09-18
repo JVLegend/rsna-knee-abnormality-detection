@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extrai embeddings EfficientNet-B0 dos arrays 2.5D locais, sem rede."""
+"""#RSNA #Kaggle #Dados — extrai embeddings EfficientNet-B0 sem rede."""
 
 from __future__ import annotations
 
@@ -43,6 +43,20 @@ def load_encoder(device: str) -> tuple[torch.nn.Module, EfficientNet_B0_Weights,
     return encoder, weights, cached
 
 
+def resolve_device(device: str) -> str:
+    if device == "auto":
+        if torch.cuda.is_available():
+            return "cuda"
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            return "mps"
+        return "cpu"
+    if device == "mps" and not (hasattr(torch.backends, "mps") and torch.backends.mps.is_available()):
+        raise RuntimeError("MPS foi solicitado, mas não está disponível neste PyTorch.")
+    if device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA foi solicitado, mas não está disponível neste ambiente.")
+    return device
+
+
 def extract_embeddings(index_path: Path, output_dir: Path, batch_size: int = 8, device: str = "auto") -> dict[str, object]:
     if batch_size < 1:
         raise ValueError("--batch-size precisa ser positivo.")
@@ -51,8 +65,7 @@ def extract_embeddings(index_path: Path, output_dir: Path, batch_size: int = 8, 
     if not records:
         raise ValueError("O índice 2.5D não contém records.")
 
-    if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = resolve_device(device)
     encoder, weights, cached = load_encoder(device)
     images: list[np.ndarray] = []
     embeddings: list[np.ndarray] = []
@@ -116,7 +129,7 @@ def main() -> None:
     parser.add_argument("--index", type=Path, default=Path("data/processed/dicom_25d_v0/index.json"))
     parser.add_argument("--output-dir", type=Path, default=Path("data/processed/dicom_embeddings_efficientnet_b0"))
     parser.add_argument("--batch-size", type=int, default=8)
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda", "mps"), default="auto")
     args = parser.parse_args()
 
     index_path = args.index.expanduser()

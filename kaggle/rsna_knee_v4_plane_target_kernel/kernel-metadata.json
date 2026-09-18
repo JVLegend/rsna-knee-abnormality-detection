@@ -1,0 +1,21 @@
+{
+  "id": "jvlegend/rsna-knee-v4-plane-target",
+  "title": "RSNA Knee v4 Plane Target",
+  "code_file": "rsna_knee_v4_plane_target.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [
+    "jvlegend/efficientnet-b0-imagenet-weights-public",
+    "stevenleehans/rsna-knee-llm-report-labels",
+    "pilkwang/rsna-knee-llm-labels"
+  ],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}
