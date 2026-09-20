@@ -4,13 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-025 (18/09): V03 COMPLETE/PASSED_V03_AUDIT.
-Treino1.000 melhora as duas sementes; média0,625189→0,612147.
-Referência própria promovida para expanded, não é ganho medido no Kaggle.
-R02 diagnóstico concluído: ausência axial/sagital ultrapassa deltaBCE0,01
-nas duas sementes. Priorizar ensaio de dropout uniforme, ainda não treinado.
-Sem DICOM novo/GPU/avaliação de confirmação nesta rodada. Nenhum novo envio.
-Verificação final:181testes e44subtestes passaram; artefatos privados no HD.
+Atualizado na AV-026 (20/09): preparando ensaio R02 em três receitas:
+controle V03, dropout25% e consistência entre exames completos/incompletos.
+Mesmas features1000/dev250 e duas sementes; confirmação fechada.
+Código/auditor implementados; resultados ainda não observados.
+Quota observada29,87hGPU; teto600sT4. Nenhuma nova submissão.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -74,6 +72,32 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-026 iniciada20/09, pedido "avance ousadamente": V03 confirmado COMPLETE,
+  nenhum kernel R02 existente, quota107.543,516sGPU (~29,87h).
+  Protocolo prospectivo R02: controle V03, dropout25%de UM plano uniforme,
+  e paired_consistency (alternativa nova): todos estudos têm par completo/
+  um plano ausente uniforme; loss0,5BCE(completo)+0,5BCE(mascarado)
+  +0,1MSE(sigmoid(mascarado),stopgrad(sigmoid(completo))).
+  Não presume que todo achado seja visível em todos planos; regularização
+  pode apagar sinal útil. Não selecionar plano pela anatomia/dev.
+  Mesmas features1000/dev250,teacher,head,DINOcongelado,seeds2026/42,
+  20épocas,batch4,AdamW0,001/0,0001. RNG de máscaras separado seed+10000,
+  checkpoints com RNG/histórico de máscaras; manter shuffle original.
+  Selecionar época SOMENTE por softBCE intacta, primeiro mínimo. Avaliar
+  três ausências no checkpoint selecionado. Promover candidato só se
+  melhorar intacto >2e−6 E média das três ausências >2e−6 nas DUAS sementes.
+  Se ambos passarem, menor média intacta; empate favorece dropout25.
+  Se nenhum passar, manter V03. Sem tuning por alvo/probabilidade/seed.
+  Controle original deve reproduzir curva/logits V03; replay NumPy próprio,
+  auditar seleção, hashes, máscaras e RNG. É comparação de receitas, não
+  isolamento causal do termo de consistência (também muda exposição).
+  Seis treinos curtos, reaproveitando features; sem DICOM/download extra.
+  Teto600sT4/offline, guard450s; checar quota>=1200s antes de enviar.
+  Artefatos privados no HD. Sem confirmação150/gold/CSV/submissão.
+  Código/protocolo serão registrados antes de observar resultados.
+  Build reports/avance_av026_r02/r02_v1.py,239.496bytes,SHA256
+  17ad28e1a5882f76b1a342a768279ccd525b9a7eae5831e052f12db0903b4887.
+  191testes+44subtestes passaram antes do lançamento. Kernel ainda não criado.
 - AV-025 concluída18/09: V03 kernel134854744 v1 COMPLETE e auditoria
   reports/avance_av024_v03/v03_audit_v1.json PASSED_V03_AUDIT.
   Controle299=0,624261641/0,626115689; expanded1000=0,611192285/0,613102226
