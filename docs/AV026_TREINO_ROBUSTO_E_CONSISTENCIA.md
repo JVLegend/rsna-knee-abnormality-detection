@@ -83,3 +83,41 @@ python -m scripts.assess_r02_training \
 Usar PYTHONPATH=src:. e NumPy/Pandas/PyTorch; testes também requerem pytest.
 Rótulos fracos e dev que escolhe épocas não são teste clínico independente
 nem score Kaggle. Melhor público confirmado continua0,941.
+
+## Estado final — preparado, execução impedida por simultaneidade
+
+Protocolo/código commit a6fc5dd, publicado antes da tentativa de lançamento.
+SaveKernel respondeu "Maximum batch GPU session count of 2 reached.",
+kernelId0, sem versão. Quota imediatamente antes:63.969,61517s (~17,77h),
+suficiente; o bloqueio é vaga simultânea, não horas disponíveis.
+As execuções hod-rf-detr-16band-smoke-v1 e
+hod-rf-detr-small-rgb1358-train-v1 estavam RUNNING. Nenhuma alterada/cancelada.
+Também observado umud-seg1-data-expansion-v1 RUNNING, sem inferir acelerador.
+
+Slug pretendido: jvlegend/rsna-knee-r02-robust-consistency.
+Consulta de status retornou404 em duas reconciliações. Lista de kernels
+retorna um placeholder privado id0/ref vazio, que não identifica versão/job.
+NÃO há treinamento R02 lançado ou resultado novo. Não criar cópia por
+confundir esse placeholder com um kernel real. Nenhum monitor agendado.
+
+197testes+44subtestes passaram ao final; seis testes adicionais bloqueiam
+features com hash/contrato/IDs/dimensões/NaNs inválidos. Fonte do kernel
+permanece exatamente17ad28e1…; nenhuma alteração de receita após a tentativa.
+
+## Retomar ao próximo AVANCE
+
+1. Conferir status do slug R02 e vagas de GPU; se já existir, recuperar,
+   não relançar. Não interromper jobs dos demais projetos.
+2. Se404 e vaga disponível, verificar hash do build e quota>=1200s.
+3. API SaveKernel: slug acima, título RSNA Knee R02 Robust Consistency;
+   script Python privado, T4 (machine_shape=NvidiaTeslaT4), internetfalse,
+   timeout600s, somente kernel_data_sources=[jvlegend/rsna-knee-v03-scale1000].
+   Sem modelo/competição extra; features já anexadas pelo kernel V03.
+   Docker fixado em reports/avance_av001_sources/maverick/kernel-metadata.json.
+4. Exigir resposta sem erro, registrar kernelId/versão e reconciliar após
+   resposta incerta. Não repetir automaticamente uma tentativa ambígua.
+5. Baixar outputs em reports/avance_av026_r02_v1/ e rodar auditor acima.
+   Conferir curva do controle, máscaras, checkpoints, perdas e decisão.
+
+Não submeter este kernel de treino. Sem resultado novo, V03 expanded continua
+a referência própria e o ensemble0,941 permanece a referência pública.

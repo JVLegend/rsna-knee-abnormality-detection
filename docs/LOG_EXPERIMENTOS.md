@@ -2,6 +2,22 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-026 — 20/09/2026 — robustez e consistência prontas, sem vaga GPU
+
+[Protocolo e retomada](AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md).
+Implementados controle V03, dropout25% e paired_consistency: seis heads,
+features1000/dev250 congeladas, seeds2026/42. Seleção por dev intacto,
+promoção apenas se intacto e média de ausências melhorarem nas duas.
+Loss pareada0,5BCEcompleto+0,5BCEmascarado+0,1MSE(probabilidades);
+RNG independente, checkpoint/retomada testados e auditor NumPy/máscaras.
+Protocolo/código a6fc5dd antes da tentativa. Build17ad28e1…,
+239.496bytes.197testes+44subtestes passaram ao final.
+SaveKernel recusado por duas sessões GPU simultâneas; quota63.969,61517s
+suficiente, kernelId0, sem versão; status do slug R02 confirmado404.
+Nenhum treino R02 lançado; outros jobs não alterados. Retomar quando houver
+vaga, reconciliando para não duplicar. Sem agendamento/CSV/submissão/métrica
+nova; referência própria V03 e público0,941 preservados.
+
 ## AV-025 — 18/09/2026 — escala aprovada e diagnóstico de robustez
 
 [Auditoria, estresse e próximo ensaio](AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md).

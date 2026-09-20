@@ -4,11 +4,12 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-026 (20/09): preparando ensaio R02 em três receitas:
+Atualizado na AV-026 (20/09): ensaio R02 implementado em três receitas:
 controle V03, dropout25% e consistência entre exames completos/incompletos.
 Mesmas features1000/dev250 e duas sementes; confirmação fechada.
-Código/auditor implementados; resultados ainda não observados.
-Quota observada29,87hGPU; teto600sT4. Nenhuma nova submissão.
+197testes+44subtestes passaram; protocolo/código a6fc5dd no GitHub.
+Lançamento recusado: duas sessões GPU simultâneas já ocupadas na conta.
+R02 não criado (status404); aguarda vaga, NÃO falta de horas. Sem novo envio.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -73,6 +74,24 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 ## Cursor de retomada
 
 - AV-026 iniciada20/09, pedido "avance ousadamente": V03 confirmado COMPLETE,
+  ESTADO FINAL: PREPARADO/BLOQUEADO POR CONCORRÊNCIA. SaveKernel devolveu
+  "Maximum batch GPU session count of 2 reached.",kernelId0/sem versão.
+  Quota antes do envio63.969,61517s (~17,77h), suficiente para o teto; não
+  confundir reserva de outros jobs com esgotamento. Status R02 confirmado404
+  em duas consultas; não houve treino novo nem resultado R02.
+  Outros jobs running: hod-rf-detr-16band-smoke-v1 e
+  hod-rf-detr-small-rgb1358-train-v1; não interrompidos. Também há execução
+  umud-seg1-data-expansion-v1 (tipo de acelerador não inferido do status).
+  Lista privada retorna placeholder id0/ref vazio: não é identificador
+  válido de job; reconciliar pelo slug/status antes de qualquer novo envio.
+  Próximo AVANCE: conferir vagas/status rsna-knee-r02-robust-consistency.
+  Se já existir, recuperar/auditar; se continuar404 e houver vaga, enviar
+  o build congelado, sem duplicação nem trocar hardware para burlar controle.
+  197testes+44subtestes passaram; protocolo/código a6fc5dd antes da tentativa.
+  Mais6testes validam features/hash/IDs/shape/NaN, sem alterar fonte do kernel.
+  Nenhum agendamento criado e nenhum processo RSNA novo rodando ao encerrar.
+  Evidências e retomada: docs/AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md.
+  Abaixo, protocolo e snapshot inicial da rodada:
   nenhum kernel R02 existente, quota107.543,516sGPU (~29,87h).
   Protocolo prospectivo R02: controle V03, dropout25%de UM plano uniforme,
   e paired_consistency (alternativa nova): todos estudos têm par completo/
@@ -495,7 +514,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
 | R01 / robustez | Normalização por volume/série versus receita atual, com MONOCHROME1, rescale e paridade de intensidade verificados | V02; preservar contrato dos pesos públicos / alto | PENDENTE |
-| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO CONCLUÍDO AV-025 — semaxial/sagital piora >0,01 nas duas sementes; R02b dropout25%priorizado; treino e ruído real pendentes |
+| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO CONCLUÍDO AV-025; TREINO PREPARADO AV-026 — controle/dropout25/paired-consistency,197testes; bloqueado por duas sessões GPU,nenhum resultado novo |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
 | E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
@@ -1128,3 +1147,22 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   Detalhes: docs/AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md.
 - Verificação final:181testes+44subtestes passaram; fonte/protocolo/resultados
   versionados no repositório, vault e espelho sincronizados.
+
+### AV-026 — 20/09/2026 — três receitas robustas prontas, limite simultâneo
+
+- Pedido ousado convertido em controle V03 + dropout25% + paired_consistency,
+  todos com1.000treino/dev250 e seeds2026/42. Seis heads, sem DICOM novo.
+  Loss pareada0,5BCEcompleto+0,5BCEmascarado+0,1MSE de probabilidades,
+  alvo completo sem gradiente. Nem todo achado é recuperável sem seu plano.
+- Protocolo/código a6fc5dd antes de tentar enviar; fonte239.496bytes,
+  SHA17ad28e1…;191testes antes da tentativa,197testes+44subtestes ao final.
+  Controle original preservado, auditor NumPy intacto/mascarado, replay RNG
+  e retomada exata sintética. Seleção pela BCE intacta; promoção exige
+  melhorar intacta e média das ausências nas duas sementes, margem2e−6.
+- Kaggle recusou por limite de2sessões GPU; kernelId0, status404 confirmado,
+  sem nova versão/job. Quota63.969,61517s suficiente, mas vagas ocupadas por
+  outros projetos. Nenhum cancelamento, fallback pesado local ou agendamento.
+- R02 permanece PREPARADO, não testado em treino real. Sem nova métrica,
+  CSV/submissão ou mudança do público0,941. Próximo passo é reconciliar
+  estado/vaga e lançar exatamente a receita congelada, depois auditar.
+  Detalhes: docs/AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md.

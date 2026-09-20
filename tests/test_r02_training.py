@@ -111,3 +111,22 @@ def test_candidate_resume_exact_on_small_synthetic_cpu_batch(tmp_path,arm):
     b=torch.load(partial/'v02_seed42_last.pt',weights_only=True)
     assert torch.equal(a['mask_rng'],b['mask_rng'])
     for key in a['model']:assert torch.equal(a['model'][key],b['model'][key])
+
+
+@pytest.mark.parametrize('case',['valid','hash','contract','ids','shape','nan'])
+def test_feature_attachment_gate(tmp_path,case):
+    scope=runtime();path=tmp_path/'features.npz'
+    train=np.ones((1000,3,384),dtype=np.float32);dev=np.ones((250,3,384),dtype=np.float32)
+    train_ids=[str(i) for i in range(1000)];dev_ids=['dev'+str(i) for i in range(250)]
+    scope['V02_BASELINE']={'splits':{'train':[{'StudyInstanceUID':i} for i in train_ids],
+                                   'development':[{'StudyInstanceUID':i} for i in dev_ids]}}
+    if case=='ids':dev_ids[0],dev_ids[1]=dev_ids[1],dev_ids[0]
+    if case=='shape':train=train[:999]
+    if case=='nan':dev[0,0,0]=np.nan
+    np.savez(path,train=train,development=dev,train_ids=train_ids,development_ids=dev_ids,
+             contract_hash='wrong' if case=='contract' else 'frozen')
+    scope['sha']=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest()
+    scope['R02']={'feature_sha256':'wrong' if case=='hash' else scope['sha'](path),'baseline_contract':'frozen'}
+    if case=='valid':assert [x.shape for x in scope['load_features'](path)]==[(1000,3,384),(250,3,384)]
+    else:
+        with pytest.raises(ValueError):scope['load_features'](path)
