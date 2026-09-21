@@ -4,11 +4,11 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-027 (21/09): R02 COMPLETE e auditado; paired_consistency
-venceu controle nas duas sementes, em exames completos e com plano ausente.
-Médias intacta0,612147→0,608357; ausências0,638511→0,620870.
-Referência própria promovida no desenvolvimento; confirmação150fechada.
-197testes+44subtestes passaram. Próximo V04: confirmar checkpoints fixos.
+Atualizado na AV-028 (21/09): V04 implementado, sem inferência iniciada.
+Confirmação única nos150reservados, controle versus paired_consistency,
+quatro checkpoints fixados na AV-027; sem treino, calibração ou seleção.
+Build1270ab30… congelado;211testes+44subtestes passaram, incluindo14novos.
+Referência própria continua paired no desenvolvimento; aguarda confirmação.
 Nenhuma nova submissão ou mudança no leaderboard.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
@@ -73,6 +73,18 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-028 iniciada21/09: implementar confirmação V04 conforme protocolo
+  fixado na AV-027/bb7897a. R02 confirmado COMPLETE; quota83.004,021396s.
+  Comparação única control/paired, seeds2026/42, epochs8/14 e hashes fixos;
+  não treinar/recalibrar nem incluir dropout25. Gates V04 inalterados.
+  Primeiro verificar IDs/grupos/seleção de séries e colisões exatas de
+  pixels contra treino/dev. Gerar somente features/logits no Kaggle;
+  métricas e bootstrap no auditor independente local. Registrar marcador
+  de exposição antes das previsões. Se falhar, recuperar artefatos antes
+  de decidir continuação; sem exclusão de casos ou retry cego.
+  Fonte/manifesto congelados no build1270ab3045f2294f47ffedb2e9d2fb7087a513bc9583efe0d0611b3eac68f50f,
+  372.104bytes;211testes+44subtestes passaram. Código será commitado antes de inferir.
+  Ainda sem previsões de confirmação ou nova submissão.
 - AV-027 concluída21/09: R02 kernel135135626 v1 COMPLETE,
   PASSED_R02_TRAINING_AUDIT. Não relançar. Build17ad28e1…/protocoloa6fc5dd
   intactos; quota84.547,447s antes do envio. T4x2/offline, só cuda:0.
@@ -533,7 +545,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
 | V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | CONCLUÍDA/AUDITADA AV-025 —1.000treino;0,611192/0,613102 vencem controle nas duas sementes; expanded promovido,sem AUC/LB |
-| V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | PROTOCOLO AV-027 — inferência/auditor a implementar; nenhuma predição de confirmação avaliada |
+| V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | AV-028 IMPLEMENTADO — build congelado; testes e pré-envio; nenhuma predição avaliada |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |

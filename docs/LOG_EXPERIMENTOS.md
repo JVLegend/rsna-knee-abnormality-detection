@@ -2,6 +2,15 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-028 — 21/09/2026 — confirmação V04 implementada, pré-inferência
+
+[Protocolo e retomada](AV028_CONFIRMACAO_RESERVADA.md).
+Uma comparação control/paired nos150reservados, quatro checkpoints fixos
+AV-027. Inferência sem métricas no Kaggle; auditor independente local,
+bootstrap agrupado e limites por alvo previamente fixados.211testes e
+44subtestes passaram, incluindo14novos. Build1270ab30…,372.104bytes.
+Ainda não lançado; sem previsões reservadas, CSV ou submissão nova.
+
 ## AV-027 — 21/09/2026 — consistência vence; confirmação preparada no plano
 
 [Resultados e protocolo reservado](AV027_RESULTADOS_R02_E_CONFIRMACAO.md).
