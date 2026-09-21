@@ -4,13 +4,12 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-028 (21/09): V04 COMPLETE/auditado, NOT_CONFIRMED.
-Nos150reservados, média intacta piorou0,601917→0,603055; consistência
-melhorou ausências0,628733→0,614479, mas falhou em3dos4gates prévios.
-IC95% do delta intacto[−0,002664;+0,005025]; OA medial/lateral regrediram.
-Não promover paired para submissão. Confirmação150agora EXPOSTA/avaliada.
-211testes+44subtestes passaram. Próximo: V05 novo desenho de validação/OOF,
-antes de G04 resolução224vs336; não retunar usando estes150.
+Atualizado na AV-029 (21/09): V05 congelado,1.000treino/300dev/300reservados.
+Novos conjuntos excluem grupos expostos desta linha própria e gold.
+OOF5folds de260estudos desenhados, NÃO executados. Labels fracos mantidos.
+G04 piloto224vs336 preparado em20exames SÓ DE TREINO, sem heads ou labels.
+228testes+44subtestes passaram, incluindo17novos; piloto pronto para envio.
+V04 permanece NOT_CONFIRMED; seus150exames não voltam para seleção.
 Nenhuma nova submissão ou mudança no leaderboard.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
@@ -75,6 +74,29 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-029 iniciada21/09: V04 reconciliado COMPLETE; não relançar.
+  V05 metadata congelado em data/processed/validation_weak_v5/manifest.json,
+  SHA9bb462aee209c132af51073851525e885545c76627fe542c0248361673e6de84.
+  2.890elegíveis após excluir1.455IDs/grupos conhecidos e62gold/grupo.
+  1.000treino/954grupos preservados; novos dev300/297grupos e
+  confirmação300/299grupos;2.290não usados. Seed20260921/namespaceV05,
+  seleção por hash de grupos inteiros, sem busca de seed/prevalência.
+  Cobertura12alvos passou; Fracture reservado18positivos/110negativos/
+  172incertos, ainda referência fraca. Nenhuma predição dos novos conjuntos.
+  OOF5folds260estudos sobre treino+novo dev, sem grupos cruzados; desenho
+  somente, não OOF calculado. Épocas futuras não podem ser escolhidas no
+  próprio fold avaliado: fixar ou usar validação interna apenas no treino.
+  Piloto G04:20estudos de treino,60séries; hash de seleção fixo, sem labels
+  ou IDs reservados no kernel. Decoder/geometria/FOV nativo iguais,
+  apenas resize224vs336; encoder oficial congelado, não testar cabeça224
+  com embeddings336. Conferir paridade224 com cache histórico/pixels.
+  Build reports/avance_av029_g04/preflight_v1.py,66.245bytes,
+  SHAca3dd37aea22cdacfc7899938d2a68f6475fc68bf55b90aa645546a857dfeb21.
+  T4x2/offline, só cuda:0,teto480s/guard360s/quota mínima960s.
+  Busca inicial G04 vazia, quota79.735,289898s; consultar antes de lançar.
+  228testes+44subtestes passaram, incluindo17novos. Ainda não lançado.
+  Metadados não provam geometria/pixels válidos dos600novos; gates pendentes
+  antes de treinar/avaliar. Fresh nesta linha, não virgindade global histórica.
 - AV-028 concluída21/09: V04 COMPLETE e PASSED_V04_CONFIRMATION_AUDIT,
   decisão NOT_CONFIRMED. Intactos control2026/42=0,605170901/0,598663756;
   paired=0,603563784/0,602545337. Delta médio+0,001137232,
@@ -569,7 +591,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
 | V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | CONCLUÍDA/AUDITADA AV-025 —1.000treino;0,611192/0,613102 vencem controle nas duas sementes; expanded promovido,sem AUC/LB |
 | V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | AV-028 CONCLUÍDO/AUDITADO — NOT_CONFIRMED;3gates falharam;150agora avaliados; sem promoção/envio |
-| V05 / validação renovada | Inventariar grupos ainda não avaliados; congelar validação OOF/novo reservado antes de testar novas receitas; excluir grupos já expostos da nova confirmação | V04 encerrado / baixo inventário, médio/alto OOF | PRÓXIMO — não implementado; antecede G04; não reaproveitar V04 para tuning |
+| V05 / validação renovada | Inventariar grupos ainda não avaliados; congelar validação OOF/novo reservado antes de testar novas receitas; excluir grupos já expostos da nova confirmação | V04 encerrado / baixo inventário, médio/alto OOF | AV-029 METADADOS CONGELADOS —1.000treino/300dev/300reservados;OOF5desenhado,não executado; pixels dos novos pendentes |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -577,7 +599,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | G01 / H-45 | Triplets adjacentes nativos versus amostragem espaçada, mantendo centros, número de views, crop e encoder | V02; primeiro medir gaps reais do loader / alto | CONCLUÍDA/AUDITADA AV-024 — adjacentes0,624262/0,626116 vencem controle nas duas sementes; nova referência própria,sem AUC/LB |
 | G02 / H-45 | Cache 16 versus 32 fatias com mesma banda; medir fatias únicas/gaps e treinar cada receita compatível | G01; ramo que de fato usa cache 16 / alto | PENDENTE |
 | G03 / H-45 | Banda central versus ampla mantendo densidade física semelhante; depois ablação da densidade com banda fixa | G01; contagem pode mudar para preservar densidade / alto | PENDENTE |
-| G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | PENDENTE |
+| G04 / H-45 | 224 versus 336; 384 só se 336 ganhar, crop físico fixo, treino e inferência compatíveis | V02; melhor amostragem congelada / alto | AV-029 PILOTO PREPARADO —20treino somente; compatibilidade/paridade/custo, sem teste de acurácia; comparação de treino pendente |
 | G05 / H-45 | Global 140 mm versus crop anatômico menor de 100–110 mm, resolução fixa; avaliar periferia e estruturas finas | V02; definir centro reproduzível / alto | PENDENTE |
 | M01 / H-46 | Média de grupos versus atenção aprendida por alvo, preservando posição física e máscara de presença | V02; pesos treinados para cada cabeça / alto | TESTADA AV-022 no V02 — mean/shared/target,2sementes; sem ganho consistente, shared mantida; coordenadas físicas novas fora desta rodada |
 | M02 / H-46 | Especialista público Renta somente em Medial Meniscus, com peso fixado antes da avaliação e 11 colunas preservadas | A00; fonte/receita própria auditada / médio | PENDENTE |

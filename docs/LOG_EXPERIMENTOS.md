@@ -2,6 +2,17 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-029 — 21/09/2026 — V05 congelado e piloto G04 preparado
+
+[Protocolo e retomada](AV029_VALIDACAO_NOVA_E_RESOLUCAO.md).
+Nova divisão1000treino/300dev/300reservados, mantendo todos grupos conhecidos
+expostos fora dos novos conjuntos. Manifesto9bb462ae…;OOF5×260desenhado,
+não executado. Sem predições dos600novos.17testes novos passaram.
+Piloto técnico20treino/60séries224vs336: paridade224, geometria e custo;
+sem labels, treino ou teste de acurácia. Buildca3dd37a…,66.245bytes.
+228testes+44subtestes passaram; piloto ainda não lançado. V04 permanece
+NOT_CONFIRMED,sem tuning nos150. Sem CSV/submissão/finalistas novos.
+
 ## AV-028 — 21/09/2026 — confirmação V04 auditada, resultado negativo
 
 [Protocolo e retomada](AV028_CONFIRMACAO_RESERVADA.md).
