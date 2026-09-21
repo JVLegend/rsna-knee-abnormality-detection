@@ -2,6 +2,23 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-027 — 21/09/2026 — consistência vence; confirmação preparada no plano
+
+[Resultados e protocolo reservado](AV027_RESULTADOS_R02_E_CONFIRMACAO.md).
+R02 kernel135135626 v1 COMPLETE/PASSED_R02_TRAINING_AUDIT. Fonte/protocolo
+AV-026 intactos. Médias intactas control/dropout/paired:
+0,612147256/0,610508535/0,608357407. Médias ausências:
+0,638510777/0,624558855/0,620869795. Ambos passam gates nas duas sementes;
+paired_consistency promovido como referência própria de desenvolvimento.
+Medial/LateralOA pioram na seed42, sem escolha de modelo por alvo.
+Controle reproduzido; máscaras/RNG/checkpoints/IDs/logits auditados.
+Replay até1,281e−6;123,76s fora imports,75.997.184bytesGPU alocados.
+197testes+44subtestes passaram novamente. Outputs privados no HD.
+Próximo V04: uma comparação control/paired nos150reservados, quatro
+checkpoints já fixos; protocolo de grupos/bootstrap/limites por alvo
+registrado ANTES de inferir. Ainda não implementado ou avaliado.
+Sem novoCSV/submissão/finalistas; melhor público confirmado0,941 preservado.
+
 ## AV-026 — 20/09/2026 — robustez e consistência prontas, sem vaga GPU
 
 [Protocolo e retomada](AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md).

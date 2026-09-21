@@ -84,7 +84,23 @@ Usar PYTHONPATH=src:. e NumPy/Pandas/PyTorch; testes também requerem pytest.
 Rótulos fracos e dev que escolhe épocas não são teste clínico independente
 nem score Kaggle. Melhor público confirmado continua0,941.
 
-## Estado final — preparado, execução impedida por simultaneidade
+## Retomada AV-027 — 21/09/2026
+
+Concluído e auditado: PASSED_R02_TRAINING_AUDIT. Paired consistency venceu
+controle e dropout pela regra prévia; intacto médio0,608357407 vs0,612147256
+do controle, ausências0,620869795vs0,638510777.197testes+44subtestes passaram.
+Resultados completos, hashes e próximo protocolo:
+[AV-027](AV027_RESULTADOS_R02_E_CONFIRMACAO.md). Confirmação150ainda fechada.
+Os parágrafos seguintes preservam o snapshot de lançamento, já encerrado.
+
+Vaga liberada. Build recomposto e SHA17ad28e1… confirmado sem alteração.
+Quota84.547,447s antes do envio. Kaggle aceitou kernel135135626 versão1:
+jvlegend/rsna-knee-r02-robust-consistency, statusRUNNING confirmado.
+Sem erro/entrada inválida; seis treinos conforme protocolo já registrado.
+Não duplicar; recuperar/auditar saídas antes de avaliar promoção.
+Ainda sem resultado ou submissão nesta atualização.
+
+## Histórico AV-026 — preparado, execução impedida por simultaneidade
 
 Protocolo/código commit a6fc5dd, publicado antes da tentativa de lançamento.
 SaveKernel respondeu "Maximum batch GPU session count of 2 reached.",
@@ -104,7 +120,7 @@ confundir esse placeholder com um kernel real. Nenhum monitor agendado.
 features com hash/contrato/IDs/dimensões/NaNs inválidos. Fonte do kernel
 permanece exatamente17ad28e1…; nenhuma alteração de receita após a tentativa.
 
-## Retomar ao próximo AVANCE
+## Roteiro histórico de retomada — cumprido na AV-027
 
 1. Conferir status do slug R02 e vagas de GPU; se já existir, recuperar,
    não relançar. Não interromper jobs dos demais projetos.
@@ -119,5 +135,5 @@ permanece exatamente17ad28e1…; nenhuma alteração de receita após a tentativ
 5. Baixar outputs em reports/avance_av026_r02_v1/ e rodar auditor acima.
    Conferir curva do controle, máscaras, checkpoints, perdas e decisão.
 
-Não submeter este kernel de treino. Sem resultado novo, V03 expanded continua
-a referência própria e o ensemble0,941 permanece a referência pública.
+Não submeter este kernel de treino. A referência própria passou para paired
+consistency na AV-027; o ensemble0,941 permanece a referência pública.

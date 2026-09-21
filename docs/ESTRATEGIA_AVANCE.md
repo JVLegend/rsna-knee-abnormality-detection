@@ -4,12 +4,12 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-026 (20/09): ensaio R02 implementado em três receitas:
-controle V03, dropout25% e consistência entre exames completos/incompletos.
-Mesmas features1000/dev250 e duas sementes; confirmação fechada.
-197testes+44subtestes passaram; protocolo/código a6fc5dd no GitHub.
-Lançamento recusado: duas sessões GPU simultâneas já ocupadas na conta.
-R02 não criado (status404); aguarda vaga, NÃO falta de horas. Sem novo envio.
+Atualizado na AV-027 (21/09): R02 COMPLETE e auditado; paired_consistency
+venceu controle nas duas sementes, em exames completos e com plano ausente.
+Médias intacta0,612147→0,608357; ausências0,638511→0,620870.
+Referência própria promovida no desenvolvimento; confirmação150fechada.
+197testes+44subtestes passaram. Próximo V04: confirmar checkpoints fixos.
+Nenhuma nova submissão ou mudança no leaderboard.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -73,6 +73,39 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-027 concluída21/09: R02 kernel135135626 v1 COMPLETE,
+  PASSED_R02_TRAINING_AUDIT. Não relançar. Build17ad28e1…/protocoloa6fc5dd
+  intactos; quota84.547,447s antes do envio. T4x2/offline, só cuda:0.
+  Intactos seeds2026/42: control0,611192285/0,613102226;
+  dropout25 0,610715930/0,610301140; paired0,607180631/0,609534184.
+  Médias ausências por seed: control0,636736768/0,640284785;
+  dropout25 0,623104157/0,626013554; paired0,618644572/0,623095017.
+  Ambos passam gates; paired_consistency vence pela menor média intacta:
+  0,608357407 vs0,612147256. Nova referência PRÓPRIA de desenvolvimento,
+  não nova submissão ou AUC. Média ausências0,620869795vs0,638510777.
+  Medial OA seed42+0,014053 e Lateral OA seed42+0,004914: registrar regressões,
+  não montar modelo por coluna nem dizer que todos os alvos melhoraram.
+  Curva/controle, RNG/trace, checkpoints, logits intactos e mascarados
+  auditados. Maior delta replay1,281e−6.123,76s sem imports/75.997.184bytesGPU.
+  197testes+44subtestes passaram novamente; outputs privados no HD em
+  reports/avance_av026_r02_v1/. Auditoria reports/avance_av026_r02/audit_v1.json
+  SHAe6208422…; receiptSHA1b863e5a…. Confirmação150não avaliada.
+  Próximo V04: preparar UMA avaliação reservada do par já escolhido
+  control/paired_consistency, seeds2026/42, epochs8/14 e hashes fixos.
+  Dropout25 fica em reserva, não entra para seleção na confirmação.
+  Mesma geometria/normalização/encoder; auditar grupos/pixels duplicados
+  contra treino/dev antes de avaliar. Não substituir ou excluir casos.
+  Sem retreino/recalibração/seleção de epoch/seed/coluna. Critérios em
+  docs/AV027_RESULTADOS_R02_E_CONFIRMACAO.md, a implementar no próximo AVANCE.
+  Gates V04 fixados antes da consulta: paired melhora intacta e média de
+  ausências >2e−6 nas duas sementes; delta intacto por estudo médio entre
+  alvos/seeds, bootstrap pareado de grupos5000réplicas/seed20260921,
+  percentil95% com limite superior<0; regressão média por alvo<=0,01BCE.
+  Limiares operacionais, não clínicos. Se inconclusivo, não reajustar e
+  reconsultar os mesmos150. Registrar exposição após a avaliação, qualquer
+  que seja o resultado. Teto previsto1200sT4/offline/guard1050s, quota>=2400s.
+  Confirmação fechada nesta linha de treino, não historicamente virgem
+  de todo o projeto. Nenhum CSV/submissão/job pendente.
 - AV-026 iniciada20/09, pedido "avance ousadamente": V03 confirmado COMPLETE,
   ESTADO FINAL: PREPARADO/BLOQUEADO POR CONCORRÊNCIA. SaveKernel devolveu
   "Maximum batch GPU session count of 2 reached.",kernelId0/sem versão.
@@ -500,6 +533,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
 | V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | CONCLUÍDA/AUDITADA AV-025 —1.000treino;0,611192/0,613102 vencem controle nas duas sementes; expanded promovido,sem AUC/LB |
+| V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | PROTOCOLO AV-027 — inferência/auditor a implementar; nenhuma predição de confirmação avaliada |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -514,7 +548,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
 | R01 / robustez | Normalização por volume/série versus receita atual, com MONOCHROME1, rescale e paridade de intensidade verificados | V02; preservar contrato dos pesos públicos / alto | PENDENTE |
-| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | DIAGNÓSTICO CONCLUÍDO AV-025; TREINO PREPARADO AV-026 — controle/dropout25/paired-consistency,197testes; bloqueado por duas sessões GPU,nenhum resultado novo |
+| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | TREINO CONCLUÍDO/AUDITADO AV-027 — paired vence control/dropout; média intacta0,608357 e ausências0,620870; ruído real não testado,confirmação pendente |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
 | E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
@@ -1166,3 +1200,19 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   CSV/submissão ou mudança do público0,941. Próximo passo é reconciliar
   estado/vaga e lançar exatamente a receita congelada, depois auditar.
   Detalhes: docs/AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md.
+
+### AV-027 — 21/09/2026 — consistência vence após treino e auditoria
+
+- Vaga liberada: kernel135135626 v1 aceito e COMPLETE. Receita/fonte da
+  AV-026 preservadas. PASSED_R02_TRAINING_AUDIT; controle reproduzido.
+- Médias intactas: control0,612147256; dropout0,610508535; paired0,608357407.
+  Médias de ausências:0,638510777/0,624558855/0,620869795 respectivamente.
+  Ambos candidatos passam os gates nas duas sementes; paired vence pela
+  menor média intacta. Nova referência própria, ainda não confirmada.
+- Medial/LateralOA pioram na seed42; não escolher por alvo. Máscaras/RNG/
+  checkpoints auditados; replay até1,281e−6.123,76s/75.997.184bytesGPU.
+  197testes+44subtestes passaram novamente. Outputs privados no HD.
+- Próximo V04: confirmar somente control/paired já escolhido nos150
+  reservados, uma consulta do lote, sem ajustes por esses resultados.
+  Protocolo: docs/AV027_RESULTADOS_R02_E_CONFIRMACAO.md. Ainda sem inferência
+  de confirmação/CSV/nova submissão; público0,941 preservado.
