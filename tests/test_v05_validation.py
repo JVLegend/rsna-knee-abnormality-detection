@@ -83,3 +83,19 @@ def test_real_frozen_population_and_source_hashes():
     assert not fold_ids & {r['StudyInstanceUID'] for r in splits['confirmation']}
     assert data['class_gate_passed'] and not data['pixel_integrity_checked']
     assert data['confirmation_model_evaluations'] == data['development_model_evaluations'] == 0
+
+
+@pytest.mark.parametrize('fault', ['none', 'group', 'label', 'fold', 'claim'])
+def test_independent_metadata_audit_rejects_drift(fault):
+    from pathlib import Path
+    from scripts.assess_v05_validation import check_partitions
+    from scripts.freeze_weak_validation import rows_by_id
+    data=build(); training=copy.deepcopy(data['splits']['train'])
+    raw=rows_by_id(Path('data/raw/train.csv')); teacher=rows_by_id(Path('data/external_labels/targetwise_teacher.csv'))
+    if fault=='group': data['splits']['development'][0]['report_hash']=training[0]['report_hash']
+    if fault=='label': data['splits']['confirmation'][0]['labels'][0]=float('nan')
+    if fault=='fold': data['oof']['assignments'][0]['fold']=5
+    if fault=='claim': data['oof']['executed']=True
+    if fault=='none': assert check_partitions(data,training,raw,teacher)['oof_counts']==[260]*5
+    else:
+        with pytest.raises(ValueError): check_partitions(data,training,raw,teacher)

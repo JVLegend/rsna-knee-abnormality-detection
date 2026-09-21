@@ -6,6 +6,29 @@
 Continua [AV-028](AV028_CONFIRMACAO_RESERVADA.md), cuja confirmação foi
 negativa. Não alterar a loss e consultar novamente os mesmos150estudos.
 
+## Estado final desta rodada
+
+V05 congelado e aprovado por auditoria local de metadados;
+**G04 preparado, mas NÃO EXECUTADO por falta de vagaGPU simultânea.**
+SaveKernel: Maximum batch GPU session count of 2 reached., kernelId0,
+versionNumbernull. Status do slug404; listagem só placeholder refvazia/id0.
+Não existe versão para acompanhar. Outros jobs não foram interrompidos.
+
+Código/protocolo f7d0b53 commitado/push ANTES da tentativa. Quota no envio
+35.804,072601s, suficiente para480s: bloqueio de concorrência, não de horas.
+Não houve feature336 produzida, treinamento, nova avaliação ou submissão.
+Na retomada, reconciliar o slug antes de lançar; não criar uma cópia com
+outro nome para tentar contornar o limite. Nenhuma automação foi criada.
+
+Auditor local adicional scripts/assess_v05_validation.py:
+PASSED_V05_METADATA_AUDIT_NOT_PIXEL_VALIDATION. Verificou SHA/fontes,
+IDs/grupos/labels congelados, cobertura, exclusões, folds e ausência de
+alegações de inferência no manifesto. Não extraiu imagens ou predições.
+Arquivo privado reports/avance_av029_v05/audit_v1.json,
+SHA2565ce4982165cfc726780506d6b2ae1519c9ab1fc395d89f31ff4b75cefb3dda41.
+233testes+44subtestes passaram, incluindo22novos nesta rodada e5testes
+do auditor adicional. Nenhuma alteração do build piloto congelado.
+
 ## V05 — partições congeladas, sem avaliações novas
 
 Manifesto privado no HD: data/processed/validation_weak_v5/manifest.json.
@@ -71,8 +94,8 @@ Para treino real, orçamento e checkpoint/retomada serão definidos antes.
 
 Build privado reports/avance_av029_g04/preflight_v1.py,66.245bytes,
 SHA256ca3dd37aea22cdacfc7899938d2a68f6475fc68bf55b90aa645546a857dfeb21.
-228testes+44subtestes passaram, incluindo17novos nesta rodada.
-Código/protocolo devem ser commitados antes de lançar.
+228testes+44subtestes passaram antes do envio, incluindo17novos.
+Código/protocolo commitado/push f7d0b53 antes da tentativa recusada.
 
 Slug previsto:jvlegend/rsna-knee-g04-resolution-preflight,sem execução
 existente na busca inicial. Anexar V03scale1000, competição e DINOv2-Ssmall/1;

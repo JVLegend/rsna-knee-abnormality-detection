@@ -2,7 +2,7 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
-## AV-029 — 21/09/2026 — V05 congelado e piloto G04 preparado
+## AV-029 — 21/09/2026 — V05 auditado; piloto G04 sem vagaGPU
 
 [Protocolo e retomada](AV029_VALIDACAO_NOVA_E_RESOLUCAO.md).
 Nova divisão1000treino/300dev/300reservados, mantendo todos grupos conhecidos
@@ -10,8 +10,14 @@ expostos fora dos novos conjuntos. Manifesto9bb462ae…;OOF5×260desenhado,
 não executado. Sem predições dos600novos.17testes novos passaram.
 Piloto técnico20treino/60séries224vs336: paridade224, geometria e custo;
 sem labels, treino ou teste de acurácia. Buildca3dd37a…,66.245bytes.
-228testes+44subtestes passaram; piloto ainda não lançado. V04 permanece
-NOT_CONFIRMED,sem tuning nos150. Sem CSV/submissão/finalistas novos.
+Código/protocolo f7d0b53 anterior ao SaveKernel recusado:2vagasGPU ocupadas,
+kernelId0/sem versão, status404. Quota35.804,072601s suficiente; nenhum
+job criado ou cancelado. Não há resultado336 nem piloto running.
+Auditor V05 PASSED_V05_METADATA_AUDIT_NOT_PIXEL_VALIDATION,
+SHA5ce49821…; sem pixels/OOF avaliados.233testes+44subtestes
+passaram, incluindo22novos. V04 permanece NOT_CONFIRMED,
+sem tuning nos150. Sem CSV/submissão/finalistas novos. Retomar piloto
+congelado após reconciliar vagas/slug; sem agendamento entre mensagens.
 
 ## AV-028 — 21/09/2026 — confirmação V04 auditada, resultado negativo
 
