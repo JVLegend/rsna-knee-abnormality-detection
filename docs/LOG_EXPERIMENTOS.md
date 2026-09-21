@@ -2,14 +2,22 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
-## AV-028 — 21/09/2026 — confirmação V04 implementada, pré-inferência
+## AV-028 — 21/09/2026 — confirmação V04 auditada, resultado negativo
 
 [Protocolo e retomada](AV028_CONFIRMACAO_RESERVADA.md).
-Uma comparação control/paired nos150reservados, quatro checkpoints fixos
-AV-027. Inferência sem métricas no Kaggle; auditor independente local,
-bootstrap agrupado e limites por alvo previamente fixados.211testes e
-44subtestes passaram, incluindo14novos. Build1270ab30…,372.104bytes.
-Ainda não lançado; sem previsões reservadas, CSV ou submissão nova.
+Kernel135297768 v1 COMPLETE/PASSED_V04_CONFIRMATION_AUDIT. Protocolo
+bb7897a e código bcd2b76 anteriores à inferência; build1270ab30…,372.104bytes.
+Comparação única control/paired nos150reservados/147grupos, quatro checkpoints
+fixos. Média intacta0,601917329→0,603054561; delta+0,001137232,
+IC95%[−0,002663697;+0,005025211]. Ausências0,628732916→0,614479061.
+Seed42 intacta piorou; MedialOA+0,017349/LateralOA+0,021597 acima do teto.
+NOT_CONFIRMED:3gates falharam, só robustez a ausências passou.
+AUC weak secundária melhorou, mas não muda a decisão pré-fixada nem é LB.
+Replay1,146e−6;450séries auditadas;151,093s fora inicialização.
+211testes+44subtestes passaram, incluindo14novos. Outputs privados no HD.
+150agora avaliados; não retunar/reconsultar. Próximo V05: novo desenho OOF/
+reservado antes de G04 resolução. Controle V03 mantido como comparador.
+Sem novoCSV/submissão/finalistas; melhor público confirmado0,941 preservado.
 
 ## AV-027 — 21/09/2026 — consistência vence; confirmação preparada no plano
 

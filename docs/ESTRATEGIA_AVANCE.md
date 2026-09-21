@@ -4,11 +4,13 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-028 (21/09): V04 implementado, sem inferência iniciada.
-Confirmação única nos150reservados, controle versus paired_consistency,
-quatro checkpoints fixados na AV-027; sem treino, calibração ou seleção.
-Build1270ab30… congelado;211testes+44subtestes passaram, incluindo14novos.
-Referência própria continua paired no desenvolvimento; aguarda confirmação.
+Atualizado na AV-028 (21/09): V04 COMPLETE/auditado, NOT_CONFIRMED.
+Nos150reservados, média intacta piorou0,601917→0,603055; consistência
+melhorou ausências0,628733→0,614479, mas falhou em3dos4gates prévios.
+IC95% do delta intacto[−0,002664;+0,005025]; OA medial/lateral regrediram.
+Não promover paired para submissão. Confirmação150agora EXPOSTA/avaliada.
+211testes+44subtestes passaram. Próximo: V05 novo desenho de validação/OOF,
+antes de G04 resolução224vs336; não retunar usando estes150.
 Nenhuma nova submissão ou mudança no leaderboard.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
@@ -73,8 +75,29 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-028 iniciada21/09: implementar confirmação V04 conforme protocolo
+- AV-028 concluída21/09: V04 COMPLETE e PASSED_V04_CONFIRMATION_AUDIT,
+  decisão NOT_CONFIRMED. Intactos control2026/42=0,605170901/0,598663756;
+  paired=0,603563784/0,602545337. Delta médio+0,001137232,
+  IC95%[−0,002663697;+0,005025211],147grupos/5.000réplicas.
+  Ausências melhoram ambas: deltas−0,016706179/−0,011801531.
+  Regressão média MedialOA+0,017349355 e LateralOA+0,021597027,
+  ambas>limite0,01. Só gate de ausência passou; os outros3falharam.
+  Não promover paired nem escolher seed/coluna/novo peso após este resultado.
+  Controle V03 continua comparador; paired apenas hipótese de robustez.
+  Confirmação150agora avaliada: não usar para nova seleção/ajuste.
+  Evidência privada reports/avance_av028_v04/audit_v1.json,
+  SHAb821b2caafbdfe51f3c1be4961b8707548632a4f5bdb28a9f1912369326f5be1.
+  Outputs reports/avance_av028_v04_v1/ no HD;151,093s fora inicialização;
+  replay independente máximo1,146e−6, geometria450séries auditada.
+  Sem treino, novoCSV ou submissão. Próximo V05: inventariar novos grupos,
+  congelar desenho OOF/novo reservado ANTES de continuar seleção (G04).
+  Não confundir isso com nova partição já pronta ou novo resultado.
+  Confirmação executada conforme protocolo
   fixado na AV-027/bb7897a. R02 confirmado COMPLETE; quota83.004,021396s.
+  Execução aceita: jvlegend/rsna-knee-v04-reserved-confirmation,
+  ID135297768 v1, sem erro de SaveKernel. Código/protocolo bcd2b76
+  commitado/push antes da inferência; quota81.881,219227s no pré-envio.
+  Não relançar: consultar estado e recuperar outputs desta versão.
   Comparação única control/paired, seeds2026/42, epochs8/14 e hashes fixos;
   não treinar/recalibrar nem incluir dropout25. Gates V04 inalterados.
   Primeiro verificar IDs/grupos/seleção de séries e colisões exatas de
@@ -83,8 +106,8 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   de exposição antes das previsões. Se falhar, recuperar artefatos antes
   de decidir continuação; sem exclusão de casos ou retry cego.
   Fonte/manifesto congelados no build1270ab3045f2294f47ffedb2e9d2fb7087a513bc9583efe0d0611b3eac68f50f,
-  372.104bytes;211testes+44subtestes passaram. Código será commitado antes de inferir.
-  Ainda sem previsões de confirmação ou nova submissão.
+  372.104bytes;211testes+44subtestes passaram. Código congelado bcd2b76.
+  Métricas recuperadas e decisão negativa registrada; não relançar/retunar.
 - AV-027 concluída21/09: R02 kernel135135626 v1 COMPLETE,
   PASSED_R02_TRAINING_AUDIT. Não relançar. Build17ad28e1…/protocoloa6fc5dd
   intactos; quota84.547,447s antes do envio. T4x2/offline, só cuda:0.
@@ -545,7 +568,8 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | V01 / validação | Inventariar cobertura local e congelar treino/desenvolvimento/confirmacão por grupos, labels e hashes; avaliar ausência de classes | início / baixo | REPRODUZIDA — AV-001; 699 elegíveis, 692 grupos, 6 testes OK |
 | V02 / validação | Treinar baseline próprio DINOv2-S 2.5D + atenção por estudo, partindo de pretreino genérico; repetir duas sementes para medir variação | V01 / alto | CONCLUÍDO — AV-021;duas sementes auditadas,softBCE dev0,62607/0,63190 vs prior0,65708;referência para ablações,sem AUC/submissão |
 | V03 / escala própria | Expandir299treino para mais estudos elegíveis, mantendo dev/confirmation e excluindo seus grupos e gold; manifesto privado separado, teacher inalterado | G01 auditado; inventário de labels/cobertura e orçamento / alto | CONCLUÍDA/AUDITADA AV-025 —1.000treino;0,611192/0,613102 vencem controle nas duas sementes; expanded promovido,sem AUC/LB |
-| V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | AV-028 IMPLEMENTADO — build congelado; testes e pré-envio; nenhuma predição avaliada |
+| V04 / confirmação própria | Confirmar control V03 versus paired_consistency nos150reservados, checkpoints fixos e uma avaliação do lote | R02 auditado / médio | AV-028 CONCLUÍDO/AUDITADO — NOT_CONFIRMED;3gates falharam;150agora avaliados; sem promoção/envio |
+| V05 / validação renovada | Inventariar grupos ainda não avaliados; congelar validação OOF/novo reservado antes de testar novas receitas; excluir grupos já expostos da nova confirmação | V04 encerrado / baixo inventário, médio/alto OOF | PRÓXIMO — não implementado; antecede G04; não reaproveitar V04 para tuning |
 | L01 / H-44 | Professor atual versus negação antes/depois por idioma, escopo por cláusula e exclusão da indicação clínica | V01 para labels; V02 para efeito visual / baixo + treino | DIAGNÓSTICO PARCIAL — AV-017; treino299,17discordâncias/723comparáveis; não substituir professor; revisão e efeito visual pendentes |
 | L02 / H-44 | Acrescentar consequências OA com atribuição ao compartimento e severidade, mantendo os demais alvos/labels | L01; referência de avaliação congelada / baixo + treino | PENDENTE |
 | L03 / H-44 | BCE atual versus BCE com máscara de não mencionado e peso reduzido para incerto; distinguir gravidade de confiança | V02; labels com estados auditáveis / alto | PENDENTE |
@@ -560,7 +584,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 | M03 / H-46 | Modelo próprio global versus global + ramo local para menisco/MCL; atenção espacial como alternativa ao crop fixo | G05/M01; escolher um mecanismo por rodada / alto | PENDENTE |
 | M04 / H-46 | Adicionar posição em mm e máscara de protocolo à atenção; comparar com mesma cabeça sem posição | V02/M01 / alto | PENDENTE |
 | R01 / robustez | Normalização por volume/série versus receita atual, com MONOCHROME1, rescale e paridade de intensidade verificados | V02; preservar contrato dos pesos públicos / alto | PENDENTE |
-| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | TREINO CONCLUÍDO/AUDITADO AV-027 — paired vence control/dropout; média intacta0,608357 e ausências0,620870; ruído real não testado,confirmação pendente |
+| R02 / robustez | Estresse de slot ausente/ruidoso; se houver queda, comparar treino normal com dropout de slots | V02; mistura de perdas somente depois do diagnóstico / médio + treino | AV-027 ganho no dev; AV-028 NÃO CONFIRMADO para promoção — ausências melhoram, intacto/OA falham; apenas hipótese de robustez; ruído real não testado |
 | E01 / ensemble | Âncora + melhor componente elegível: peso global fixo pequeno, definido no desenvolvimento; medir correlação e delta por caso | A/V com predições comparáveis / médio | PENDENTE |
 | E02 / ensemble | Probabilidade versus rank no mesmo conjunto de componentes, pesos e partição; evitar grid target-wise | E01 / baixo | PENDENTE |
 | E03 / eficiência | Compartilhar decode; compartilhar prefixo congelado só se os tensores forem idênticos; distribuir braços nas duas T4 | referência estável / médio | APROVADA_LOCAL — AV-015; paridade completa/−6,99% no benchmark e smoke3/15 aprovado; confirmação oculta da nova receita pendente |
