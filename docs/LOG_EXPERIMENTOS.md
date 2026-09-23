@@ -2,6 +2,485 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-029 — 21/09/2026 — V05 auditado; piloto G04 sem vagaGPU
+
+[Protocolo e retomada](AV029_VALIDACAO_NOVA_E_RESOLUCAO.md).
+Nova divisão1000treino/300dev/300reservados, mantendo todos grupos conhecidos
+expostos fora dos novos conjuntos. Manifesto9bb462ae…;OOF5×260desenhado,
+não executado. Sem predições dos600novos.17testes novos passaram.
+Piloto técnico20treino/60séries224vs336: paridade224, geometria e custo;
+sem labels, treino ou teste de acurácia. Buildca3dd37a…,66.245bytes.
+Código/protocolo f7d0b53 anterior ao SaveKernel recusado:2vagasGPU ocupadas,
+kernelId0/sem versão, status404. Quota35.804,072601s suficiente; nenhum
+job criado ou cancelado. Não há resultado336 nem piloto running.
+Auditor V05 PASSED_V05_METADATA_AUDIT_NOT_PIXEL_VALIDATION,
+SHA5ce49821…; sem pixels/OOF avaliados.233testes+44subtestes
+passaram, incluindo22novos. V04 permanece NOT_CONFIRMED,
+sem tuning nos150. Sem CSV/submissão/finalistas novos. Retomar piloto
+congelado após reconciliar vagas/slug; sem agendamento entre mensagens.
+
+## AV-028 — 21/09/2026 — confirmação V04 auditada, resultado negativo
+
+[Protocolo e retomada](AV028_CONFIRMACAO_RESERVADA.md).
+Kernel135297768 v1 COMPLETE/PASSED_V04_CONFIRMATION_AUDIT. Protocolo
+bb7897a e código bcd2b76 anteriores à inferência; build1270ab30…,372.104bytes.
+Comparação única control/paired nos150reservados/147grupos, quatro checkpoints
+fixos. Média intacta0,601917329→0,603054561; delta+0,001137232,
+IC95%[−0,002663697;+0,005025211]. Ausências0,628732916→0,614479061.
+Seed42 intacta piorou; MedialOA+0,017349/LateralOA+0,021597 acima do teto.
+NOT_CONFIRMED:3gates falharam, só robustez a ausências passou.
+AUC weak secundária melhorou, mas não muda a decisão pré-fixada nem é LB.
+Replay1,146e−6;450séries auditadas;151,093s fora inicialização.
+211testes+44subtestes passaram, incluindo14novos. Outputs privados no HD.
+150agora avaliados; não retunar/reconsultar. Próximo V05: novo desenho OOF/
+reservado antes de G04 resolução. Controle V03 mantido como comparador.
+Sem novoCSV/submissão/finalistas; melhor público confirmado0,941 preservado.
+
+## AV-027 — 21/09/2026 — consistência vence; confirmação preparada no plano
+
+[Resultados e protocolo reservado](AV027_RESULTADOS_R02_E_CONFIRMACAO.md).
+R02 kernel135135626 v1 COMPLETE/PASSED_R02_TRAINING_AUDIT. Fonte/protocolo
+AV-026 intactos. Médias intactas control/dropout/paired:
+0,612147256/0,610508535/0,608357407. Médias ausências:
+0,638510777/0,624558855/0,620869795. Ambos passam gates nas duas sementes;
+paired_consistency promovido como referência própria de desenvolvimento.
+Medial/LateralOA pioram na seed42, sem escolha de modelo por alvo.
+Controle reproduzido; máscaras/RNG/checkpoints/IDs/logits auditados.
+Replay até1,281e−6;123,76s fora imports,75.997.184bytesGPU alocados.
+197testes+44subtestes passaram novamente. Outputs privados no HD.
+Próximo V04: uma comparação control/paired nos150reservados, quatro
+checkpoints já fixos; protocolo de grupos/bootstrap/limites por alvo
+registrado ANTES de inferir. Ainda não implementado ou avaliado.
+Sem novoCSV/submissão/finalistas; melhor público confirmado0,941 preservado.
+
+## AV-026 — 20/09/2026 — robustez e consistência prontas, sem vaga GPU
+
+[Protocolo e retomada](AV026_TREINO_ROBUSTO_E_CONSISTENCIA.md).
+Implementados controle V03, dropout25% e paired_consistency: seis heads,
+features1000/dev250 congeladas, seeds2026/42. Seleção por dev intacto,
+promoção apenas se intacto e média de ausências melhorarem nas duas.
+Loss pareada0,5BCEcompleto+0,5BCEmascarado+0,1MSE(probabilidades);
+RNG independente, checkpoint/retomada testados e auditor NumPy/máscaras.
+Protocolo/código a6fc5dd antes da tentativa. Build17ad28e1…,
+239.496bytes.197testes+44subtestes passaram ao final.
+SaveKernel recusado por duas sessões GPU simultâneas; quota63.969,61517s
+suficiente, kernelId0, sem versão; status do slug R02 confirmado404.
+Nenhum treino R02 lançado; outros jobs não alterados. Retomar quando houver
+vaga, reconciliando para não duplicar. Sem agendamento/CSV/submissão/métrica
+nova; referência própria V03 e público0,941 preservados.
+
+## AV-025 — 18/09/2026 — escala aprovada e diagnóstico de robustez
+
+[Auditoria, estresse e próximo ensaio](AV025_ESCALA_AUDITADA_E_ROBUSTEZ.md).
+V03 COMPLETE/PASSED_V03_AUDIT: treino1000=0,611192285/0,613102226 versus
+controle299=0,624261641/0,626115689 nas seeds2026/42. Média0,612147256
+versus0,625188665; expanded promovido. Épocas8/14. Fracture piora ambas;
+sem seleção por alvo. Features antigas idênticas, controle reproduzido;
+checkpoints/logits/BCE auditados.962,71s totais/916,98s features.
+Protocolo R02 commit207544e; falha de esquema antes de métricas corrigida
+fce369b (metadados de dev herdados da geometria G01 por hash). Diagnóstico
+CPU concluído sem treino: deltaBCE semaxial+0,038457/+0,047711;
+semsagital+0,021992/+0,027067; semcoronal+0,016185/+0,006770.
+Axial/sagital ultrapassam0,01 nas duas: priorizar R02b dropout25%uniforme,
+receita/critério registrados; ainda não implementado/lançado. Zerar vetor
+com slot presente é controle distinto, não correção nem ruído real.
+Quota observada29,10minGPU, compartilhada; nenhum novo job/CSV/envio.
+Confirmação150fechada. Melhor público confirmado0,941 permanece do ensemble;
+estes resultados próprios medem acordo com labels fracos, não AUC clínica/LB.
+Verificação final:181testes+44subtestes passaram; vault/espelho sincronizados,
+outputs/features/checkpoints privados e ignorados pelo Git no HD externo.
+
+## AV-024 — 18/09/2026 — ganho G01 auditado e V03 escala1000
+
+[Protocolo, artefatos e retomada](AV024_ESCALA_TREINO_V03.md).
+G01 COMPLETE/PASSED_G01_AUDIT. Adjacentes0,62426164/0,62611569 vencem
+controle0,62607019/0,63189521; promovidos como referência própria conforme
+regra anterior. Média0,62518867vs0,62898270; não é melhora de leaderboard.
+V03 aumenta299→1.000treino/954grupos,701novos;455excluídos por IDs/grupos
+reservados e62por gold/grupo. Preserva professor/dev250/confirmation150.
+Protocolo/código549b33e.168testes+44subtestes passaram. Kernel134854744 v1
+RUNNING,build3ae46545…,T4/offline/teto1.200s. Último log extra_features2/701;
+sem resultado V03 ainda. Auditor implementado, aguarda outputs completos.
+Sem CSV ou novo envio; melhor público confirmado0,941 do ensemble preservado.
+
+## AV-023 — 17/09/2026 — pesquisa Kaggle e G01 em execução
+
+[Fontes, protocolo e retomada](AV023_PESQUISA_E_GEOMETRIA_G01.md).
+Revisados25notebooks por atividade recente e quatro fontes baixadas; relatos
+negativos de ensemble/intensidade/LLMs não sustentam atalho garantido.
+Implementados ordem física estrita, quartis físicos e adjacentes, com controle
+V02 e auditor NumPy.162testes+44subtestes passaram. Protocolo b769ee4.
+Buildlocalv1 recusado >1MB; contagens compactadas6183f46 sem mudar receita.
+Buildlocalv2SHA986a3ffb…, kernel134798342 v1 RUNNING,T4/offline/1.800s.
+Último log:100/549estudos passaram geometria/pixels; sem resultado de treino.
+Não duplicar; outputs previstos reports/avance_av023_g01_v1/. V03 escala de
+treino priorizada após auditoria G01, ainda não implementada. Nenhum novo
+envio; score confirmado0,941 permanece do ensemble anterior.
+
+## AV-022 — 17/09/2026 — M01 pooling, sem promoção
+
+[Protocolo e resultados](AV022_ABLACAO_POOLING_M01.md).
+Protocolo commit538a0e9 antes de treinar3cabeças×2seeds com features V02
+congeladas. Kernel134795832 v1 COMPLETE; PASSED_M01_AUDIT, shared reproduzido.
+SoftBCE2026/42:shared0,62607019/0,63189521;mean0,62733778/0,62448577;
+target0,63315980/0,62473064. Mean tem melhor média0,62591178, mas nenhuma
+alternativa melhora ambas sementes; regra prévia mantém shared como referência.
+Mean em reserva; sem alegar ganho clínico/LB. 146testes+44subtestes passaram.
+Replay NumPy dos12checkpoints até1,21e−6;36,02s sem imports,76,74MiB
+pico alocado. Nenhum DICOM reextraído/confirmation avaliada/novo envio.
+Melhor público0,941 mantido. Próximo G01, geometria sem mudar cabeça/teacher.
+
+## AV-021 — 17/09/2026 — baseline V02 e protocolo prospectivo
+
+[Protocolo e execução](AV021_BASELINE_PROPRIO_V02.md).
+Implementados preflight train299/dev250, runtime20épocas/2sementes2026/42,
+checkpoint recuperável, seleção por softBCE dev e comparador prior de treino.
+Auditor independente de BCE/logits/heads/IDs/checkpoints. **141testes e
+44subtestes passaram**. Cache549estudos/1.647arrays e reconstrução GPU exatos.
+Kernel134788472 v1 COMPLETE; **PASSED_V02_BASELINE_AUDIT**.
+Prior softBCE0,65707840;seed2026época10=0,62607019 e seed42época6=0,63189521.
+Ambas melhores que prior; época20 piora dev. Baker's piora nas duas sementes.
+Features164,57s,total175,04s sem imports; replay logits até1,04e−6.
+Aceito como referência para M01 (média vs atenção por alvo), não submissão.
+Confirmação150fechada, melhor público0,941; sem novo envio.
+
+## AV-020 — 17/09/2026 — percentis corrigidos e piloto V02 aprovado
+
+[Causa, testes e retomada](AV020_CORRECAO_PERCENTIS_V02.md).
+Falha v2 reproduzida no NumPy2.0.2: posição do percentil float32 altera
+normalização; DICOM/raw/resize não divergem no caso diagnosticado.
+Correção explícita float64/limites float32:36/36séries iguais ao cache em
+dois ambientes, contra32/36 da receita antiga no2.0.2. Cache/teacher preservados.
+**136 testes e44subtestes passaram**.
+
+Piloto134631088 v3 COMPLETE; **PASSED_V02_PILOT_AUDIT**, pixels/features/
+treino/retomada exata aprovados. Descoberta0,001893s, total medido6,8730s
+fora imports;153MiB pico alocado. Não é baseline completo nem ganho de AUC.
+Nenhum novo envio. Próximo: baseline299treino/250dev, confirmação150fechada,
+duas sementes/protocolo congelado/cache completo; teto1.800s por execução.
+
+## AV-019 — 16/09/2026 à noite — candidata0,941 e diagnóstico V02
+
+[Evidências e retomada](AV019_PARIDADE_PIXELS_V02.md).
+56281610 COMPLETE0,941, empata com histórico. Nenhuma nova submissão.
+Piloto134631088 v1 falhou na igualdade de pixels; local108DICOMs/36séries
+reconstruídos exatamente. Versão2 instrumentada RUNNING no mesmo kernel,
+sem tolerância/fallback; evidencia estágios antes de qualquer treino.
+**134 testes e44subtestes passaram**. Dev/confirmation/professor preservados.
+Próximo: comparar artefatos remotos, corrigir causa e repetir gate estrito.
+
+## AV-018 — 16/09/2026 — preflight do baseline próprio V02
+
+[Evidências e retomada](AV018_PREFLIGHT_V02_GENERICO.md).
+Cache299estudos/897séries aprovado,2.691canais; sem constantes/arrays de
+pixels exatamente duplicados no treino. Quartis com gaps2–80, não adjacentes.
+**105 testes locais passaram**, manifesto V01/professor intactos.
+
+Iniciado piloto privado134631088 v1, RUNNING, offline/T4/1.800s,12estudos
+de treino. DINOv2 genérico congelado, cabeça própria de atenção; testar pixels,
+treino e checkpoint antes do baseline completo. Logs ainda indisponíveis por
+timeout de leitura; gates GPU/custo pendentes. Não duplicar nem submeter piloto.
+56281610 segue PENDING; melhor0,941, nenhum novo envio. Próximo: auditar piloto.
+
+## AV-017 — 16/09/2026 — auditoria L01 somente no treino
+
+[Evidências e retomada](AV017_AUDITORIA_L01_TREINO.md).
+Ref56281610 PENDING, sem score/erro; melhor0,941, nenhum novo envio.
+Teste de escopo/negação:299estudos/296grupos de treino,3.588pares;
+169sinais alterados vs extrator legado,17discordâncias com professor em723
+pares comparáveis. Sem adjudicação, não são17erros comprovados.
+
+725sinais definidos e653abstenções sobre sinais antigos: não substituir
+professor. Revisão cega60casos privada no HD, sem dados em GitHub.
+**102 testes passaram**, V01/professor intactos; nenhum dev/confirmation
+analisado ou AUC medida. L01 efeito visual pendente. Próximo: V02 baseline
+com pretreino genérico/professor original e preflight de cache/custo/checkpoint.
+
+## AV-016 — 16/09/2026 — probe22 estável enviado
+
+[Evidências e retomada](AV016_CANDIDATA_ESTAVEL_PROBE22.md).
+Kernel134618609 v1 COMPLETE, offline/T4/9h. Candidata herda smoke aprovado,
+fixa probe22 sem novo grid; auditor confirma componentes/raw idênticos,
+replay da fusão,3estudos/15séries e56hashes. **97 testes passaram**.
+CSV SHAff848c73… igual ao probe22 visível histórico; etapas114,5048s.
+
+Enviado **56281610**, scriptVersionId350342219,16/09 12:00:59 São Paulo.
+PENDING, sem score/erro. Único envio desta rodada;1hoje/4restantes.
+Melhor0,941 e seleção final preservados; V01/dev/confirmation intocados.
+Próximo: consultar esse ID sem duplicar; seguir V02/L01 enquanto aguarda.
+
+## AV-015 — 16/09/2026 — paridade completa aprovada; smoke oficial
+
+[Evidências e retomada](AV015_PARIDADE_COMPLETA_E_SMOKE_OFICIAL.md).
+Par ordered COMPLETE: **PASSED_ORDERED_FULLSTACK_PARITY**, todos os CSVs e
+componentes exatos, incluindo comparação com âncoras Raptor/CoAt. Etapas
+624,30→580,65s (**−6,99%**); subtotal Raptor/CoAt/fusão−13,57%, sem ganho AUC.
+
+Builder/auditor do smoke oficial preparado a partir do exato prefetch aprovado.
+**91 testes passaram**, V01 intacta. Kernel134610738 v1 COMPLETE e smoke
+aprovado:3estudos/15séries,5ramos, raw/replay/IDs exatos, zero fallback.
+CSV SHA7d3b8bd4… igual ao piloto visível; etapas117,69s; outerparent0,60.
+Próximo: preparar candidata estável com presetprobe22 e gates de envio. Melhor0,941
+inalterado, nenhuma nova submissão ou seleção final.
+
+## AV-014 — 16/09/2026 — CoAt ordered exato; nova integração completa
+
+[Evidências e retomada](AV014_COAT_ORDENADO_E_INTEGRACAO.md).
+ABBA134608117 COMPLETE e auditado: inputs/ambiente iguais, ordered raw/ranks
+exatos nas2repetições. Completion variou248valores raw, delta máx0,0001143664;
+ranks/CSV iguais. Tempos116,51/113,98/115,88/115,71s, sem ganho de AUC alegado.
+
+Builder/auditor do par completo com a mesma cópia CoAt ordered implementados;
+só célula57 muda. **87 testes passaram**, V01 intacta. Iniciados serial134609177
+e prefetch134609181, v1, offline/T4/teto1.800s. Exigir gate completo e âncoras
+Raptor/CoAt; nenhum smoke ou novo envio. Melhor público0,941 preservado.
+
+## AV-013 — 16/09/2026 — Raptor integrado; CoAt depende de investigação
+
+[Evidências e retomada](AV013_COAT_LOTES_E_GATE_COMPLETO.md).
+Par completo COMPLETE:613,55→602,09s (−1,868%); CSV final igual.
+Raptor raw/ranks/inputs iguais entre modos e âncora; DINO e native iguais.
+CoAt muda71probabilidades em2estudos, delta máx3,41088e−5;2ranks ACL e2valores
+CoAt divergentes. Gate estrito reprovado, sem smoke/envio. Melhor0,941.
+
+Fonte revela lotes formados por ordem de conclusão do preparo. Hipótese
+testável, não causalidade comprovada. Iniciado ABBA CoAt36 completion/ordered/
+ordered/completion, v1 ID134608117, T4/offline/1.800s. Novo código/auditor,
+**83 testes passaram**, V01 intacta. Próximo: auditar repetição ordered;
+se não passar, suspender E03 e seguir V02. Nenhuma seleção final alterada.
+
+## AV-012 — 16/09/2026 — probe22 0,941; par determinístico completo
+
+[Evidências e retomada](AV012_PROBE22_0941_E_STACK_DETERMINISTICO.md).
+Probe22 ref56263721 COMPLETE **0,941**, +0,002 sobre parent0,939; nenhuma nova
+submissão. Reprodução pública, OOF independente indisponível, seleção intacta.
+Raptor36 repetiu inputs/raw/ranks/ambiente exatos em nova sessão,193,94s.
+
+Implementados builder/auditor completos: backend fixo no Raptor, restauração
+em finally, ordem native por ID e gate de todos os componentes preservado.
+**75 testes passaram**, V01 intacta. Par privado/offline/T4/1.800s iniciado:
+serial134588338/prefetch134588340, v1, mesmos36 estudos/205 séries do treino.
+Próximo: auditar resultados; smoke antigo precisa incorporar a receita validada.
+
+## AV-011 — 15/09/2026 à noite (16/09 UTC) — Raptor determinístico aprovado na sessão
+
+[Evidências e retomada](AV011_RAPTOR_DETERMINISTICO_E_ROUTING.md).
+ABBA36 v1 ID134547620 COMPLETE: quatro passagens com imagens, raw e ranks
+exatamente iguais. Tempos 287,49/177,11/175,46/240,80s; média prefetch176,28s,
+**26,79% menos tempo contra serial aquecido**. Só Raptor, sem ganho de score medido.
+
+Repetição em nova sessão iniciada: rsna-knee-raptor36-deterministic-repeat v1
+ID134548619 RUNNING, offline/T4/teto1.800s; mesmos36 estudos/205 séries e flags,
+uma passagem prefetch. Identidade do host físico não disponível.
+
+Teste isolado classificou native DINO como diagnóstico no trecho de promoção:
+quatro variantes native geram o mesmo principal público; saída pública ausente
+ou inválida falha. Gate completo não alterado. **71 testes passaram**, V01 intacta.
+Probe22 56263721 PENDING, melhor H43 0,939; nenhuma submissão nova.
+
+## AV-010 — 15/09/2026 à noite (16/09 UTC) — CSV igual, gate intermediário reprovado
+
+[Evidências e retomada](AV010_PARIDADE_FINAL_E_VARIACAO_RAPTOR.md).
+Stable36 serial134546480/prefetch134546487 COMPLETE. CSV final idêntico
+(SHA87ee1ac7…), DINO público/raw idênticos. Etapas710,02→605,98s (−14,65%);
+subtotal Raptor/CoAt/fusão−20,01%. Comparação entre workers não isola causalidade.
+
+Gate FAILED_STABLE_FULLSTACK_PARITY: raw Raptor1727/1728 diferenças,
+máx0,0004003644; dois ranks Baker's. Inputs idênticos. Native DINO muda dois
+Medial OA. Sem promoção apesar do CSV final igual. Builder de smoke preparado
+e testado contra a rejeição real; nenhum smoke gerado/enviado.
+
+Iniciado rsna-knee-raptor36-deterministic-abba v1 ID134547620 RUNNING,
+offline/T4/teto1.800s, ABBA36/205séries só Raptor. Flags determinísticas fixadas
+para testar hipótese de backend; causa cuDNN não confirmada. **66 testes passaram**.
+Probe22 56263721 PENDING; melhor H43 0,939 preservado. Nenhuma submissão nova.
+
+## AV-009 — 15/09/2026 à noite (16/09 UTC) — par completo com DINO estável
+
+[Código, hashes e retomada](AV009_DINO_ESTAVEL_STACK_PAREADO.md). Regra exata
+implementada apenas no DINO público uniforme. Teste CPU com captura real
+reproduz o replay independente em 20 ordens; pesos/IDs/finitude/cobertura validados.
+Parent histórico e demais ramos preservados; nenhum ganho de AUC alegado.
+**59 testes passaram**, incluindo replay real e casos negativos da auditoria.
+
+Iniciados rsna-knee-stable36-serial v1 **134546480** e
+rsna-knee-stable36-prefetch v1 **134546487**, ambos RUNNING. Cada um privado,
+offline/T4/teto1.800s; 36 estudos/205 séries e cinco ramos. Mesma regra DINO;
+varia só modo Raptor. Auditor de raw/inputs/componentes/CSV preparado.
+Não submeter os benchmarks; paridade e ganho completos pendentes.
+
+V01 intacta. Probe22 56263721 PENDING, sem reenvio; H43 parent **0,939**.
+Nenhuma alteração da seleção final ou automação. Recuperar outputs nos diretórios
+reports/avance_av009_serial_v1/ e reports/avance_av009_prefetch_v1/.
+
+## AV-008 — 15/09/2026 à noite (16/09 UTC) — fullstack e empates DINO
+
+[Evidências e retomada](AV008_FULLSTACK_E_EMPATES_DINO.md). Stack36 v1
+ID 134543253 COMPLETE: 598,60 vs 667,72 s, **10,35% menos tempo**; cinco ramos
+íntegros, mas seis valores do CSV mudaram. Não promover. Raptor/CoAt idênticos;
+a divergência começa no DINO público e foi reproduzida sem executar prefetch.
+
+Captura DINO36 v1 ID 134544795 COMPLETE: replay das mesmas previsões nas duas
+ordens históricas reproduz exatamente os dois CSVs DINO. Soma float64 dependente
+da conclusão das GPUs altera empates que o rank final amplifica.
+Soma exata de ranks duplicados passou em 20 permutações; muda 14 valores vs
+legado, portanto é correção candidata a validar, não reprodução idêntica.
+**47 testes passaram**, V01 intacta. Nenhum ganho de AUC medido.
+
+Probe22 56263721 segue PENDING; melhor público H43 **0,939**. Nenhuma nova
+submissão/seleção final/automação. Próximo: stack36 serial/prefetch com a mesma
+agregação estável; preservar baseline e aguardar probe22 sem duplicar.
+
+## AV-007 — 15/09/2026 à noite (16/09 UTC) — prefetch isolado aprovado
+
+[Evidências](AV007_E03_GANHO_E_FULLSTACK.md). E03 ABBA v1 ID 134542682 COMPLETE:
+serial 123,55/86,11 s, prefetch 64,08/63,37 s. Média B 63,73 s, **25,99% menos
+tempo** contra serial aquecido. Só Raptor/12 estudos, não o ensemble completo.
+Auditoria local independente conferiu NPZs/IDs/36 pares receita-estudo e
+recalculou métricas: paridade exata de inputs, probabilidades e ranks, delta0.
+Raw SHA dos quatro arquivos 498c9ea93f3544d8babe47bd45ac7c4d0647ad0fe8f8879c38a4485737b61278.
+
+Iniciado jvlegend/rsna-knee-e03-fullstack36-prefetch v1, ID **134543253**,
+RUNNING, offline/T4x2/1h, mesmos 36 estudos/205 séries de treino. Cinco ramos;
+exigir CSV idêntico e comparar tempos com benchmark AV-004. Não é submissão.
+Build SHA 7d2dc6c5f3538c451ae332c22ae92949b29370c1f02a82b3f86af6123285cb5c.
+**39 testes passaram**, V01 inalterada. Outputs isolados em
+reports/avance_av007_e03_v1/; fullstack esperado em reports/avance_av007_fullstack_v1/.
+
+Probe22 56263721 ainda PENDING, sem erro/score novo. H43 parent **0,939**
+preservado; nenhuma submissão/automação/seleção final nova. Retomar ambos os IDs.
+
+## AV-006 — 15/09/2026 à noite (16/09 UTC) — E03 prefetch iniciado
+
+[Experimento e retomada](AV006_E03_PREFETCH.md). Probe22 ref 56263721 segue
+PENDING, sem score/erro informado. Não reenviado; H43 parent 0,939 preservado.
+
+E03 testa CPU preparando um estudo à frente da GPU, com produtor único e
+memória de lookahead limitada. Modelo/preparo/rank inalterados. Kernel
+jvlegend/rsna-knee-e03-prefetch-abba v1, ID 134542682 RUNNING, offline/T4,
+limite 1.800 s; 12 estudos/70 séries apenas do treino V01, ABBA de quatro
+passagens pelos quatro ramos Raptor. Nunca submeter este benchmark.
+
+Critério: paridade exata de inputs, raw probabilities, IDs e ranks; ganho
+≥5% no ABBA e contra serial aquecido habilita só teste futuro do stack completo.
+33 testes locais passaram; não há tempo ou paridade remota demonstrados ainda.
+Build SHA 223ec2a6ee262aae8202aa46866ee31df916454e9fa2a90399b39b258f3eeeb2.
+Nenhuma nova submissão/automação/seleção final; outputs esperados em
+reports/avance_av006_e03_v1/. Retomar o kernel e o submission_id existentes.
+
+## AV-005 — 15/09/2026 — H43 0,939 confirmada; A02 probe22
+
+[Evidências](AV005_PARENT_0939_E_PROBE22.md). H43 ref **56253529 COMPLETE,
+0,939**, delta público +0,010 vs H38. A01 REPRODUZIDA; melhor público passa
+a H43, sem modificar seleção final. OOF independente indisponível.
+
+A02 escolheu somente probe22 publicado. Cinco pesos externos alterados;
+sete alvos e todas as células de inferência preservados. Código:
+prepare_h43_probe22.py e assess_h43_probe22.py. Builder fixado por SHA,
+gate exige receita completa, comparação pareada protege sete alvos e parent
+diagnóstico. **28 testes passaram**, manifesto V01 inalterado.
+
+Kernel jvlegend/rsna-knee-h43-probe22-strict-submission v1, ID **134536133**,
+COMPLETE, privado/offline/T4x2/9h, mesmas fontes do parent. Build no HD:
+reports/avance_av005_build/h43_probe22_strict_v1.ipynb, SHA
+beb65225a4ed75d1ce2d60f0afdd5ee46c39ed843c151e465ff07e6eb80d572c.
+Último log 248,28 s. Parent diagnóstico idêntico ao CSV anterior, sete alvos
+intactos, CoAt sem falhas/fallback. CSV novo 3×13, SHA
+ff848c73ba6f31e487d175161304d26df307e6e777189c01dfb508a76532ddfc.
+
+**Submissão 56263721**, scriptVersionId 350168027, enviada em 15/09/2026
+19:51:17 São Paulo; **PENDING**, sem score/erro informado. Um envio nesta
+AVANCE, dois hoje, três restantes. Próximo: consultar esse ID, sem duplicar.
+Não testar halfway/grade própria; preservar H43 0,939 e seleção final.
+
+## AV-004 — 15/09/2026 — benchmark COMPLETE, H43 enviada
+
+[Evidências e retomada](AV004_BENCHMARK_E_SUBMISSAO.md). Benchmark v1
+ID 134423935 aprovado: 36 estudos/205 séries, cinco ramos, lock 56 e T4x2,
+zero fallback CoAt. Total de etapas 667,72 s; Raptor/CoAt/fusão representa
+58%. Projeções com margem: 8,57 h para 1.322 e 12,94 h para 2.000 casos
+hipotéticos. Tamanho oculto desconhecido; risco de timeout explicitado.
+Limite oficial de 9h/offline/Notebook-only revalidado.
+
+Kernel dedicado jvlegend/rsna-knee-h43-parent-strict-submission v1,
+ID 134484564 COMPLETE, 32.400 s, mesmo build/hash do piloto íntegro.
+CSV 3×13 idêntico ao piloto, IDs/schema/finitude/hash oficiais conferidos,
+cinco ramos íntegros, CoAt zero fallback. Último log 281,49 s.
+
+Submissão **56253529**, scriptVersionId **350055640**, enviada em
+15/09/2026 08:47:46 São Paulo, **PENDING**, sem score/erro informado.
+Único envio desta AVANCE: API confirmou um hoje, quatro restantes e 24
+históricos. Reprodução pública; OOF independente indisponível; sem ajuste
+pelos 58. 22 testes passaram; manifesto V01 inalterado. Próximo: consultar
+esse submission_id sem duplicar. H38 0,929 e seleção final preservadas.
+
+## AV-003 — 14/09/2026 (15/09 UTC) — piloto COMPLETE, benchmark iniciado
+
+[Evidências e retomada](AV003_PILOTO_APROVADO_BENCHMARK.md). Piloto H43 parent
+v1 ID 134328295 COMPLETE, gate PASSED_PARENT_INTEGRITY aos 289,22 s; último
+evento 301,06 s. 20 DINO, 5 A5, Rad/calibrador, 4 views Raptor e 3 CoAt;
+CoAt zero fallback. CSV 3×13 validado novamente, SHA
+7d3b8bd4e76b309171e2c44a58301e71da26104d1049cc9f8c445c17eee3c770.
+
+Lançado jvlegend/rsna-knee-h43-runtime-benchmark v1, ID 134423935, RUNNING:
+36 estudos/205 séries do treino V01, offline, duas T4 exigidas, limite 3.600 s.
+Objetivo runtime/cobertura, não AUC. Sem acesso aos conjuntos dev/confirmação
+para avaliação. Código novo: prepare_h43_benchmark.py e assess_h43_runtime.py;
+22 testes passaram. Nunca submeter o kernel de benchmark nem o piloto de 30 min.
+
+Nenhuma submissão ou score novo; H-38 0,929 preservada. Retomar o benchmark
+existente e estimar orçamento antes de preparar a versão para o teste real.
+
+## AV-002 — 14/09/2026 — A01 parent estrito em execução
+
+Implementados gates e builder ancorado na fonte auditada; 16 testes passaram.
+[Registro completo](AV002_PARENT_ESTRITO.md). Preflight CPU
+jvlegend/rsna-knee-h43-artifact-preflight v1 (ID 134328050) COMPLETE:
+56 arquivos, 4.483.039.152 bytes, 48,39 s para auditoria; hashes fixados no piloto.
+
+Piloto jvlegend/rsna-knee-h43-parent-strict-pilot v1 (ID 134328295)
+iniciado, último status RUNNING. T4 solicitada, exige duas T4 reais, offline,
+limite 1.800 s. Código não deixa CSV elegível após falha dos ramos obrigatórios.
+Build reports/avance_av002_build/h43_parent_strict_locked_v2.ipynb:
+a103e27720ba52f584c377ac6ffa470aad062c0a4e8558df22da06535a6b0306.
+
+Não confundir versão local v2 com versão remota v1. Não submeter este piloto
+de 30 minutos: faltam inferência íntegra, lote representativo e orçamento para
+teste oculto. Nenhuma submissão/score novo; H-38 0,929 preservada.
+Retomar o kernel existente antes de qualquer nova execução; alternativa A03.
+
+## AV-001 — 14/09/2026 — A00 + V01 executadas
+
+Resultado: [auditoria e validação congelada](AV001_AUDITORIA_E_VALIDACAO.md).
+A00 fixou fonte/hash/receitas do H-43A e identificou fallbacks que permitem
+CSV de ensemble incompleto. E13 real tem 63.534.726 bytes e SHA esperado;
+não estava ausente como a listagem de tamanho sugeria. Nenhum checkpoint foi
+executado. A01 deve exigir parent explícito, duas T4 e composição integral.
+
+V01 inventariou 700 estudos/2.100 arrays e excluiu 1 estudo que compartilha
+laudo com gold. Congelou 299 treino, 250 desenvolvimento e 150 confirmação,
+692 grupos disjuntos; 12 alvos com as duas classes em todas as partições.
+6 testes passaram e repetição não alterou o manifesto. Labels 0,5 são incertos.
+Código: scripts/freeze_weak_validation.py; artefato ignorado pelo Git:
+data/processed/validation_weak_v1/manifest.json, SHA-256
+365566b0f830e398e78bd36bd9118a7365c3af340f588e774c8bcc351398b6df.
+
+Sem AUC nova, treino, kernel ou submissão. CLI confirmou H-38 ref 55916072
+COMPLETE 0,929 e H-42 ref 56217840 COMPLETE 0,881. Preservar H-38.
+Próxima experiência: A01 preflight estrito; se bloquear, A03 Native384Dense.
+
+## Plano AVANCE — 14/09/2026
+
+Criada [ESTRATEGIA_AVANCE.md](ESTRATEGIA_AVANCE.md), com 27 alternativas,
+dependências, validação, orçamento por execução e cursor persistente.
+Cada AVANCE do JV retoma o trabalho em andamento ou a próxima experiência
+elegível, com registro de código, resultado e eventual envio Notebook-only.
+Próxima ação: A00 (inventário H-43A); alternativa: V01 (partição agrupada).
+Estado: planejamento concluído; nenhuma experiência, treino ou submissão nova
+foi executada nesta rodada. H-38 permanece 0,929 e H-42 permanece rejeitada.
+
+## Histórico de experiências
+
 | Data | Versão | Hipótese | Validação local | Leaderboard | Decisão |
 |---|---|---|---:|---:|---|
 | 07/08/2026 | `setup` | Repositório, regras, protocolo e smoke test sintético | N/A | N/A | Infraestrutura pronta |
@@ -14,6 +493,12 @@
 | 08/08/2026 | `dicom_subset_manifest` | Selecionar séries fluido-sensíveis, cobrindo positivo/negativo por alvo | Manifesto local com 10 estudos únicos e 1 série por estudo; ambos os valores presentes nos 12 alvos | — | Seleção congelada para o primeiro lote visual |
 | 08/08/2026 | `dicom_subset_download` | Baixar somente as séries do manifesto, sem varrer o dataset integral | 10 séries, 289/289 arquivos, `193.721.314` bytes; leitura DICOM e pixels OK; dimensões de `256×256` a `800×800` | — | Lote local pronto para o pipeline visual; aquisição integral não autorizada ainda |
 | 08/08/2026 | `dicom_subset_download_v2` | Ampliar a cobertura sem repetir estudos do primeiro manifesto | 8 estudos/séries, 232/232 arquivos, `169.086.016` bytes; os dois lotes somam 18 estudos e 521 fatias; leitura DICOM e pixels OK | — | Manter aquisição incremental; iniciar pipeline visual antes de novo lote |
+| 14/08/2026 | `dicom_budget_50gb_zip_range` | Ampliar o universo visual em aproximadamente 50 GB, preservando diversidade de planos e evitando duplicatas | Dois manifestos disjuntos: 700 estudos, 2.100 séries, 78.299 DICOMs e `51.983.501.480` bytes adicionais; total local 758 estudos, 2.159 séries e 80.278 DICOMs; CRC e amostra DICOM OK | — | Dados suficientes para benchmark multimodal e ablações por plano/estudo; manter fora do Git e reservar o próximo passo para CV visual |
+| 14/08/2026 | `budget50_filename_2p5d_embeddings` | Criar rapidamente uma representação visual dos 700 estudos novos e testar se weak supervision já contém sinal transferível | 2.100 arrays `(3,224,224)` e embeddings `(2.100,1.280)` em MPS; diagnóstico weak concat `0,655891` (com viés de seleção); holdout independente dos 58 oficiais: mean `0,577565`, série `0,575001` | — | **Não promover/submeter**. A ordem lexicográfica é apenas smoke; próximo teste deve ordenar por `InstanceNumber`/posição e usar pooling por alvo/plano |
+| 15/08/2026 | `gold_visual_ordering_ablation` | Medir se a ordenação real dos cortes melhora a representação visual sem trocar estudos, rótulos ou encoder | 58 estudos oficiais, 59 séries, CV agrupada por estudo em seeds 42/2026: header `InstanceNumber` macro-AUC médio `0,578718` vs filename `0,543691`; delta pareado `+0,035027`; cobertura `56 Sagittal`, `3 Coronal`, `0 Axial` | — | **Aprovar para escalar**. Gerar a versão anatômica nos 700 estudos weak; manter pooling multi-plano como hipótese ainda não validada |
+| 15/08/2026 | `budget50_header_2p5d_embeddings` | Escalar a ordenação por header para os 700 estudos e medir transferência no gold independente | 2.100/2.100 arrays `(3,224,224) uint8` íntegros; 700 séries por plano; embeddings `(2.100,1.280)` finitos em MPS; holdout Steven v4: mean `0,585771`, série `0,591101` | — | **Manter como ramo complementar**. Melhora filename, mas não alcança a referência `0,706` isoladamente |
+| 15/08/2026 | `weak_visual_order_blend` | Testar complementaridade entre filename e header sem calibrar pesos por alvo | Holdout dos 58: mistura fixa 50/50 marcou `0,614597` com mean pooling e `0,607885` por série; grade diagnóstica teve máximo `0,614597` em alpha `0,5` para mean | — | **Não submeter esta mistura ainda**. H-22 já superou o fallback com público `0,712`; manter a mistura como hipótese posterior |
+| 15/08/2026 | `dense6_local_mac_probe` | Reproduzir localmente a geometria dense6 da v6 antes de alterar o kernel | Probe interrompido após `25/758` estudos e `420` views; leitura completa de headers/pixels no HD externo projetou horas de I/O; nenhum artefato parcial foi salvo | — | **Não repetir localmente**. H-25 já validou a base no T4 com público `0,708`; testar mudanças dense6 diretamente no Kaggle quando houver cota |
 | 08/08/2026 | `dicom_25d_v0` | Construir representação visual compacta para validar a esteira 2.5D | 18/18 estudos processados; 3 fatias por série; arrays `(3, 224, 224) uint8`; `index.json` íntegro | — | Pipeline de leitura/normalização pronto; próximo gate é embedding e pooling |
 | 08/08/2026 | `efficientnet_b0_embedding_v0` | Usar um encoder visual pré-treinado disponível localmente, sem rede, para reduzir cada estudo a um vetor | 18/18 estudos; matriz `(18, 1280)` `float32`; todos os valores finitos; 18 linhas distintas; pesos com SHA-256 registrado no índice local | — | Pré-processamento validado; repetir nos 58 estudos anotados antes da fusão |
 | 08/08/2026 | `dicom_labeled_completion_audit` | Evitar rebaixar arquivos e separar séries completas das incompletas | 34/40 séries adicionais completas; 1.296/1.428 arquivos presentes; 132 arquivos faltantes em 6 séries | — | Processar os 52 estudos completos e retomar apenas o residual |
@@ -33,7 +518,65 @@
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v7` | Acelerar a mesma candidata com GPU genérica | Worker recebeu Tesla P100, incompatível com o PyTorch instalado (`sm_60`; suporte `sm_70+`); terminou `ERROR` antes do modelo | — | Diagnóstico confirmado; não usar P100 neste ambiente |
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v8` | Executar a candidata com GPU explicitamente `NvidiaTeslaT4`, internet desligada e pesos anexados | Kernel histórico multi-view, versão 8, status atual `RUNNING`; aguardando primeiros logs | — | Aguardar CSV; promover somente após saída íntegra e score futuro superior a `0,635` |
 | 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v9` | Repetir a v8 com fallback automático de GPU antiga para CPU | Worker T4 `COMPLETE` em `74,8 s`; `183 views`, CSV íntegro, mas o pacote enviado manteve `weak_visual=False` e reproduziu a referência v2 | — | Não submeter; usar como regressão de runtime e corrigir o default do pacote |
-| 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v10` | Executar de fato a weak supervision visual com o fallback CUDA atualizado | `COMPLETE` em `3.727,8 s`; T4; `weak_visual=True`; 4.407/4.407 estudos e 13.230 views válidos; submissão via Notebook criada como `55392604`, status `PENDING` | — | Envio direto foi recusado pela regra “somente Notebook”; a versão 10 com `submission.csv` foi aceita e aguarda score |
+| 09/08/2026 (UTC 09/08) | `kaggle_kernel_v3_weak_visual_v10` | Executar de fato a weak supervision visual com o fallback CUDA atualizado | `COMPLETE` em `3.727,8 s`; T4; `weak_visual=True`; 4.407/4.407 estudos e 13.230 views válidos; submissão via Notebook criada como `55392604` | Público `0,655` | Nova referência; ganho de `+0,020` sobre `55365537` |
+| 10/08/2026 | `external_labels_audit` | Comparar labels públicos contra os 58 rótulos oficiais sem trocar o visual | Steven v4 macro-AUC `0,892707`; Steven v2 `0,887349`; Pilkwang `0,870040`; Lixin `0,835194`; consenso por ranking `0,892826`; todos os datasets retornaram CC0-1.0 pelo CLI | — | Steven v4 mascarado pelo v2 virou a próxima fonte weak; claims são validação nos 58, não ground truth |
+| 10/08/2026 | `v3_external_labels_local_smoke` | Trocar o professor textual pelo Steven v4, neutralizando `v2=0,5` e usando confiança `≥0,85` | 4.407 estudos percorridos; 58 DICOMs locais válidos; 3/3 linhas do teste; CSV passou o validador; variante `kaggle/rsna_knee_v3_external_labels.py` pronta | — | Promover para T4 quando o limite de sessões GPU liberar |
+| 10/08/2026 | `kaggle_v3_external_labels_push` | Subir variante com dataset Steven CC0 e EfficientNet-B0 no kernel v3 | Código e metadata passaram `py_compile`/JSON; duas tentativas de push recusadas por `Maximum batch GPU session count of 2 reached` | — | Aguardar o limite do Kaggle; nenhum leaderboard alterado |
+| 10/08/2026 | `dinov2_bundle_audit` | Auditar o bundle público pequeno antes de anexá-lo a um kernel | Backbone `88.283.115` bytes, 175 tensores, embedding 384; quatro heads com macro-AUC de fold entre `0,567850` e `0,661374`; Kaggle reportou licença `other` | — | Manter em auditoria; não usar os heads até esclarecer a licença |
+| 10/08/2026 | `dinov2_offline_loader` | Corrigir a dependência de URL do `predict.py` e carregar o peso local | Construção offline e inferência unitária `224×224 → (1,384)` finita passaram; smoke completo não ocorreu porque o checkout local não contém `test_series/` DICOM | — | Código `kaggle/rsna_knee_dinov2_offline.py` pronto para kernel, condicionado à licença e aos DICOMs |
+| 10/08/2026 | `v4_dense6_target_pool_unit` | Testar janelas densas 2.5D, pooling por alvo e teacher por alvo | Código compilou; seis testes unitários passaram; `dense6/dense9` geram slabs de três canais e `targetwise` preserva `UNK=0,5` | — | Variante ousada pronta para T4; sem score ainda e sem DICOM bruto local |
+| 10/08/2026 | `kaggle_v4_dense_target_pool_v1` | Executar a v4 ousada no T4 | Worker `ERROR` antes do modelo: o peso EfficientNet não foi encontrado nos níveis rasos de `/kaggle/input` | — | Corrigir busca para `rglob`; não é falha da hipótese |
+| 10/08/2026 | `kaggle_v4_dense_target_pool_v2` | Repetir a v4 após corrigir o mount recursivo de pesos | Worker `RUNNING`, cota GPU subiu para `10,55 h`, ainda sem logs/CSV no momento do registro | — | Aguardar conclusão; manter `0,655` como fallback |
+| 10/08/2026 | `v4_adjacent3_fast_unit` | Reduzir a v4 para 3 slabs adjacentes por plano e acelerar I/O/normalização | 5 testes v4 passaram; smoke real em 1 série: 3 views `(3,224,224)` válidas; processamento rápido `0,012 s` contra `1,173 s` no modo integral; diferença média `0,34` níveis e máxima `5` em uint8 nos 10 estudos auditados | — | Promover ao T4; medir primeiro se o CSV termina e só então avaliar leaderboard |
+| 10/08/2026 | `kaggle_v4_adjacent3_fast_v4` | Executar a ablação rápida com labels externos e 9 views por estudo | 4.410/4.410 estudos visuais e 39.672 views concluídos em `4.897 s`; worker falhou ao localizar `llm_labels_v2.csv` porque o mount estava aninhado em `/kaggle/input/datasets` | — | Corrigir busca recursiva e validar inputs antes do DICOM; nenhum CSV gerado |
+| 10/08/2026 | `kaggle_v4_adjacent3_fast_v5` | Reexecutar após busca recursiva dos labels | Worker ainda sem primeiro log após cerca de 10 min; diagnóstico: a busca recursiva também atravessava o mount DICOM | — | Restringir a busca a diretórios externos não nomeados `competition(s)` e validar labels antes de texto/DICOM |
+| 10/08/2026 | `kaggle_v4_dense6_target_pool_v6` | Executar a v4 com pooling por alvo, teacher target-wise e labels públicos no worker T4 | `COMPLETE` em `6.779,9 s`; `4.410/4.410` estudos válidos, `79.380` views, CUDA; labels encontrados no mount aninhado; CSV válido | `55413852` → público `0,706` | Ganho de `+0,051` sobre `0,655`; dense6/target pooling já supera a referência, mas não mede H-20/H-21 |
+| 10/08/2026 | `yash_pipeline_audit` | Extrair mecanismos reproduzíveis do pipeline publicado por Yash Bishnoi | Artigo reporta `0,903` e 18º/792 no snapshot de 09/08; descreve labels Qwen + Pilkwang, EfficientNet-B3 fine-tunada, MIL/max, janela por série, 5 folds e fallback de runtime; notebook pull via CLI retornou `403` | — | Usar como evidência de direção; não tratar score nem CV vazado como prova; H-20/H-21 são a próxima ablação |
+| 10/08/2026 | `v4_yash_lite_max_mil` | Manter teacher/B0/blend e trocar para `adjacent3 + fast_preprocess + max pooling` | `COMPLETE` em `4.416,4 s`; `4.410/4.410` estudos, `39.690` views, 9 views/estudo, CUDA; CSV válido | `55418681` → público `0,673` | Abaixo da v6 em `-0,033`, mas acima da v3 em `+0,018`; não promover como substituta; custo menor confirmado |
+| 10/08/2026 | `kaggle_v4_yash_lite_v7` | Executar a ablação article-inspired pelo kernel | `ERROR` antes do modelo: o script principal não encontrou o módulo auxiliar enviado como segundo arquivo | — | Kaggle executa somente o `code_file`; montar um arquivo standalone antes de repetir |
+| 10/08/2026 | `kaggle_v4_yash_lite_v8` | Reexecutar a mesma ablação com o código standalone | `COMPLETE` no T4; `adjacent3`, `fast_preprocess=True`, `target_pooling=max`; `submission.csv` gerado | `55418681` → público `0,673` | H-20/H-21 combinadas não superaram a v6; testar max isoladamente antes de descartar a ideia |
+| 11/08/2026 | `v4_dense6_max_mil` | Isolar H-20: trocar somente o pooling target por `max`, preservando a configuração integral da v6 | `COMPLETE` no T4, kernel v9; `4.410/4.410` estudos, `79.380` views, `8.125,9 s`; CSV válido | `55442653` → público `0,663` | Refutada contra a v6: queda de `-0,043`; manter o pooling targetwise original |
+| 11/08/2026 | `v4_dense6_soft_labels` | Implementar H-25: preservar a probabilidade dos weak labels com cópias ponderadas `p`/`1-p` | `COMPLETE` no T4, kernel v10; `4.410/4.410` estudos, `79.380` views, `6.882,9 s`; CSV válido | `55446808` → público `0,708` | **Referência anterior**; H-22 superou-a em `+0,004` |
+| 16/08/2026 | `v4_dense6_series_window_soft` | Implementar H-22: trocar somente a normalização por slice por janela comum `1–99%` por série, mantendo labels weak suaves da melhor v6 | v1 falhou em `316 s` no P100 (`sm_60` incompatível com PyTorch `sm_70+`); v2 T4 `COMPLETE` em `8.228,2 s`, `4.410/4.410` estudos e `79.380` views; CSV íntegro com 3 linhas | `55551332` → público `0,712` | **Nova referência**; ganho de `+0,004` sobre H-25. Manter H-22 como fallback enquanto testamos a próxima família |
+| 16/08/2026 | `teacher_blend_audit` | Testar H-24 com fusão contínua e simétrica de teachers antes de publicar outro kernel | `targetwise_current`=`0,899120`; melhor blend simples Steven v4 mascarado + Pilkwang + Lixin=`0,895808`; 1.000 bootstrap pareado: delta médio do blend de três fontes `-0,007790`, IC `[-0,018389,+0,002357]`; relatório `reports/teacher_blend_audit_20260816.json` | — | **Refutada para submissão nesta rodada**; preservar H-22 e avançar para fine-tuning leve H-23 |
+| 17/08/2026 | `v4_finetune_light` | Implementar H-23 sem trocar teacher, pooling, blend ou janela H-22: ajustar uma época do último bloco B0 com head auxiliar multilabel e labels weak suaves | T4 `COMPLETE`; fine-tuning `4.407/4.407` estudos e `79.326` views, loss `0,625231`; extração `79.380` views; elapsed `15.404,7 s`; CSV íntegro com SHA-256 `47a783fadca59d69cba08cb6ef90b2053623cc0b3a005a2c3b277d4bfb776ffc` | `55582655` → `COMPLETE`, público `0,718` | **Promovida**; ganho `+0,006` sobre H-22 `55551332` (`0,712`). O CSV local fica como cópia de auditoria; a submissão oficial foi pelo Notebook-only |
+| 17/08/2026 | `dinov2_official_gold_audit` | Medir o backbone DINOv2-S oficial MetaResearch, Apache 2.0, antes de criar um worker T4 | Smoke `(6,384)` finito; 58 gold: embedding mean `0,568709`, MIL mean `0,576975`, top-k `0,584075`, max `0,581314`; B0 congelado na mesma geometria `0,636834` | — | **Refutada nesta forma**; não submeter DINOv2 congelado. Preservar o código para fine-tuning futuro |
+| 17/08/2026 | `v4_mean_pool_local_audit` | H-26: trocar somente o pooling top-k/mean da H-23 por média nos 12 alvos | Dense6 + janela por série nos 58: política atual `0,635104`; mean-all `0,643152`; delta `+0,008048`; `27` testes e smoke do kernel passaram. A v1 foi alocada em P100 `sm_60` e falhou antes do modelo por incompatibilidade com PyTorch `sm_70+`; v2 foi relançada com `NvidiaTeslaT4` | `jvlegend/rsna-knee-v4-mean-pool-h-26` → v1 `ERROR`, v2 `COMPLETE`; submissão `55610358` → `COMPLETE`, público `0,712` | **Refutada contra H-23**; não promover. H-23 `55582655` (`0,718`) permanece referência |
+| 18/08/2026 | `gold_resolution_336_probe` | Medir se 336 px melhora o sinal visual antes de implementar crop físico | Mesmos 59 conjuntos/58 estudos, mesma ordem por header, 3 views por série e EfficientNet-B0: 224 marcou `0,578718`; 336 marcou `0,558250`; delta `-0,020469` em duas seeds | — | **Refutada como resize simples**; não enviar. Crop físico de 150 mm continua uma hipótese distinta |
+| 18/08/2026 | `gold_physical_ordering_probe` | Comparar a ordem por `InstanceNumber` com a projeção de `IPP` na normal de `IOP` | A ordem física mudou as views selecionadas em `27/59` séries, mas marcou `0,572880` contra `0,578718` do header; delta `-0,005838` em duas seeds | — | **Refutada provisoriamente neste gold 3-view**; manter `InstanceNumber` e não consumir T4 com essa troca isolada |
+| 18/08/2026 | `six_slot_coverage_audit` | Verificar se o lote de aproximadamente 50 GB permite seis slots clínicos | 700 estudos, cada um com exatamente 1 série Sagittal + 1 Coronal + 1 Axial; 0 estudos sem algum dos três planos. Não há ainda seis contrastes/séries por estudo | — | **Pronta para implementação**, mas sem conclusão de score; a próxima variante deve começar com máscara de presença e três slots observados |
+| 18/08/2026 | `v4_mean_pool_submission` | Submeter H-26 somente após o worker T4 gerar CSV íntegro | v2 `COMPLETE` no T4; `79.380` views, `79.326` views no fine-tuning, loss `0,626634`, CSV validado (3 linhas, 12 alvos), SHA-256 `92b682aee4a01eb0137fe68afee0e4fe6e58778fa744ae10608a6917e906ce7f` | `55610358` → `PENDING` | **Aguardar score**; a submissão foi feita pelo fluxo Notebook-only, comparando contra H-23 `0,718` |
+| 18/08/2026 | `plane_presence_holdout` | Separar a representação Sagittal/Coronal/Axial e adicionar máscara de presença antes de misturar os planos | 700 estudos weak/2.100 séries no treino e 58 gold no holdout: média global `0,585771` Steven v4 / `0,587916` Pilkwang; concatenação + máscara `0,600978` / `0,606066`; ensemble por plano `0,619018` / `0,634186`. Gold local cobre 56 Sagittal, 3 Coronal e 0 Axial | — | **Aprovar para variante Kaggle**; evidência consistente em duas fontes, mas ainda sem validação do terceiro plano no gold. Manter H-23 `0,718` como fallback |
+| 18/08/2026 | `gold_three_plane_download` | Completar o holdout oficial com uma série preferencial por plano para não decidir com Axial ausente | Manifesto com 58 estudos/174 séries; 3.509 arquivos novos, `3.665.527.680` bytes escritos pelo ZIP oficial; arrays 2.5D `174×(3,224,224)` e embeddings B0 `174×1.280` finitos em MPS | — | **Gate de cobertura concluído**; dados complementares permanecem ignorados pelo Git |
+| 18/08/2026 | `plane_presence_three_plane_holdout` | Repetir H-07 com Sagittal, Coronal e Axial presentes em todo o gold | Steven v4: mean `0,636558`, concat+mask `0,664505`, ensemble por plano `0,689533`; Pilkwang: `0,649627`, `0,660182`, `0,683570`; target-wise H-23 com C=0,1: `0,627124`, `0,635707`, `0,646388` | — | **Apoiar provisoriamente o ensemble por plano**; ganho target-wise `+0,019264`, ainda sem seis slots e sem score Kaggle |
+| 18/08/2026 | `kaggle_v4_plane_target_v1` | Executar H-27: preservar H-23 e trocar somente a cabeça visual para modelos separados por plano com máscara de presença | Código standalone, `py_compile`, JSON, smoke sintético e 6 testes direcionados passaram; T4 `COMPLETE`, `4.407/4.407` estudos, `79.380` views, `79.326` views no fine-tuning, loss `0,624997`, elapsed `14.683,9 s`; CSV íntegro com SHA-256 `5702c233af67f92177176344708351f49bb4f4ade135b48b736b64bcb001f0e0` | `55632699` → `COMPLETE`, público `0,727`, Notebook-only, kernel versão 1 | **Promovida**; ganho `+0,009` sobre H-23 `55582655` (`0,718`). H-23 permanece fallback |
+| 19/08/2026 | `gold_six_slot_download` | Completar o inventário dos slots de aquisição nos 58 estudos oficiais | Manifesto com `58` estudos e `336` séries; categorias observadas `Sagittal/Coronal/Axial × FLUID_FS/NONFLUID`; download incremental selecionou `10.528` arquivos e aproximadamente `7.013 GB`; arrays `336×(3,224,224)` e embeddings B0 `336×1.280` finitos | — | **Gate de dados concluído**; `Axial_NONFLUID` aparece em `13/58` gold, mas em `0/700` estudos weak locais |
+| 19/08/2026 | `six_slot_holdout` | Testar cabeças separadas por slot contra a política H-27 de uma série preferencial por plano | Mesma geometria H-23, treino 700 weak/gold 58: Steven `0,689533→0,698081` (`+0,008548`); Pilkwang `0,683570→0,698814` (`+0,015244`); target-wise H-23 `0,639910→0,642363` (`+0,002454`, C=`0,5`) e `0,646388→0,653319` (`+0,006931`, C=`0,1`) | — | **Apoiar H-28 provisoriamente**; aguardar H-27 `55632699` antes de criar outro worker, porque o slot axial não-fluido ainda não tem treino local |
+| 20/08/2026 | `kaggle_v4_slot_target_v1` | Executar H-28 preservando H-27 e trocando somente a seleção/cabeça para slots plano × aquisição | Kernel standalone em `kaggle/rsna_knee_v4_slot_target_kernel/`; `py_compile`, seleção sintética e smoke da cabeça com fallback passaram; T4 `COMPLETE` com `4.410/4.410` estudos, `128.082` views, `79.326` views no fine-tuning, loss `0,626189`, elapsed `20.622,4 s`; CSV 3×13 íntegro, SHA-256 `4677293025197e7804e101fa5bb735c0d962e20eeae2ea3b02c31bb32b43d8fb` | `55665843` → `COMPLETE`, público `0,723`, Notebook-only, kernel versão 1 | **Não promovida**; `-0,004` vs H-27 `55632699` (`0,727`), embora `+0,005` vs H-23 `55582655` (`0,718`) |
+| 24/08/2026 | `kaggle_v4_slot_gold_weight` | Executar H-32: preservar H-28 e aplicar peso gold target-wise no fine-tuning e nas cabeças visuais | `kaggle/rsna_knee_v4_slot_gold_weight_kernel/`; política ACL/MCL/meniscos/OA/fluido/focal/fratura=`8`, Synovitis=`1`; `py_compile`, metadata JSON e smoke sintético passaram; T4 `COMPLETE` com `4.410/4.410` estudos, `128.082` views, `79.326` views no fine-tuning, loss `0,627801`, elapsed `21.903,9 s`; CSV 3×13 íntegro, SHA-256 `22175985e76bbae6ee4dc22ef75b72334820c1abaadab933540fdbcd118372a6` | `55739684` → `COMPLETE`, público `0,720`, Notebook-only, kernel v1 | **Não promovida**; `-0,007` vs H-27 (`0,727`), `-0,003` vs H-28 (`0,723`) e `-0,006` vs H-33 (`0,726`); o ganho local `0,661929` não transferiu |
+| 25/08/2026 | `kaggle_h29_dinov2_adjusted_worker` | Implementar H-29 com crop físico central de `130 mm` em `336 px`, 3 slabs adjacentes por plano, DINOv2-S oficial ajustado nos últimos 6 blocos e cabeça por plano | Commit `ad871bc`; `py_compile`, metadata JSON, `--help`, crop sintético (`3×3×336×336`), DINO local `(1,384)` e fine-tuning sintético com loss finito passaram. A v1 foi alocada em P100 `sm_60` e falhou antes do primeiro tensor (`CUDA no kernel image`); a v2 foi reenviada explicitamente com `NvidiaTeslaT4`, concluiu `COMPLETE` em `11.644,5 s`, processou `4.407/4.407` estudos, `39.663` views no fine-tuning e `39.690` views totais, loss `0,561918`, todos os `4.410` estudos válidos; CSV 3×13 íntegro, SHA-256 `03ea2b055958263b66bb4c81ac237ef6ebca230d69ee1d03acf0fe4e22b62efa` | `55779936` → `COMPLETE`, Notebook-only, kernel v2 | **Promovida**; público `0,759`, ganho `+0,032` vs H-27 `0,727` |
+| 26–29/08/2026 | `kaggle_h34_dinov2_cc0_rank_prepare` | Preparar, executar e submeter uma ablação limpa com o ensemble público de 20 checkpoints DINOv2-S, ranks por alvo, janelas sobrepostas e pooling focal | Notebook `kaggle/rsna_knee_h34_dinov2_cc0_rank_kernel/`; metadata JSON válido; v1 T4 `COMPLETE`, `95,8 s`, `4.410/4.410` estudos válidos, 20 fingerprints conferidos, saída `submission.csv` 3×13 sem nulos; SHA-256 `f9fb57b7bac8489a5d5285b3984b06df57f142572be6417eac6341c43e96707`; usa somente `pilkwang/rsna-knee-weights` (`CC0-1.0`) e DINOv2 oficial Apache 2.0; RadImageNet, DINOv3 e bundle privado `other` fora | `55856090` → `COMPLETE`, público `0,899`, Notebook-only, descrição H-34 | **Confirmada como fallback**; ganho `+0,140` sobre H-29 `55779936` (`0,759`), depois superada por H-36 e H-38 |
+| 27/08/2026 | `kaggle_h35_rank_stack_cpu` | Testar um blend conservador em rank entre outputs já concluídos, sem nova inferência visual | Kernel `jvlegend/rsna-knee-h-35-rank-stack`, v2 CPU; pesos fixos H-29=`0,80`, H-27=`0,15`, H-33=`0,05`; `py_compile` e metadata passaram. A v1 atravessou DICOM por busca recursiva e foi corrigida; a v2 falhou fechado porque outputs de kernels privados não são montados como `kernel_sources`: `H-29 output is not mounted` | — | **Bloqueada operacionalmente, sem score e sem CSV**; não enviar dados privados para criar um dataset auxiliar; manter apenas os artefatos públicos reproduzíveis como fallbacks |
+| 30/08/2026 | `kaggle_h36_coatnet_maxspan_prepare` | Testar uma família visual independente do H-34 com o checkpoint CoAtNet Max-Span público | `kaggle/rsna_knee_h36_coatnet_maxspan_kernel/`; dataset `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; checkpoint local 292.831.426 bytes, SHA-256 `20d45e0732a0e9120025d0172a4d2dd0170900bc250b06742dfb7ae08a63786a`, arquitetura CoAtNet RMLP 2 RW 384, 12 alvos; `py_compile`, JSON, carga estrita e inferência sintética finita passaram; nenhum DICOM de teste local foi assumido | A executar — ainda sem submissão | **Preparada**; executar no T4 com cinco slots, 64 fatias, crop 140 mm, span 2–98%, 62 janelas e rank-percentile; só promover acima de H-34 `0,899` |
+| 30/08/2026 | `kaggle_h36_coatnet_maxspan_execute` | Executar H-36 standalone no T4 e produzir o artefato de submissão | Kernel `jvlegend/rsna-knee-h-36-coatnet-max-span`, v1 `COMPLETE`, `25,4 s`; root oficial, checkpoint carregado, `3/3` estudos de teste, `0` falhas, faixa bruta `(0,18242; 0,94599)`; CSV 3×13, UIDs únicos, sem nulos/NaN e valores em `[0,1]`; SHA-256 `fc8b32d5964f54619ef358b8cf97291012806c16aea6fe8db799c1d3279829b7` | Submissão Notebook-only criada às 13:05, `COMPLETE`, public score `0,928` | **Confirmada como fallback**; ganho `+0,029` vs H-34 `0,899`, depois superada por H-38 em `+0,001` |
+| 30/08/2026 | `kaggle_h37_dinov3_coatnet_rank_submit` | Testar se a diversidade de cinco folds DINOv3 públicos acrescenta ao H-36 CoAtNet quando os dois braços são combinados por rank | Kernel standalone `jvlegend/rsna-knee-h-37-dinov3-coatnet-rank`, versão 2, no commit `9d65a24`; DINOv3 `mattiaangeli/knee-mri-fold-weights` CC0-1.0, ViT-S 336 px/130 mm/6 slots/16 fatias/`xcodex`; H-36 `dreaddevelopment/raptor-knee-maxspan` CC0-1.0; `kernel_sources=[]`; T4×2, cinco checkpoints carregados, 3/3 estudos, fusão exata 50/50 por rank; CSV 3×13 validado, SHA-256 `a31f58a2a59ef31f8040bf469a335babf06b1663ae956c655141121f62ba4a50` | Submissão Notebook-only criada em 30/08 às 21:46 BRT, `COMPLETE`, public score `0,922` | **Não promovida**; `-0,006` vs H-36 `0,928`; o CSV está em `submissions/submission_h37_dinov3_coatnet_rank.csv`; a fusão 50/50 não justificou mudança do baseline |
+| 31/08/2026 | `kaggle_h38_dinov3_coatnet_residual_submit` | Testar se um residual DINOv3 pequeno retém diversidade sem repetir a queda da fusão 50/50 H-37 | Kernel `jvlegend/rsna-knee-h-38-dinov3-20-residual-coatnet`; mesmos datasets públicos CC0-1.0, cinco folds DINOv3, rank por alvo, DINOv3 `0,20` + CoAtNet H-36 `0,80`, `kernel_sources=[]`, T4×2; `py_compile` e metadata JSON passaram. Execução `COMPLETE`, `3/3` estudos, saída DINOv3 reproduzida exatamente do H-37, CoAtNet reproduzido exatamente do H-36; CSV 3×13 íntegro, UIDs únicos, finito e em `[0,1]`; saída Kaggle e reconstrução local têm SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e` | Notebook-only criada em 31/08 às 10:06 BRT, `COMPLETE`, public score `0,929` | **Promovida**; ganho `+0,001` vs H-36 `0,928`; novo baseline |
+| 22/08/2026 | `weak_gold_text_visual_blend` | Treinar também o ramo textual nos labels weak e reduzir o peso visual após bloquear hash compartilhado | `scripts/evaluate_weak_gold_text_visual_blend.py`; gate local com `699` weak/`58` gold, 1 hash removido; texto `0,740510`, visual plano `0,645628`, fusão alpha=`0,1` `0,742925`, H-27 targetwise `0,737327`; worker standalone em `kaggle/rsna_knee_v4_weak_text_plane_kernel/`, threshold textual `0,85`, `alpha=0,1`; v1 recebeu P100 (`sm_60`) e falhou em `568 s`, v2 T4 `COMPLETE` com `4.410/4.410` estudos, `79.380` views, `79.326` views no fine-tuning, loss `0,624871`, elapsed `13.744,4 s`; CSV 3×13 íntegro, SHA-256 `d660cdc779eb38354236d0852032a114f0c0ac267ea6bb2c8821d6e264a29886` | `55694502` → `COMPLETE`, público `0,726`, Notebook-only, kernel v2 | **Não promovida**; `-0,001` vs H-27 `55632699` (`0,727`), `+0,003` vs H-28 `55665843` (`0,723`); o ganho do gate local não transferiu para o leaderboard |
+| 20/08/2026 | `external_label_consensus_audit` | Verificar se um consenso simples de rankings deve substituir o teacher target-wise | Target-wise/raw `0,899120`; consenso `raw_rank` `0,896616`; Steven v4 `0,892707`; Pilkwang `0,870040` nos 58 | — | **Não substituir**; manter o teacher target-wise e investigar cobertura/confiança antes de nova fusão |
+| 20/08/2026 | `report_hash_group_audit` | Medir duplicatas de laudo e risco de vazamento entre folds | `4.407` linhas, `4.257` hashes normalizados, `54` grupos duplicados, `204` linhas em grupos (`150` cópias extras), maior grupo `37`; `1/58` gold em grupo duplicado; relatório `reports/report_hash_groups_20260820.json` | — | **Aprovar como protocolo**; usar GroupKFold por hash, sem atribuir o gap inteiro a duplicatas |
+| 20/08/2026 | `gold_weighted_cv` | Testar peso `1/4/8` para os 58 gold junto aos 700 weak, bloqueando hash compartilhado no fold de validação | `scripts/evaluate_gold_weighted_cv.py`; macro médio `0,654226/0,658457/0,660684` para pesos `1/4/8`, duas seeds; peso 8 melhora `11/12` alvos, mas Synovitis cai `-0,0149`; `1` hash weak/gold bloqueado e `72` exclusões acumuladas por folds/alvos | — | **Apoiar H-30 provisoriamente**; começar peso gold `8` na próxima ablação, com peso/teacher específico para Synovitis e controle peso `1` |
+| 20/08/2026 | `gold_laterality_header_audit` | Verificar se os headers DICOM sustentam flip condicionado e troca medial/lateral | Nos `174` headers gold: `Laterality=R` em `48`, `L` em `30`, vazia em `54`, ausente em `42`; `ImageLaterality` ausente em `174/174` | — | **Bloquear H-31**; não aplicar flip nem trocar alvos laterais sem uma fonte de laterality confiável |
+| 20/08/2026 | `gold_physical_crop_130mm_336` | Separar crop físico de resize simples e testar a receita pública em B0 antes de DINOv2 | `174` séries (`58×3`), arrays `3×336×336`, embeddings B0; crop macro `0,647449` vs header 224 `0,628697`, delta `+0,018752` em seeds 42/2026; relatório `reports/gold_physical_crop_130mm_336_vs_header_20260820.json` | — | **Apoiar H-04 provisoriamente**; implementar primeiro como ablação de preprocessing, sem declarar score Kaggle |
+| 20/08/2026 | `physical_crop_weak_gold_holdout` | Medir o crop físico no mesmo desenho weak→gold usado para decidir H-27 | `700` estudos/`2.100` séries no treino e `58` estudos/`174` séries no gold; B0 crop `mean_all=0,627878`, `plane_ensemble=0,622298` com C=`0,5`; C=`0,1`: `0,633069`/`0,633436`, contra header target-wise `0,627124`/`0,646388` | — | **Não promover B0 crop-only**; preservar o crop como entrada potencial do DINO ajustado |
+| 20/08/2026 | `gold_weight_targetwise_synovitis` | Testar a exceção indicada pela queda de Synovitis sob peso gold 8 | Header: peso 8 uniforme `0,660684`; peso 8 nos outros 11 alvos e peso 1 em Synovitis `0,661929`, duas seeds; crop: `0,642761` uniforme e `0,642712` target-wise | — | **Apoiar H-32 provisoriamente**; integrar a política target-wise na próxima ablação, sem enviar crop B0 |
+
+## Runtime alternativo — 12/08/2026
+
+- O Mac local detecta `mps=True` no PyTorch e agora aceita `--device mps`/`RSNA_DEVICE=mps`; `auto` prioriza CUDA, depois MPS e por fim CPU.
+- O peso público EfficientNet-B0 foi baixado somente para `models/efficientnet_b0_rwightman-7f5810bc.pth`, diretório ignorado pelo Git.
+- Smoke real: estudo `1.2.826.0.1.3680043.8.498.18392509497170616983977319528036573378`, 6 views `dense6`, embedding `(6, 1280)`, todos os valores finitos, `2,96 s` no MPS.
+- O HD local tem DICOM de treino parcial, mas `test_series/` contém zero DICOM; portanto a execução local não pode produzir um leaderboard válido. Docker/Colima também não acrescenta GPU Apple e não há host DGX/túnel SSH configurado nesta máquina.
+- Plano operacional atual: proteger H-38 (`0,929`) como baseline, manter H-36 (`0,928`) e H-37 (`0,922`) como fallbacks e só consumir nova cota T4 para uma hipótese com chance clara de superar `0,929`. Usar MPS para pré-processamento, CV e regressões locais; não enviar DINOv2 congelado nem combinar outputs privados sem uma fonte pública permitida.
 
 ## Detalhe da candidata v0.2
 
@@ -49,3 +592,16 @@
 - A coluna de validação deve conter macro-AUC e AUC de cada alvo, além de seed/split.
 - Score público e privado ficam separados; não ajustar pesos usando o leaderboard.
 - Cada entrada deve apontar para o commit e para os artefatos locais ignorados pelo Git.
+
+| 01/09/2026 | `dinov3_v16_gold_reproduction` | Reproduzir o artefato público DINOsaur V16 e verificar se os heads target-conditioned acrescentam ao DINOv3 antes de acoplar ao CoAtNet | `58` gold, `(58,6,1152)`, DINOv3 base full-ensemble `0,868587`; OOF público dos heads `0,824163`. O ensemble dos cinco heads aplicado ao mesmo gold marcou `1,000000`, identificado como diagnóstico com vazamento; a mistura local com pesos do manifesto marcou `0,884582`, também sem validação independente | — | **Não tratar como score transferível**; usar somente OOF/manifesto e gates conservadores |
+| 01/09/2026 | `kaggle_h39_dinov3_v16_coatnet` | Testar um residual V16 pequeno sobre o baseline H-38, preservando a âncora `0,929` e sem outputs privados | Worker standalone em `kaggle/rsna_knee_h39_dinov3_v16_coatnet/`; v4 `COMPLETE`, bundle público encontrado, cinco alvos promovidos pelo gate do manifesto, CSV `3×13` finito/único/[0,1], SHA-256 `67265048d923bc060210651d598a5cfbd3029078dd4a556fd02ad337a9e00d0e`, idêntico ao H-38; v1/v2/v3 falharam de forma segura e foram corrigidas | Nenhuma submissão; H-38 `0,929` permanece | **Não promover**: com 3 linhas, o residual não muda os ranks nem o CSV; preservar como implementação auditada para um teste com saída mais ampla |
+| 01/09/2026 | `kaggle_h40_widedense_residual` | Testar o complemento CoAtNet WideDense v4 do DINOsaur V10 sobre o H-38, com pesos pequenos e sem outputs privados | Checkpoint `dreaddevelopment/raptor-knee-widedense`, `CC0-1.0`, SHA-256 `d8bb0f8751b4bb65750257869ddc4c7a3c0cdfc6e62596fc68193919406c53eb`; v3 `COMPLETE`, cobertura `1.000`, âncora corrigida para H-38 `submission_v53_main.csv`; CSV H-40 `3×13` finito, SHA-256 `fc8b32d5964f54619ef358b8cf97291012806c16aea6fe8db799c1d3279829b7`, igual ao H-36 e com 24 células diferentes do H-38 | Nenhuma submissão; H-38 `0,929` permanece | **Refutada**: o residual perde a ordem H-38 neste teste público de 3 estudos; guardar o checkpoint sem alterar o baseline |
+| 02/09/2026 | `widedense_full_public_audit` | Auditar o checkpoint WideDense completo antes de consumir outro T4 | Arquivo `raptor_ft_coatnet_v4_full.pt` baixado e verificado: `292.829.402` bytes, `CC0-1.0`, arquitetura `coatnet_rmlp_2_rw_384.sw_in12k_ft_in1k`, `gold_auc=0,916749`, SHA-256 `89606f05849838529e1b4658d28fb049623205d9853371548403bca460361ded`; a página pública do kernel informa `0,924`, abaixo de H-38 `0,929` | Nenhuma submissão | **Não executar como primária**: triagem negativa por custo; preservar o checkpoint para blend OOF independente, sem escolher peso nas 3 linhas do teste |
+| 02/09/2026 | `widedense_gold_gate` | Medir o checkpoint WideDense na mesma geometria do H-40 e testar complementaridade contra H-36/H-38 antes de nova GPU | `58` estudos gold, 336 séries, cobertura de inferência 100%; full `0,914097`, SWA exato do H-40 `0,914483`, H-36 `0,919929`, H-38 reconstruído `0,922466`; blend fixo H-38/SWA 80/20 `0,922942` (`+0,000476`), bootstrap pareado 2.000: média `+0,000464`, IC95% `[-0,002530; 0,003668]`; relatórios `reports/widedense_gold_20260902.json`, `reports/widedense_swa_gold_20260902.json` e `reports/widedense_swa_h38_gold_compare_20260902.json` | Nenhuma submissão | **Refutada como primária**; ganho do blend é pequeno e inconclusivo, manter H-38 e reservar WideDense para OOF condicionado |
+| 02/09/2026 | `dinov3_residual_weight_grid` | Verificar se o residual DINOv3 de H-38 está em uma faixa razoável antes de abrir outra família | Sobre H-36 no gold, pesos DINO `5/10/15/20/25/30%` deram macro `0,920423/0,922067/0,922241/0,922466/0,921481/0,920971`; bootstrap 2.000 para `10/15/20/25/30%` teve médias `+0,002135/+0,002344/+0,002618/+0,001665/+0,001191`, todos os IC95% cruzando zero | H-38 já submetida: `0,929`; nenhuma nova | **Manter H-38 20/80**; não escolher outro peso pelo gold, e investigar somente uma variante com validação OOF independente |
+| 03/09/2026 | `dinov2_public_members_gold_gate` | Auditar e reproduzir os ensembles públicos DINOv2 `champ` e `llm199e30`, ainda não testados no projeto, antes de preparar uma candidata Kaggle | Checkpoints CC0-1.0, 5 folds por família, arquitetura carregada estritamente; gold com 58 estudos/336 séries, cache `(58,6,3,3,224,224)` e cobertura decodificada `56/55/58/39/39/26`; `champ=0,967357`, `llm199e30=0,996925`, blend público 20/80=`0,995527` contra H-38=`0,922466`; bootstrap do blend vs H-38: média `+0,072699`, IC95% `[+0,052073;+0,096115]` | Descrição dos datasets associa o exp056 a public score `0,886`; ainda sem execução/submissão nossa | **Não tratar o gold como OOF**: os pesos foram treinados no próprio treino e a seleção DICOM é reprodução compatível; kernel standalone preparado com T4, sem `kernel_sources`, aguardando decisão explícita para executar |
+| 03/09/2026 | `dinov2_public_members_local_test` | Baixar o teste completo para o HD e reproduzir localmente a candidata H-42 enquanto a cota GPU Kaggle está esgotada | `557/557` DICOMs, `599.962.984` bytes, 3 estudos/15 séries, tamanhos conferidos pela API; entrypoint com overrides locais; MPS carregou 10 folds em `194,3 s`; cobertura de slots `2/3/3/2/1/1`; CSV `3×13` validado, SHA-256 `2b9a159784efeeb45d50e209b5bdbc58317fa9ec512e7d2dad0974338ba77e22` | Tentativa de `kernels push` recusada antes da execução: quota semanal GPU `30,00 h` atingida; nenhum envio | **Candidata local auditada, não promover nem submeter**; H-38 `0,929` permanece baseline |
+| 05/09/2026 | `strategy_engineering_streaming_oof` | Implementar as primeiras melhorias da revisão: inferência H-42 em streaming/cache, diagnóstico de slots, alinhamento por UID e manifesto OOF agrupado | H-42 batch 1 e streaming batch 2 reproduziram byte a byte a saída local anterior; cache `.npz` versionado, cobertura visível `2/3/3/2/1/1`; comparador rejeita relatórios sem `study_ids` por padrão; manifesto `58` estudos/`5` folds/zero overlap de grupos; `py_compile`, `git diff --check` e comparação histórica passaram | Nenhum treino Kaggle ou envio; cota GPU previamente esgotada | **Infraestrutura aprovada; próximo gate é gerar OOF cross-fitted real antes de testar atenção/global+local** |
+| 13/09/2026 | `grouped_manifest_metadata_oof` | Medir o primeiro baseline sem vazamento usando o manifesto agrupado por estudo/laudo | `scripts/evaluate_baseline.py --manifest ... --folds 5 --seed 2026 --c 32 --use-lexicon` concluiu em 58 estudos, 5 folds e 12 alvos; macro-AUC `0,626918`; relatório `reports/v0_2_grouped_manifest_oof_20260913.json` | — | **Gate criado**: usar como referência de texto/metadados; não confundir com OOF visual |
+| 14/09/2026 | `kaggle_h42_dinov2_members_exp056_v2` | Validar a candidata H-42 no ambiente Kaggle e corrigir a descoberta de checkpoints anexados | Versão 1 falhou por mount aninhado; versão 2 terminou `COMPLETE` no T4 em `48,7 s`, carregou 10 checkpoints CC0, cobriu `3/3` estudos, gerou `3×13` finito e único; saída local/Kaggle idêntica, SHA-256 `2b9a159784efeeb45d50e209b5bdbc58317fa9ec512e7d2dad0974338ba77e22`; diagnóstico de slots `2/3/3/2/1/1` | Kernel [`jvlegend/rsna-knee-dinov2-members-exp056`](https://www.kaggle.com/code/jvlegend/rsna-knee-dinov2-members-exp056), versão 2; submissão Notebook-only criada em `2026-09-14 00:49:02 UTC`, `COMPLETE`, public score `0,881` | **Rejeitada**; `-0,048` vs H-38 `0,929`. O gold `0,995527` estava contaminado e não previu o leaderboard |
+| 14/09/2026 | `forum_notebook_research_20260914` | Reavaliar fórum e notebooks recentes para sair do plateau e distinguir ganho reproduzível de tuning público | Evidência consolidada: mesmos pesos `42→62` janelas `+0,003` público; adjacência central `+0,018` em fold 0; cache `16→32` fatias `+0,0060` em 10/10 seeds reportados; DINOv2 Base `+0,0011`, abaixo do noise floor `0,0020`; validação derivada agrupada ≥250 recomendada; stack público `0,939–0,941` auditado e licenças dos datasets consultadas | Snapshot: H-38 `0,929`, rank `1.385/3.706`; topo `0,956`; score `0,941` na faixa aproximada 250–500 | **Priorizar H-43A como reprodução controlada do stack público; em paralelo H-44 labels e H-45 geometria. Não repetir SWA, backbone maior ou grid target-wise no gold** |

@@ -1,0 +1,26 @@
+{
+  "id": "jvlegend/rsna-knee-h-36-coatnet-maxspan",
+  "title": "RSNA Knee H-36 CoAtNet Max-Span",
+  "code_file": "rsna_knee_h36_coatnet_maxspan.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [
+    "gpu",
+    "medicine",
+    "healthcare",
+    "image classification"
+  ],
+  "dataset_sources": [
+    "dreaddevelopment/raptor-knee-maxspan"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "rsna-knee-abnormality-detection"
+  ],
+  "model_sources": [],
+  "machine_shape": "NvidiaTeslaT4"
+}
