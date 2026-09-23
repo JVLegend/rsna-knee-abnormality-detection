@@ -4,16 +4,15 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-029 (21/09): V05 congelado/auditado em metadados,
-1.000treino/300dev/300reservados; pixels dos novos ainda não verificados.
-Novos conjuntos excluem grupos expostos desta linha própria e gold.
-OOF5folds de260estudos desenhados, NÃO executados. Labels fracos mantidos.
-G04 piloto224vs336 preparado em20exames SÓ DE TREINO, sem heads ou labels.
-Kaggle recusou lançamento:2vagasGPU ocupadas. KernelId0/sem versão,404;
-nenhum piloto executado. Cota35.804s suficiente, problema é concorrência.
-233testes+44subtestes passaram, incluindo22novos nesta rodada.
+Atualizado na AV-030 (23/09): auditoriaCPU H46 COMPLETE/PASSED,
+candidata pública0,943 construída com109hashes/gate estrito, sem inferênciaGPU.
+OOF públicoDINO tem11grupos/35estudos cruzando folds; não aprovar blendFracture.
+Contratos de cross-fit/fine-tuning parcial/canais implementados e testados;
+5folds V05 ganharam seleção interna, mas nenhum professor foi treinado.
+263testes+44subtestes passaram. GPU sem cota informada; reset25/09às21hBRT.
+G04 continua preparado, não executado. V05 e confirmação300 preservados.
 V04 permanece NOT_CONFIRMED; seus150exames não voltam para seleção.
-Nenhuma nova submissão ou mudança no leaderboard.
+Nenhuma nova submissão, métrica de imagem ou alteração da seleção final.
 Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
 
 
@@ -76,6 +75,41 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-030 concluída23/09: P1/H46CPU ID135536476v1 COMPLETE,
+  PASSED_H46_ASSET_AUDIT_NOT_INFERENCE,63,3255s;20DINO,56registros
+  compartilhados,45arquivosD4 e17Global96. Fontes/pesos não executados.
+  Recibo reports/avance_av030_h46_v1/h46_preflight.json,
+  SHAaec26af61c4485359ff40431cc381ad38ecf8fcc454697402f43d3b79a377b76.
+  Candidata reports/avance_av030_h46/candidate_v1.ipynb,301.010bytes,
+  SHAd3029315a5f7beb419aeba943f3d4d0b68603078e59777c68b56c2acea196b53,
+  receita speedy fixa,109hashes; gate3CoAt/20DINO/5A5/4views,sem degradação.
+  NÃO executada emGPU/nem submetida; falta smokeT4x2/paridade/cobertura/custo.
+  P2 OOF:11grupos/35estudosDINO cruzamfolds;Rad0. IDs não provam pacientes.
+  Proveniência de treino/seleção por membro eE13 pendentes;sem AUC/blendnovo.
+  P3/P4 primitivas implementadas:professores com exclusão por grupo/cobertura,
+  seleção interna por fold,liberação de2blocosDINO,contrato adjacente/central.
+  Treino interno/seleção por fold:887/153,887/153,871/169,877/163,889/151;
+ 260externos cada. Plano SHA df8258e1cb94e67b47dacd137945e40c64be0a1c5d1b019361b339b3430f68b0.
+  Nenhum treino MRI/pseudo-rótulo/OOF executado;confirmação300 intacta.
+  263testes+44subtestes passaram,30novos. SemGPU/custos/APIs com laudos.
+  Quota retornou uso46725.135.0s (string anômala),limite21600s,reserva0;
+  conservadoramente semGPU. Reset2026-09-26T00:00Z=25/09às21hBRT.
+  Próximo AVANCE:reconsultar quota;reconciliar H46CPU sem duplicar e preparar
+  smoke delimitadoT4x2 da candidatafixa. P3 precisa integração ao treinador,
+  pixelsV05/loss/endpoints/épocas/custo antes de iniciar. Não abrir holdout
+  para guiar mudanças. G04 continua dependenteGPU;V04 não será relançada.
+  Detalhes docs/AV030_NOVO_STACK_E_CROSSFIT.md; melhor nosso0,941 preservado.
+
+- Pesquisa de 23/09, sem execução: ver atualização em [[05_Forum_Kaggle]].
+  Público observado0,941,929º/4.229; novo candidato Maverick V3 tem0,943 V1.
+  Próximo AVANCE: reconciliar jobs e priorizar auditoria/reprodução FIXA desse
+  candidato (P1), preservando H43A; P2=OOF/Fracture; P3=fine-tuning/professor
+  visual cross-fitted; P4=contrato de canais RadImageNet. São propostas não
+  testadas. Não abrir grid de blends ou confirmação V05 para escolher pesos.
+  Fontes baixadas no HD em reports/research_20260923/, hashes na nota de fórum.
+  G04 abaixo continua preparado, não executado; vagas/cota são históricas de
+  21/09 e precisam de nova consulta. V04 continua NOT_CONFIRMED.
 
 - AV-029: V05 metadados concluídos/auditados; G04 BLOQUEADO POR CONCORRÊNCIA.
   SaveKernel recusou Maximum batch GPU session count of 2 reached,
@@ -601,6 +635,10 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
+| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-030 AUDITORIA CPU PASSOU; candidata construída,semGPU/envio |
+| P2 / Fracture OOF | Auditar exposição dos recibos antes da inclusão Rad no alvoFracture | Proveniência por membro/E13 / baixo + inferência | AV-030 DIAGNÓSTICO:11grupos/35estudosDINO cruzamfolds; NÃO APROVADO para seleção independente |
+| P3 / professores visuais | Fine-tuning parcial versus congelado e cross-fit sem exposição do fold externo | V05 pixels/protocolo/integração/quota / alto | AV-030 PRIMITIVAS TESTADAS e seleção interna congelada; nenhum treino ou pseudo-rótulo |
+| P4 / canais RadImageNet | Adjacentes versus corte central repetido, receitas treinadas separadas | Backbone/licença/protocolo/quota / alto | AV-030 CONTRATO IMPLEMENTADO/TESTADO; ablação MRI pendente |
 | A00 / H-43A | Inventário do parent público: fonte, versão, licença, hash, receita, número de membros e disponibilidade; confrontar com H-38 | início / baixo | REPRODUZIDA — auditoria estática AV-001; runtime e cadeia completa pendentes A01 |
 | A01 / H-43A | Reproduzir primeiro um único parent fixado, sem pesos próprios; verificar predições e execução antes da confirmação Kaggle | A00 com fontes utilizáveis / médio | REPRODUZIDA — AV-005; ref 56253529 COMPLETE 0,939, +0,010 vs H38 |
 | A02 / H-43A | Comparar parent com um único preset publicado escolhido previamente: halfway OU probe22; aproveitar previsões dos mesmos membros | A01 / baixo após inferência | CONFIRMADA — AV-012; submissão56263721 COMPLETE 0,941, +0,002 vs parent; OOF independente indisponível |
@@ -1292,3 +1330,17 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   reservados, uma consulta do lote, sem ajustes por esses resultados.
   Protocolo: docs/AV027_RESULTADOS_R02_E_CONFIRMACAO.md. Ainda sem inferência
   de confirmação/CSV/nova submissão; público0,941 preservado.
+
+### AV-030 — 23/09/2026 — auditoria pública e infraestrutura das quatro frentes
+
+- P1: H46CPU privado135536476v1 COMPLETE;63,3255s; inventário/hashes passaram.
+  Candidata fixa0,943 construída com109pins e gate de publicação; NÃO rodouGPU.
+- P2: auditados4.349não-gold de cada fonte;DINO11grupos/35estudos cruzamfolds,
+  Rad0;proveniência completa/E13 faltam. Não selecionar blend por essa evidência.
+- P3: contrato anti-exposição de professor e seleção interna dos5foldsV05;
+  fine-tuning2blocos testado com gradientes sintéticos, nãoMRI.
+- P4: canais adjacentes/central repetido e compatibilidade checkpoint-input
+  implementados/testados. Não reaplicarcheckpoint antigo com input diferente.
+- 263testes+44subtestes passaram. SemGPU disponível informado;reset25/09às21h.
+  Sem submissão/novoAUC/alteração de finalistas. Nosso público0,941 preservado.
+  Retomada/detalhes em docs/AV030_NOVO_STACK_E_CROSSFIT.md e cursor acima.
