@@ -4,13 +4,15 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-031 (28/09): H46 speedy fixa executou em T4x2, passou os
-gates20DINO/5A5/4Raptor/3CoAt e foi submetida como ref **56640374**. A
-reexecução privada está PENDING; ainda não há score nosso para a receita0,943.
-Versão2 corrigiu somente o contador do gate A5 após a v1 terminar a inferência
-e falhar nesse gate local. CSV/recibo têm o mesmo SHA; esquema/IDs passaram.
-266testes+44subtestes passaram. H43A **0,941** continua melhor confirmado até
-o Kaggle concluir. V04 permanece NOT_CONFIRMED; confirmação não volta à seleção.
+Atualizado na AV-032 (28/09): a submissão H46 ref **56640374** terminou
+`Notebook Threw Exception` no oculto, sem score; a execução pública v2 segue
+`COMPLETE`. O diagnóstico mais provável é nosso gate extra ter convertido os
+fallbacks por estudo previstos pela fonte em exceção fatal. A candidata v3
+restaura a política fail-soft auditada sem mudar pesos/aritmética; SHA
+9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb.
+266testes+44subtestes passaram. O lançamento privado está aguardando liberar
+uma das duas sessões GPU ativas; nenhuma nova submissão foi feita. H43A
+**0,941** continua melhor confirmado. V04 permanece NOT_CONFIRMED.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -73,9 +75,21 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
+- AV-032 em andamento28/09: submissão **56640374** da AV-031 terminou
+  `Notebook Threw Exception` no oculto, score nulo. A versão pública2 continua
+  COMPLETE; Kaggle não forneceu traceback oculto. A comparação exata com a
+  fonte mostrou que nosso gate tornava fatal qualquer reparo/fallback por linha,
+  embora o runtime publicado os registre e continue. Candidata v3
+  `reports/avance_av032_h46/candidate_v3.ipynb`, SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb,
+  preserva a receita e registra warnings sem abortar; ainda exige20DINO/5A5/
+  4Raptor/3CoAt, redução e pesos esperados. 266testes+44subtestes passaram.
+  Tentativa de validação privada bloqueada por limite de2 sessões GPU ativas:
+  Biohub V26 e ROAD E13. Nenhuma nova submissão. Próximo: reconciliar as sessões,
+  lançar v3 quando houver vaga, verificar saída/gate e pedir confirmação no ato
+  antes de uma nova submissão Notebook-only.
+
 - AV-031 enviada28/09: submissão **56640374**, notebook
-  `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão2, status PENDING na última
-  consulta;4submissões restantes no dia. Não reenviar enquanto essa ref existir.
+  `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão2, resultado final ERROR.
   Kernel136214178v2 COMPLETE em281,6s/T4x2; pipeline final198,612s em teste
   público3estudos. Gate `PASSED_H46_RELEASE_GATE_NOT_SCORE_VALIDATION`:
   20DINO,5A5,4viewsRaptor e CoAt `resgated_top3/global96_top3/d4_swa3`, pesos
@@ -86,8 +100,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   A v1 falhou só no nosso contador A5 após carregar/executar5folds; a v2 conta
   `_A5_LOAD_RECEIPT` e exige folds0..4, sem mudar pesos, aritmética ou receita.
   266testes+44subtestes passaram. Artefatos em reports/avance_av031_h46*/.
-  Próximo: consultar ref56640374 até COMPLETE/ERROR, registrar score/erro uma
-  vez e só então decidir promoção contra H43A0,941. Não alegar reprodução0,943
+  Não alegar reprodução0,943
   antes do score; `score_reproduced=false` e paridade privada não foi verificada.
   Detalhes: docs/AV031_H46_EXECUCAO_E_SUBMISSAO.md.
 
@@ -1372,9 +1385,26 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   `score_reproduced=false`. CSV SHA7c6dfe8… coincide com o recibo COMPLETE.
   Validação independente confirmou3linhas,12alvos, esquema/IDs/ordem exatos,
   unicidade, finitude e faixa[0,1]. Não é validação de score oculto.
-- Submissão Notebook-only ref56640374 registrada com versão2; status PENDING
-  na última consulta. É a única nova submissão da rodada. Não reenviar.
+- Submissão Notebook-only ref56640374 registrada com versão2; terminou
+  `Notebook Threw Exception` no oculto e não recebeu score.
 - 266testes+44subtestes passaram. Código e documentação serão sincronizados
   ao GitHub; outputs/recibos privados permanecem no HD externo.
 - Decisão: aguardar resultado e comparar com H43A0,941. O0,943 é da fonte
   pública e não deve ser atribuído à nossa execução até o Kaggle pontuar.
+
+### AV-032 — 28/09/2026 — recuperação da falha oculta H46
+
+- O Kaggle expôs apenas a mensagem genérica da falha oculta; o run público v2
+  segue COMPLETE. A ref56640374 ficou sem pontuação.
+- A comparação exata com a fonte mostrou que nosso gate adicional abortava no
+  fim diante de qualquer fallback/reparo por estudo, enquanto a fonte os audita,
+  produz linha finita e continua. Em1.322 estudos ocultos isso é a explicação
+  mais provável; não afirmar que é traceback confirmado.
+- V3 construída com mesma receita e SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb.
+  O gate continua bloqueando perda de modelo/composição, mas grava warnings por
+  linha sem transformar um DICOM atípico em falha global.
+- 266testes+44subtestes passaram. Commit e16e2b6.
+- SaveKernel não criou versão: limite de2 sessões GPU ocupado por Biohub V26 e
+  ROAD E13. Nenhuma execução v3 e nenhuma nova submissão foram criadas.
+- Próximo: lançar a validação v3 quando houver vaga, auditar saída completa e
+  solicitar confirmação imediatamente antes de reenviar à competição.

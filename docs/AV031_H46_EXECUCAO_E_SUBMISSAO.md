@@ -7,9 +7,11 @@ Data: 28/09/2026.
 ## Resultado
 
 A receita pública H46 `speedy` foi executada no Kaggle com T4×2, auditada e
-submetida como notebook-only. A submissão é a ref **56640374**, notebook
-`jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão 2. Na última consulta estava
-`PENDING`, ainda sem pontuação pública. A melhor pontuação nossa confirmada
+submetida como notebook-only. A submissão ref **56640374**, notebook
+`jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão 2, terminou com
+`Notebook Threw Exception` na reexecução oculta e **não recebeu pontuação**.
+O Kaggle não expôs o traceback oculto; a versão pública continua `COMPLETE`
+em 281,6 s. A melhor pontuação nossa confirmada
 continua **0,941**; o 0,943 é a referência declarada pela fonte pública e não
 foi atribuído à nossa execução.
 
@@ -56,20 +58,42 @@ aritmética. A repetição foi permitida apenas para essa candidata auditada.
 
 - Referência: **56640374**.
 - Descrição: `AV031 H46 speedy fixed v2: 20 DINO + 5 A5 + 4 Raptor + CoAt family (resgated/global96/d4); strict 109-asset and release gates; rank of member probability mean.`
-- Status na última consulta: `PENDING`.
+- Status antes da reconciliação: `PENDING`.
+- Resultado final: `ERROR — Notebook Threw Exception`; score público nulo.
 - Submissões restantes no dia após o envio: 4.
-- Regra: não reenviar enquanto a referência existir; consultar até
-  `COMPLETE` ou `ERROR` e registrar o resultado uma única vez.
+- A ref foi reconciliada e não deve ser reenviada como se estivesse pendente.
+
+## Diagnóstico e candidata v3
+
+A diferença executável entre a fonte pública H46 e a nossa v2 foi auditada.
+Além dos pins/recibos, a v2 transformava qualquer evento de reparo por estudo
+(`fallback`, `neutral`, `partial`, `unreadable` etc.) em exceção fatal no gate
+final. Isso é incompatível com o runtime original, que registra esses eventos,
+preenche a linha de forma finita e continua. Com três estudos públicos não
+houve reparos; no conjunto oculto de 1.322 estudos basta um DICOM atípico para
+explicar o padrão observado. Como o traceback oculto não é fornecido, esta é a
+causa mais provável, não uma exceção textualmente confirmada pelo Kaggle.
+
+A v3 foi construída em
+`reports/avance_av032_h46/candidate_v3.ipynb`, SHA-256
+`9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb`.
+Ela mantém pesos, imagens, preset e aritmética; bloqueia perda de membros,
+schema/composição incorretos e valores inválidos, mas registra reparos por
+linha em `warning_event_counts` sem abortar a submissão inteira. A tentativa
+de lançar a validação privada foi recusada por duas sessões GPU simultâneas
+(`biohub-v26-deepcenter-safediv-020` e
+`road-e13-qwen25-word-aware-pilot`). Nenhuma nova submissão foi feita.
 
 ## Verificação local
 
 `PYTHONPATH=src:. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python3 -m pytest -q tests`
 
-Resultado: **266 testes + 44 subtestes passaram**.
+Resultado após a correção: **266 testes + 44 subtestes passaram**.
 
 ## Próxima decisão
 
-Quando o Kaggle concluir, comparar a pontuação pública da ref 56640374 com
-H43A 0,941. Só promover H46 se o resultado observado justificar; não usar o
+Quando uma das duas sessões GPU liberar, lançar a v3 privada e validar os três
+estudos públicos. Só depois de execução completa e nova confirmação do JV,
+submeter a versão corrigida. Comparar a pontuação com H43A 0,941; não usar o
 teste público de três estudos, o score publicado de terceiros ou os recibos
 de integridade como substitutos da avaliação no leaderboard.
