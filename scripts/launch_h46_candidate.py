@@ -22,6 +22,8 @@ PARENT_SHA = '7dc49666e01c46e5017d4975960b06b359e869d8fd916d1be41cb90561beb522'
 
 
 def seconds(value):
+    if hasattr(value, 'total_seconds'):
+        return float(value.total_seconds())
     text = str(value)
     match = re.fullmatch(r'(\d+(?:\.\d+)?)s', text)
     if not match:
