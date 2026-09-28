@@ -29,7 +29,9 @@ def build(raw, receipt):
         if c['cell_type'] == 'code':
             c['source'] = ''.join(c['source']); c['outputs'] = []; c['execution_count'] = None
     cells[2]['source'] = replace_once(cells[2]['source'], 'PRESET = os.environ.get("RSNA_PRESET", "speedy")', 'PRESET = "speedy"')
-    cells[40]['source'] += '\nH46_A5_COUNT = len(models)\nif H46_A5_COUNT != 5: raise RuntimeError("H46 A5 fold count")\n'
+    cells[40]['source'] += ('\nH46_A5_COUNT = len(_A5_LOAD_RECEIPT)\n'
+        'if H46_A5_COUNT != 5 or {int(r["fold"]) for r in _A5_LOAD_RECEIPT} != set(range(5)):\n'
+        '    raise RuntimeError("H46 A5 fold receipt")\n')
     # Convert a logged incomplete preparation identity into an immediate abort.
     cells[49]['source'] = replace_once(cells[49]['source'],
         'if _ke_input_ids != _expected_preparations:\n',

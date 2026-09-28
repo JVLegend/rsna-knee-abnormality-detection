@@ -67,6 +67,8 @@ def test_candidate_is_frozen_and_gate_precedes_publication():
     source=next(c['source'] for c in nb['cells'] if c['cell_type']=='code' and 'H46_RELEASE = validate_h46_release(' in c['source'])
     assert source.index('H46_RELEASE = validate_h46_release(') < source.index('os.replace(_tmp,_final)')
     assert 'global96_epochs' in source and "PRESET = \"speedy\"" in nb['cells'][3]['source']
+    a5=next(c['source'] for c in nb['cells'] if c['cell_type']=='code' and 'H46_A5_COUNT' in c['source'])
+    assert 'len(_A5_LOAD_RECEIPT)' in a5 and 'set(range(5))' in a5
     assert nb['metadata']['h46_build']['asset_lock_entries']>=100
     assert not nb['metadata']['h46_build']['gpu_smoke_executed']
     with pytest.raises(ValueError):build(SOURCE.read_bytes(),{})
