@@ -4,16 +4,13 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-030 (23/09): auditoriaCPU H46 COMPLETE/PASSED,
-candidata pública0,943 construída com109hashes/gate estrito, sem inferênciaGPU.
-OOF públicoDINO tem11grupos/35estudos cruzando folds; não aprovar blendFracture.
-Contratos de cross-fit/fine-tuning parcial/canais implementados e testados;
-5folds V05 ganharam seleção interna, mas nenhum professor foi treinado.
-263testes+44subtestes passaram. GPU sem cota informada; reset25/09às21hBRT.
-G04 continua preparado, não executado. V05 e confirmação300 preservados.
-V04 permanece NOT_CONFIRMED; seus150exames não voltam para seleção.
-Nenhuma nova submissão, métrica de imagem ou alteração da seleção final.
-Melhor público **0,941** preservado; softBCE de rótulos fracos não é score Kaggle.
+Atualizado na AV-031 (28/09): H46 speedy fixa executou em T4x2, passou os
+gates20DINO/5A5/4Raptor/3CoAt e foi submetida como ref **56640374**. A
+reexecução privada está PENDING; ainda não há score nosso para a receita0,943.
+Versão2 corrigiu somente o contador do gate A5 após a v1 terminar a inferência
+e falhar nesse gate local. CSV/recibo têm o mesmo SHA; esquema/IDs passaram.
+266testes+44subtestes passaram. H43A **0,941** continua melhor confirmado até
+o Kaggle concluir. V04 permanece NOT_CONFIRMED; confirmação não volta à seleção.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -75,6 +72,24 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-031 enviada28/09: submissão **56640374**, notebook
+  `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão2, status PENDING na última
+  consulta;4submissões restantes no dia. Não reenviar enquanto essa ref existir.
+  Kernel136214178v2 COMPLETE em281,6s/T4x2; pipeline final198,612s em teste
+  público3estudos. Gate `PASSED_H46_RELEASE_GATE_NOT_SCORE_VALIDATION`:
+  20DINO,5A5,4viewsRaptor e CoAt `resgated_top3/global96_top3/d4_swa3`, pesos
+  iguais e redução `rank_of_member_probability_mean`. Receita speedy fixa.
+  CSV SHA7c6dfe8ba6c71d557d2a6b21af8a96bddfeb4b75626ee38a7a8cae44ec80c23d
+  coincide com recibo;3x13, IDs/ordem/colunas iguais ao sample, finito e [0,1].
+  Candidata v2 SHA71e22cce751a5fc1e379180a117aa73daa7933ac2f238f23d31bfa332f9f51ef.
+  A v1 falhou só no nosso contador A5 após carregar/executar5folds; a v2 conta
+  `_A5_LOAD_RECEIPT` e exige folds0..4, sem mudar pesos, aritmética ou receita.
+  266testes+44subtestes passaram. Artefatos em reports/avance_av031_h46*/.
+  Próximo: consultar ref56640374 até COMPLETE/ERROR, registrar score/erro uma
+  vez e só então decidir promoção contra H43A0,941. Não alegar reprodução0,943
+  antes do score; `score_reproduced=false` e paridade privada não foi verificada.
+  Detalhes: docs/AV031_H46_EXECUCAO_E_SUBMISSAO.md.
 
 - AV-030 concluída23/09: P1/H46CPU ID135536476v1 COMPLETE,
   PASSED_H46_ASSET_AUDIT_NOT_INFERENCE,63,3255s;20DINO,56registros
@@ -635,7 +650,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
-| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-030 AUDITORIA CPU PASSOU; candidata construída,semGPU/envio |
+| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-031 SUBMETIDA — ref56640374 PENDING; gates GPU/CSV passaram, score ainda desconhecido |
 | P2 / Fracture OOF | Auditar exposição dos recibos antes da inclusão Rad no alvoFracture | Proveniência por membro/E13 / baixo + inferência | AV-030 DIAGNÓSTICO:11grupos/35estudosDINO cruzamfolds; NÃO APROVADO para seleção independente |
 | P3 / professores visuais | Fine-tuning parcial versus congelado e cross-fit sem exposição do fold externo | V05 pixels/protocolo/integração/quota / alto | AV-030 PRIMITIVAS TESTADAS e seleção interna congelada; nenhum treino ou pseudo-rótulo |
 | P4 / canais RadImageNet | Adjacentes versus corte central repetido, receitas treinadas separadas | Backbone/licença/protocolo/quota / alto | AV-030 CONTRATO IMPLEMENTADO/TESTADO; ablação MRI pendente |
@@ -1344,3 +1359,22 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - 263testes+44subtestes passaram. SemGPU disponível informado;reset25/09às21h.
   Sem submissão/novoAUC/alteração de finalistas. Nosso público0,941 preservado.
   Retomada/detalhes em docs/AV030_NOVO_STACK_E_CROSSFIT.md e cursor acima.
+
+### AV-031 — 28/09/2026 — H46 executada, auditada e submetida
+
+- Quota oficial reinterpretada corretamente: limite108.000s, uso inicial
+  ~3.217s, reserva0 e reset03/10T00:00Z. A candidata fixa foi lançada em T4x2.
+- Kernel136214178 v1 executou os modelos, mas nosso gate contou uma variável
+  `models` restaurada e rejeitou A5 apesar de os5folds terem carregado e inferido.
+  A correção passou a contar recibos A5 estritos e exigir folds0..4; nenhuma
+  alteração de pesos, imagens, blend, preset ou aritmética. Versão2 COMPLETE.
+- Gate final passou com20DINO/5A5/4Raptor/3CoAt, família e pesos esperados;
+  `score_reproduced=false`. CSV SHA7c6dfe8… coincide com o recibo COMPLETE.
+  Validação independente confirmou3linhas,12alvos, esquema/IDs/ordem exatos,
+  unicidade, finitude e faixa[0,1]. Não é validação de score oculto.
+- Submissão Notebook-only ref56640374 registrada com versão2; status PENDING
+  na última consulta. É a única nova submissão da rodada. Não reenviar.
+- 266testes+44subtestes passaram. Código e documentação serão sincronizados
+  ao GitHub; outputs/recibos privados permanecem no HD externo.
+- Decisão: aguardar resultado e comparar com H43A0,941. O0,943 é da fonte
+  pública e não deve ser atribuído à nossa execução até o Kaggle pontuar.
