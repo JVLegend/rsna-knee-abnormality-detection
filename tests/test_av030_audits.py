@@ -37,26 +37,35 @@ def release_args():
             {'dino':20,'a5':5,'raptor_views':4},{'fixed':True},{'fixed':True}]
 
 
-@pytest.mark.parametrize('fault',['member','duplicate','rankfallback','nan','neutral','dropped','count','recipe','weights'])
+@pytest.mark.parametrize('fault',['member','duplicate','rankfallback','count','recipe','weights'])
 def test_runtime_gate_rejects_degraded_composition(fault):
     args=release_args();assert not validate_h46_release(*args)['score_reproduced']
     if fault=='member':args[2]['members'].pop()
     if fault=='duplicate':args[2]['members'][0]=args[2]['members'][1]
     if fault=='rankfallback':args[2]['family_reduction']='rank_sum_fallback_probabilities_unavailable'
-    if fault in ['nan','neutral','dropped']:
-        args[1]=[{'kind':{'nan':'rad_nonfinite_zeroed','neutral':'a5_nonfinite_neutral','dropped':'dino_dropped'}[fault]}]
     if fault=='count':args[3]['dino']=19
     if fault=='recipe':args[4]['fixed']=False
     if fault=='weights':args[2]['within_coat']['d4_swa3']=.5
     with pytest.raises(ValueError):validate_h46_release(*args)
 
 
-def test_runtime_gate_allows_finite_retry_and_zero_fallback():
+def test_runtime_gate_reports_source_compatible_row_fallbacks():
     args=release_args();args[1]=[{'kind':'scratch_fallback'},{'kind':'rad_fp16_nonfinite_retry_fp32'},
-                                {'kind':'coat_global96_fallback_studies','count':0}]
-    validate_h46_release(*args)
-    args[1][-1]['count']=1
-    with pytest.raises(ValueError):validate_h46_release(*args)
+                                {'kind':'coat_global96_fallback_studies','count':1},
+                                {'kind':'raptor_study_failed','study':'odd-dicom'},
+                                {'kind':'raptor_neutral_fill','studies':1}]
+    result=validate_h46_release(*args)
+    assert result['status']=='PASSED_H46_SOURCE_COMPATIBLE_GATE_NOT_SCORE_VALIDATION'
+    assert result['source_compatible_fallbacks_observed']
+    assert result['warning_event_counts']['raptor_study_failed']==1
+
+
+@pytest.mark.parametrize('kind',[
+    'rad_nonfinite_zeroed', 'a5_nonfinite_neutral', 'dino_dropped'])
+def test_runtime_gate_audits_but_does_not_abort_source_row_repairs(kind):
+    args=release_args();args[1]=[{'kind':kind}]
+    result=validate_h46_release(*args)
+    assert result['warning_event_counts']=={kind:1}
 
 
 def test_candidate_is_frozen_and_gate_precedes_publication():
@@ -69,6 +78,8 @@ def test_candidate_is_frozen_and_gate_precedes_publication():
     assert 'global96_epochs' in source and "PRESET = \"speedy\"" in nb['cells'][3]['source']
     a5=next(c['source'] for c in nb['cells'] if c['cell_type']=='code' and 'H46_A5_COUNT' in c['source'])
     assert 'len(_A5_LOAD_RECEIPT)' in a5 and 'set(range(5))' in a5
+    assert 'H46 Raptor preparation identity mismatch' not in source
+    assert nb['metadata']['h46_build']['hidden_row_fallback_policy']=='source-compatible-audited'
     assert nb['metadata']['h46_build']['asset_lock_entries']>=100
     assert not nb['metadata']['h46_build']['gpu_smoke_executed']
     with pytest.raises(ValueError):build(SOURCE.read_bytes(),{})

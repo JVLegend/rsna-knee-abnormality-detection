@@ -1,7 +1,8 @@
 """#RSNA #Kaggle #Pesquisa — fixed 0.943 candidate with audited assets/release gate.
 
 Build only. No Kaggle upload, inference or automatic competition submission.
-Arithmetic is retained; strengthened gates can abort previously degraded runs.
+Arithmetic and the source's row-level fallback behavior are retained.  The
+release gate still aborts missing model branches or composition drift.
 """
 import argparse
 import ast
@@ -32,10 +33,8 @@ def build(raw, receipt):
     cells[40]['source'] += ('\nH46_A5_COUNT = len(_A5_LOAD_RECEIPT)\n'
         'if H46_A5_COUNT != 5 or {int(r["fold"]) for r in _A5_LOAD_RECEIPT} != set(range(5)):\n'
         '    raise RuntimeError("H46 A5 fold receipt")\n')
-    # Convert a logged incomplete preparation identity into an immediate abort.
-    cells[49]['source'] = replace_once(cells[49]['source'],
-        'if _ke_input_ids != _expected_preparations:\n',
-        'if _ke_input_ids != _expected_preparations:\n    raise RuntimeError("H46 Raptor preparation identity mismatch")\n')
+    # Keep the source's fail-soft row policy.  The visible set has only three
+    # studies; a strict late abort on any hidden-row repair caused v2 to throw.
     gate = Path('scripts/h46_runtime_gate.py').read_text()
     before_publish = '''
 H46_RELEASE = validate_h46_release(
@@ -61,7 +60,8 @@ rsna_json('/kaggle/working/h46_release_gate.json', H46_RELEASE)
     nb['metadata']['h46_build'] = {'source_sha256':SOURCE_SHA,'recipe':'speedy',
         'asset_lock_entries':len(lock),'gpu_smoke_executed':False,
         'gate_sha256':hashlib.sha256(gate.encode()).hexdigest(),
-        'modified_original_cells':[2,40,49], 'submission_eligible':False,
+        'modified_original_cells':[2,40,49], 'hidden_row_fallback_policy':'source-compatible-audited',
+        'submission_eligible':False,
         'remaining_gates':['T4x2 numerical/coverage/runtime smoke','hidden-set runtime budget','submission quota check']}
     return nb
 

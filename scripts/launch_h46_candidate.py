@@ -17,7 +17,8 @@ from kagglesdk.kernels.types.kernels_api_service import ApiSaveKernelRequest
 from scripts.prepare_h46_candidate import build, SOURCE
 
 SLUG = 'jvlegend/rsna-knee-h46-speedy-fixed-v1'
-EXPECTED_SHA = '71e22cce751a5fc1e379180a117aa73daa7933ac2f238f23d31bfa332f9f51ef'
+EXPECTED_SHA = '9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb'
+PREVIOUS_V2_SHA = '71e22cce751a5fc1e379180a117aa73daa7933ac2f238f23d31bfa332f9f51ef'
 FAILED_V1_SHA = 'd3029315a5f7beb419aeba943f3d4d0b68603078e59777c68b56c2acea196b53'
 PARENT_SHA = '7dc49666e01c46e5017d4975960b06b359e869d8fd916d1be41cb90561beb522'
 
@@ -72,12 +73,12 @@ def main():
     api=KaggleApi();api.authenticate()
     existing=own_slug_state(api)
     if existing is not None:
-        if kernel_status_name(existing) != 'ERROR' or args.previous_launch_receipt is None:
-            raise ValueError(f'H46 existing state is not an authorized failed-v1 retry: {existing}')
+        if kernel_status_name(existing) != 'COMPLETE' or args.previous_launch_receipt is None:
+            raise ValueError(f'H46 existing state is not an authorized completed-v2 repair: {existing}')
         previous=json.loads(args.previous_launch_receipt.read_text())
-        if (previous.get('slug') != SLUG or previous.get('candidate_sha256') != FAILED_V1_SHA
-                or previous.get('version_number') != 1 or previous.get('kernel_id') != 136214178):
-            raise ValueError('Previous failed launch receipt does not identify H46 v1')
+        if (previous.get('slug') != SLUG or previous.get('candidate_sha256') != PREVIOUS_V2_SHA
+                or previous.get('version_number') != 2 or previous.get('kernel_id') != 136214178):
+            raise ValueError('Previous launch receipt does not identify completed H46 v2')
     quota=api.quota_view();gpu=quota.gpu_quota
     remaining=seconds(gpu.total_time_allowed)-seconds(gpu.time_used)-seconds(gpu.time_reserved)
     if remaining < 2400:
@@ -99,7 +100,7 @@ def main():
             'gpu':True,'machine_shape':'NvidiaTeslaT4','internet':False,
             'timeout_seconds':1200,'remaining_gpu_seconds_before':remaining,
             'quota_refresh_time':str(quota.quota_refresh_time),
-            'previous_failed_version':1 if existing is not None else None,
+            'previous_version':2 if existing is not None else None,
             'state':'PREPARED_NOT_DISPATCHED'}
     if not args.launch:
         print(json.dumps(record,indent=2));return
