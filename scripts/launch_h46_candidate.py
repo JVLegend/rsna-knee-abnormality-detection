@@ -48,6 +48,11 @@ def own_slug_state(api):
     return None
 
 
+def kernel_status_name(response):
+    raw=getattr(response,'status',None)
+    return getattr(raw,'name',str(raw).rsplit('.',1)[-1])
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--candidate',type=Path,required=True)
@@ -67,7 +72,7 @@ def main():
     api=KaggleApi();api.authenticate()
     existing=own_slug_state(api)
     if existing is not None:
-        if getattr(existing,'status',None) != 'ERROR' or args.previous_launch_receipt is None:
+        if kernel_status_name(existing) != 'ERROR' or args.previous_launch_receipt is None:
             raise ValueError(f'H46 existing state is not an authorized failed-v1 retry: {existing}')
         previous=json.loads(args.previous_launch_receipt.read_text())
         if (previous.get('slug') != SLUG or previous.get('candidate_sha256') != FAILED_V1_SHA
