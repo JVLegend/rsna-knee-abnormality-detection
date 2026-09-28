@@ -4,15 +4,14 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-032 (28/09): a submissão H46 ref **56640374** terminou
-`Notebook Threw Exception` no oculto, sem score; a execução pública v2 segue
-`COMPLETE`. O diagnóstico mais provável é nosso gate extra ter convertido os
-fallbacks por estudo previstos pela fonte em exceção fatal. A candidata v3
-restaura a política fail-soft auditada sem mudar pesos/aritmética; SHA
-9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb.
-266testes+44subtestes passaram. O lançamento privado está aguardando liberar
-uma das duas sessões GPU ativas; nenhuma nova submissão foi feita. H43A
-**0,941** continua melhor confirmado. V04 permanece NOT_CONFIRMED.
+Atualizado na AV-032 (28/09): a v3 source-compatible passou a execução pública
+T4×2 e a auditoria completa, foi submetida como ref **56652369** e está
+`PENDING`/`Notebook Running` na reexecução oculta. Kernel136214178v3,
+scriptVersionId353696869, pipeline194,159s; gate confirmou20DINO/5A5/4Raptor/
+3CoAt, pesos1/3, redução `rank_of_member_probability_mean` e zero warnings no
+teste visível. A ref anterior56640374 falhou no oculto sem score. H43A
+**0,941** continua melhor confirmado até o Kaggle pontuar a v3. V04 permanece
+NOT_CONFIRMED.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -75,18 +74,16 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
 
 ## Cursor de retomada
 
-- AV-032 em andamento28/09: submissão **56640374** da AV-031 terminou
-  `Notebook Threw Exception` no oculto, score nulo. A versão pública2 continua
-  COMPLETE; Kaggle não forneceu traceback oculto. A comparação exata com a
-  fonte mostrou que nosso gate tornava fatal qualquer reparo/fallback por linha,
-  embora o runtime publicado os registre e continue. Candidata v3
-  `reports/avance_av032_h46/candidate_v3.ipynb`, SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb,
-  preserva a receita e registra warnings sem abortar; ainda exige20DINO/5A5/
-  4Raptor/3CoAt, redução e pesos esperados. 266testes+44subtestes passaram.
-  Tentativa de validação privada bloqueada por limite de2 sessões GPU ativas:
-  Biohub V26 e ROAD E13. Nenhuma nova submissão. Próximo: reconciliar as sessões,
-  lançar v3 quando houver vaga, verificar saída/gate e pedir confirmação no ato
-  antes de uma nova submissão Notebook-only.
+- AV-032 em andamento28/09: v3 `reports/avance_av032_h46/candidate_v3.ipynb`,
+  SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb,
+  executou em T4x2 após liberar vaga: kernel136214178v3/scriptVersion353696869
+  COMPLETE, pipeline194,159s. Gate
+  `PASSED_H46_SOURCE_COMPATIBLE_GATE_NOT_SCORE_VALIDATION`:20DINO/5A5/
+  4Raptor/3CoAt, pesos1/3, redução `rank_of_member_probability_mean`, três
+  recibos CoAt com zero fallback e `warning_event_counts={}` no público3.
+  CSV3x13 SHA7c6dfe8… validado. Com confirmação do JV, submissão Notebook-only
+  **56652369** criada às21:18:23, estado `PENDING`/`Notebook Running`. Não
+  duplicar. Próximo: reconciliar essa ref até resultado e comparar com H43A0,941.
 
 - AV-031 enviada28/09: submissão **56640374**, notebook
   `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão2, resultado final ERROR.
@@ -663,7 +660,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
-| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-031 SUBMETIDA — ref56640374 PENDING; gates GPU/CSV passaram, score ainda desconhecido |
+| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-032 SUBMETIDA — v3 ref56652369 PENDING/Notebook Running; gates GPU/CSV passaram, score ainda desconhecido; v2 ref56640374 falhou sem score |
 | P2 / Fracture OOF | Auditar exposição dos recibos antes da inclusão Rad no alvoFracture | Proveniência por membro/E13 / baixo + inferência | AV-030 DIAGNÓSTICO:11grupos/35estudosDINO cruzamfolds; NÃO APROVADO para seleção independente |
 | P3 / professores visuais | Fine-tuning parcial versus congelado e cross-fit sem exposição do fold externo | V05 pixels/protocolo/integração/quota / alto | AV-030 PRIMITIVAS TESTADAS e seleção interna congelada; nenhum treino ou pseudo-rótulo |
 | P4 / canais RadImageNet | Adjacentes versus corte central repetido, receitas treinadas separadas | Backbone/licença/protocolo/quota / alto | AV-030 CONTRATO IMPLEMENTADO/TESTADO; ablação MRI pendente |
@@ -1404,7 +1401,9 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   O gate continua bloqueando perda de modelo/composição, mas grava warnings por
   linha sem transformar um DICOM atípico em falha global.
 - 266testes+44subtestes passaram. Commit e16e2b6.
-- SaveKernel não criou versão: limite de2 sessões GPU ocupado por Biohub V26 e
-  ROAD E13. Nenhuma execução v3 e nenhuma nova submissão foram criadas.
-- Próximo: lançar a validação v3 quando houver vaga, auditar saída completa e
-  solicitar confirmação imediatamente antes de reenviar à competição.
+- Após liberar vaga, kernel136214178v3/scriptVersion353696869 terminou COMPLETE
+  em T4x2; pipeline194,159s e todos os recibos/gates/CSV passaram. O teste
+  visível teve zero warnings/fallbacks e preservou o SHA7c6dfe8… da receita.
+- Submissão Notebook-only **56652369** criada com confirmação do JV. Estado
+  inicial `PENDING`/`Notebook Running`; score ainda desconhecido. Não duplicar.
+- Próximo: reconciliar a ref56652369 até conclusão e comparar com H43A0,941.

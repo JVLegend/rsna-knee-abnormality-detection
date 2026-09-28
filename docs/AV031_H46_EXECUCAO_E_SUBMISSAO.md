@@ -7,13 +7,15 @@ Data: 28/09/2026.
 ## Resultado
 
 A receita pública H46 `speedy` foi executada no Kaggle com T4×2, auditada e
-submetida como notebook-only. A submissão ref **56640374**, notebook
+submetida como notebook-only. A primeira submissão, ref **56640374**, notebook
 `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão 2, terminou com
 `Notebook Threw Exception` na reexecução oculta e **não recebeu pontuação**.
 O Kaggle não expôs o traceback oculto; a versão pública continua `COMPLETE`
-em 281,6 s. A melhor pontuação nossa confirmada
-continua **0,941**; o 0,943 é a referência declarada pela fonte pública e não
-foi atribuído à nossa execução.
+em 281,6 s. A versão 3 corrigida passou na execução e auditoria públicas e foi
+submetida como ref **56652369**; neste registro, a reexecução oculta está
+`PENDING`/`Notebook Running`. A melhor pontuação nossa confirmada continua
+**0,941**; o 0,943 é a referência declarada pela fonte pública e não foi
+atribuído à nossa execução.
 
 ## Identidade da candidata
 
@@ -79,10 +81,24 @@ A v3 foi construída em
 `9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb`.
 Ela mantém pesos, imagens, preset e aritmética; bloqueia perda de membros,
 schema/composição incorretos e valores inválidos, mas registra reparos por
-linha em `warning_event_counts` sem abortar a submissão inteira. A tentativa
-de lançar a validação privada foi recusada por duas sessões GPU simultâneas
-(`biohub-v26-deepcenter-safediv-020` e
-`road-e13-qwen25-word-aware-pilot`). Nenhuma nova submissão foi feita.
+linha em `warning_event_counts` sem abortar a submissão inteira.
+
+Após a liberação de uma vaga GPU, o kernel 136214178, versão 3, terminou
+`COMPLETE` em T4×2. O pipeline registrou 194,159 s e o gate
+`PASSED_H46_SOURCE_COMPATIBLE_GATE_NOT_SCORE_VALIDATION`: 20 DINO, 5 A5,
+4 vistas Raptor, os três membros CoAt esperados, pesos internos de 1/3 e
+redução `rank_of_member_probability_mean`. Os três recibos CoAt tiveram
+`fallback_studies=0`; o gate registrou `warning_event_counts={}` no teste
+visível. O CSV 3×13 permaneceu finito, completo e com SHA-256
+`7c6dfe8ba6c71d557d2a6b21af8a96bddfeb4b75626ee38a7a8cae44ec80c23d`.
+
+Com confirmação do JV no ato, a versão 3 foi submetida à competição:
+
+- Referência: **56652369**.
+- Script version: **353696869**.
+- Arquivo: `submission.csv`.
+- Estado inicial confirmado pela UI e API: `Notebook Running` / `PENDING`.
+- Submissões restantes informadas antes do envio: 4; o envio consumiu uma.
 
 ## Verificação local
 
@@ -92,8 +108,8 @@ Resultado após a correção: **266 testes + 44 subtestes passaram**.
 
 ## Próxima decisão
 
-Quando uma das duas sessões GPU liberar, lançar a v3 privada e validar os três
-estudos públicos. Só depois de execução completa e nova confirmação do JV,
-submeter a versão corrigida. Comparar a pontuação com H43A 0,941; não usar o
-teste público de três estudos, o score publicado de terceiros ou os recibos
-de integridade como substitutos da avaliação no leaderboard.
+Aguardar a reexecução oculta da ref **56652369** sem reenviar ou duplicar o
+candidato. Quando o Kaggle concluir, registrar status, score público e eventuais
+erros, comparando com H43A 0,941. Não usar o teste público de três estudos, o
+score publicado de terceiros ou os recibos de integridade como substitutos da
+avaliação no leaderboard.
