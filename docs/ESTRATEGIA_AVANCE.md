@@ -4,13 +4,12 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-032 (28/09): a v3 source-compatible passou a execução pública
-T4×2 e a auditoria completa, foi submetida como ref **56652369** e está
-`PENDING`/`Notebook Running` na reexecução oculta. Kernel136214178v3,
-scriptVersionId353696869, pipeline194,159s; gate confirmou20DINO/5A5/4Raptor/
-3CoAt, pesos1/3, redução `rank_of_member_probability_mean` e zero warnings no
-teste visível. A ref anterior56640374 falhou no oculto sem score. H43A
-**0,941** continua melhor confirmado até o Kaggle pontuar a v3. V04 permanece
+Atualizado na AV-033 (29/09): a v3 ref **56652369** também terminou
+`Notebook Threw Exception`, sem score. A causa operacional encontrada foi o
+launcher ter salvo v2/v3 com timeout de apenas1.200s. A versão4 mantém
+exatamente notebook/receita/CSV, mas usa43.200s, passou execução pública T4×2
+e auditoria completa; submissão Notebook-only **56662611** está `PENDING`.
+H43A **0,941** continua melhor confirmado até o resultado. V04 permanece
 NOT_CONFIRMED.
 
 
@@ -73,6 +72,16 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-033 em andamento29/09: ref56652369 reconciliada como
+  `Notebook Threw Exception`, sem score. Diagnóstico objetivo: as versões2/3
+  foram salvas pelo launcher com `session_timeout_seconds=1200`, insuficiente
+  para1.322 estudos ocultos. Corrigido para43.200s/12h sem alterar a candidata
+  SHA9c9924f9…, pesos, blend ou CSV. Suíte completa:266testes+44subtestes.
+  Kernel136214178v4 COMPLETE; pipeline241,472s, CSV SHA7c6dfe8… idêntico à v3,
+  20DINO/5A5/4Raptor/3CoAt, zero warnings/fallbacks no público3. Submissão
+  Notebook-only **56662611** criada via CLI, estado `PENDING`;4 envios restantes.
+  Não duplicar. Próximo: reconciliar ref56662611 até score ou erro.
 
 - AV-032 em andamento28/09: v3 `reports/avance_av032_h46/candidate_v3.ipynb`,
   SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb,
@@ -660,7 +669,7 @@ alto = fine-tuning, múltiplas sementes ou folds. Não são horas prometidas.
 
 | ID / família | Alternativa e comparação | Dependência / custo | Estado |
 |---|---|---|---|
-| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-032 SUBMETIDA — v3 ref56652369 PENDING/Notebook Running; gates GPU/CSV passaram, score ainda desconhecido; v2 ref56640374 falhou sem score |
+| P1 / H-46 | Receita pública MaverickV3 speedy0,943 fixa com três leitoresCoAt e109hashes | T4×2/quota/smoke / médio-alto | AV-033 SUBMETIDA — v4 ref56662611 PENDING com timeout43.200s; gates GPU/CSV passaram; v2/v3 falharam sem score por timeout1.200s |
 | P2 / Fracture OOF | Auditar exposição dos recibos antes da inclusão Rad no alvoFracture | Proveniência por membro/E13 / baixo + inferência | AV-030 DIAGNÓSTICO:11grupos/35estudosDINO cruzamfolds; NÃO APROVADO para seleção independente |
 | P3 / professores visuais | Fine-tuning parcial versus congelado e cross-fit sem exposição do fold externo | V05 pixels/protocolo/integração/quota / alto | AV-030 PRIMITIVAS TESTADAS e seleção interna congelada; nenhum treino ou pseudo-rótulo |
 | P4 / canais RadImageNet | Adjacentes versus corte central repetido, receitas treinadas separadas | Backbone/licença/protocolo/quota / alto | AV-030 CONTRATO IMPLEMENTADO/TESTADO; ablação MRI pendente |
@@ -1407,3 +1416,21 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - Submissão Notebook-only **56652369** criada com confirmação do JV. Estado
   inicial `PENDING`/`Notebook Running`; score ainda desconhecido. Não duplicar.
 - Próximo: reconciliar a ref56652369 até conclusão e comparar com H43A0,941.
+
+### AV-033 — 29/09/2026 — correção do orçamento oculto e submissão v4
+
+- A ref56652369 terminou `Notebook Threw Exception`, sem score, apesar de a v3
+  pública e seus gates terem passado.
+- O launcher gravava `session_timeout_seconds=1200`: vinte minutos para uma
+  reexecução oculta de1.322 estudos. V2 e v3 herdaram esse teto. A documentação
+  oficial vigente permite sessão CPU/GPU de até12h; o launcher passou a43.200s.
+- A versão4 usa o mesmo notebook SHA9c9924f9…, mesmos pesos, preset, blend e
+  CSV. Não é uma nova hipótese de modelagem; isola apenas o orçamento de runtime.
+- 266testes+44subtestes passaram. Commit0e9196e. Kernel136214178v4 COMPLETE;
+  pipeline241,472s. Gate source-compatible confirmou20DINO/5A5/4Raptor/3CoAt,
+  pesos1/3, redução `rank_of_member_probability_mean`, zero warnings/fallbacks.
+  CSV3x13 SHA7c6dfe8… idêntico à v3.
+- Submissão Notebook-only **56662611** criada via CLI com versão4; estado
+  inicial `PENDING`;4 submissões restantes no dia. Não duplicar.
+- Próximo: aguardar/reconciliar essa ref. O melhor confirmado segue H43A0,941;
+  o0,943 continua sendo referência da fonte até o Kaggle pontuar nossa execução.

@@ -11,11 +11,12 @@ submetida como notebook-only. A primeira submissão, ref **56640374**, notebook
 `jvlegend/rsna-knee-h46-speedy-fixed-v1`, versão 2, terminou com
 `Notebook Threw Exception` na reexecução oculta e **não recebeu pontuação**.
 O Kaggle não expôs o traceback oculto; a versão pública continua `COMPLETE`
-em 281,6 s. A versão 3 corrigida passou na execução e auditoria públicas e foi
-submetida como ref **56652369**; neste registro, a reexecução oculta está
-`PENDING`/`Notebook Running`. A melhor pontuação nossa confirmada continua
-**0,941**; o 0,943 é a referência declarada pela fonte pública e não foi
-atribuído à nossa execução.
+em 281,6 s. A versão 3 corrigida passou na execução e auditoria públicas, mas a
+ref **56652369** também terminou `Notebook Threw Exception`, sem score. A causa
+operacional encontrada depois foi o timeout de apenas1.200s salvo pelo launcher.
+A versão4 idêntica foi criada com43.200s e submetida como ref **56662611**;
+está `PENDING`. A melhor pontuação nossa confirmada continua **0,941**; o 0,943
+é a referência declarada pela fonte pública e não foi atribuído à nossa execução.
 
 ## Identidade da candidata
 
@@ -97,8 +98,24 @@ Com confirmação do JV no ato, a versão 3 foi submetida à competição:
 - Referência: **56652369**.
 - Script version: **353696869**.
 - Arquivo: `submission.csv`.
-- Estado inicial confirmado pela UI e API: `Notebook Running` / `PENDING`.
+- Resultado final: `ERROR — Notebook Threw Exception`; score público nulo.
 - Submissões restantes informadas antes do envio: 4; o envio consumiu uma.
+
+## Diagnóstico de timeout e versão 4
+
+As versões2 e3 foram salvas com `session_timeout_seconds=1200`. Esse teto de
+20min era suficiente para o smoke de três estudos, mas incompatível com a
+reexecução dos1.322 estudos ocultos. A v4 corrige somente esse parâmetro para
+43.200s/12h; o notebook, SHA, pesos, imagens, preset, aritmética e CSV não mudam.
+
+- Kernel136214178, versão4, `COMPLETE` em T4×2.
+- Pipeline público:241,472s; runtime total observado no log:365,906s.
+- Gate: `PASSED_H46_SOURCE_COMPATIBLE_GATE_NOT_SCORE_VALIDATION`.
+- Composição:20DINO,5A5,4Raptor,3CoAt; zero warnings/fallbacks no público.
+- CSV SHA-256: `7c6dfe8ba6c71d557d2a6b21af8a96bddfeb4b75626ee38a7a8cae44ec80c23d`,
+  idêntico à v3.
+- Submissão Notebook-only: **56662611**, versão4, estado inicial `PENDING`.
+- Submissões restantes no dia após o envio:4.
 
 ## Verificação local
 
@@ -108,8 +125,8 @@ Resultado após a correção: **266 testes + 44 subtestes passaram**.
 
 ## Próxima decisão
 
-Aguardar a reexecução oculta da ref **56652369** sem reenviar ou duplicar o
+Aguardar a reexecução oculta da ref **56662611** sem reenviar ou duplicar o
 candidato. Quando o Kaggle concluir, registrar status, score público e eventuais
-erros, comparando com H43A 0,941. Não usar o teste público de três estudos, o
+erros, comparando com H43A0,941. Não usar o teste público de três estudos, o
 score publicado de terceiros ou os recibos de integridade como substitutos da
 avaliação no leaderboard.
