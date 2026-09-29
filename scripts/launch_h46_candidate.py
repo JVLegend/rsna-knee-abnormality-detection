@@ -1,8 +1,10 @@
-"""#RSNA #Kaggle #Pesquisa — launch the frozen H46 notebook once on T4 x2.
+"""#RSNA #Kaggle #Pesquisa — launch the frozen H46 notebook on T4 x2.
 
 The script refuses source drift, an existing slug, insufficient quota or an
 uncommitted launch implementation. It records intent before dispatch. It does
 not submit to the competition; submission requires a completed audited output.
+The hidden cohort needs the full batch-session budget rather than the 20-minute
+public smoke timeout used by versions 2 and 3.
 """
 import argparse
 from datetime import datetime, timezone
@@ -18,9 +20,11 @@ from scripts.prepare_h46_candidate import build, SOURCE
 
 SLUG = 'jvlegend/rsna-knee-h46-speedy-fixed-v1'
 EXPECTED_SHA = '9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb'
+PREVIOUS_V3_SHA = EXPECTED_SHA
 PREVIOUS_V2_SHA = '71e22cce751a5fc1e379180a117aa73daa7933ac2f238f23d31bfa332f9f51ef'
 FAILED_V1_SHA = 'd3029315a5f7beb419aeba943f3d4d0b68603078e59777c68b56c2acea196b53'
 PARENT_SHA = '7dc49666e01c46e5017d4975960b06b359e869d8fd916d1be41cb90561beb522'
+SESSION_TIMEOUT_SECONDS = 12 * 60 * 60
 
 
 def seconds(value):
@@ -74,11 +78,12 @@ def main():
     existing=own_slug_state(api)
     if existing is not None:
         if kernel_status_name(existing) != 'COMPLETE' or args.previous_launch_receipt is None:
-            raise ValueError(f'H46 existing state is not an authorized completed-v2 repair: {existing}')
+            raise ValueError(f'H46 existing state is not an authorized completed-v3 timeout repair: {existing}')
         previous=json.loads(args.previous_launch_receipt.read_text())
-        if (previous.get('slug') != SLUG or previous.get('candidate_sha256') != PREVIOUS_V2_SHA
-                or previous.get('version_number') != 2 or previous.get('kernel_id') != 136214178):
-            raise ValueError('Previous launch receipt does not identify completed H46 v2')
+        if (previous.get('slug') != SLUG or previous.get('candidate_sha256') != PREVIOUS_V3_SHA
+                or previous.get('version_number') != 3 or previous.get('kernel_id') != 136214178
+                or previous.get('timeout_seconds') != 1200):
+            raise ValueError('Previous launch receipt does not identify the 20-minute H46 v3')
     quota=api.quota_view();gpu=quota.gpu_quota
     remaining=seconds(gpu.total_time_allowed)-seconds(gpu.time_used)-seconds(gpu.time_reserved)
     if remaining < 2400:
@@ -88,7 +93,7 @@ def main():
     request.new_title='RSNA Knee H46 Speedy Fixed v1';request.text=actual
     request.language='python';request.kernel_type='notebook';request.is_private=True
     request.enable_gpu=True;request.enable_tpu=False;request.enable_internet=False
-    request.session_timeout_seconds=1200;request.machine_shape='NvidiaTeslaT4'
+    request.session_timeout_seconds=SESSION_TIMEOUT_SECONDS;request.machine_shape='NvidiaTeslaT4'
     request.dataset_data_sources=meta['dataset_sources']
     request.kernel_data_sources=meta['kernel_sources']
     request.model_data_sources=meta['model_sources']
@@ -98,9 +103,9 @@ def main():
             'candidate_sha256':digest,'parent_sha256':PARENT_SHA,
             'asset_receipt_sha256':hashlib.sha256(args.asset_receipt.read_bytes()).hexdigest(),
             'gpu':True,'machine_shape':'NvidiaTeslaT4','internet':False,
-            'timeout_seconds':1200,'remaining_gpu_seconds_before':remaining,
+            'timeout_seconds':SESSION_TIMEOUT_SECONDS,'remaining_gpu_seconds_before':remaining,
             'quota_refresh_time':str(quota.quota_refresh_time),
-            'previous_version':2 if existing is not None else None,
+            'previous_version':3 if existing is not None else None,
             'state':'PREPARED_NOT_DISPATCHED'}
     if not args.launch:
         print(json.dumps(record,indent=2));return
