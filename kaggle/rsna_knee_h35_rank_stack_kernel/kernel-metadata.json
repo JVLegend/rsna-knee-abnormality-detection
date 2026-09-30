@@ -1,0 +1,19 @@
+{
+  "id": "jvlegend/rsna-knee-h-35-rank-stack",
+  "title": "RSNA Knee H-35 Rank Stack",
+  "code_file": "rsna_knee_h35_rank_stack.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "kernel_sources": [
+    "jvlegend/rsna-knee-h-29-dinov2-adjusted-physical-crop",
+    "jvlegend/rsna-knee-v4-plane-target",
+    "jvlegend/rsna-knee-v4-weak-text-plane"
+  ],
+  "competition_sources": ["rsna-knee-abnormality-detection"],
+  "model_sources": []
+}

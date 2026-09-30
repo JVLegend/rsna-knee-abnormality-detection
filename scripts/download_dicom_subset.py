@@ -31,9 +31,29 @@ def _list_series_files(
     prefixes: set[str],
     page_size: int,
     max_pages: int,
+    file_cache: Path | None = None,
+    tree_delay: float = 0.5,
+    tree_retry_attempts: int = 8,
 ) -> dict[str, list[tuple[str, int]]]:
+    cached: dict[str, list[tuple[str, int]]] = {}
+    if file_cache is not None and file_cache.is_file():
+        raw_cache = json.loads(file_cache.read_text(encoding="utf-8"))
+        cached = {
+            str(prefix): [(str(name), int(size)) for name, size in files]
+            for prefix, files in raw_cache.items()
+        }
     if ApiListDataTreeFilesRequest is not None:
-        return _list_series_files_tree(api, competition, prefixes, page_size, max_pages)
+        return _list_series_files_tree(
+            api,
+            competition,
+            prefixes,
+            page_size,
+            max_pages,
+            cached,
+            file_cache,
+            tree_delay,
+            tree_retry_attempts,
+        )
 
     return _list_series_files_flat(api, competition, prefixes, page_size, max_pages)
 
@@ -44,13 +64,21 @@ def _list_series_files_tree(
     prefixes: set[str],
     page_size: int,
     max_pages: int,
+    cached: dict[str, list[tuple[str, int]]],
+    file_cache: Path | None,
+    tree_delay: float,
+    tree_retry_attempts: int,
 ) -> dict[str, list[tuple[str, int]]]:
     """Lista diretamente cada diretório de série (Kaggle CLI >= 2.2.2)."""
 
-    found: dict[str, list[tuple[str, int]]] = {prefix: [] for prefix in prefixes}
+    found: dict[str, list[tuple[str, int]]] = {
+        prefix: list(cached.get(prefix, [])) for prefix in prefixes
+    }
     pages = 0
     with api.build_kaggle_client() as client:
-        for prefix in prefixes:
+        for prefix in sorted(prefixes):
+            if found[prefix]:
+                continue
             token = None
             while True:
                 if pages >= max_pages:
@@ -60,16 +88,40 @@ def _list_series_files_tree(
                 request.path = prefix.rstrip("/")
                 request.page_size = page_size
                 request.page_token = token
-                try:
-                    response = client.competitions.competition_api_client.list_data_tree_files(request)
-                except HTTPError as exc:
-                    status = getattr(exc.response, "status_code", None)
-                    if status not in {429, 500, 502, 503, 504}:
-                        raise
-                    raise RuntimeError(f"API de árvore retornou HTTP {status} ao consultar uma série.") from exc
+                response = None
+                for attempt in range(1, tree_retry_attempts + 1):
+                    if tree_delay:
+                        time.sleep(tree_delay)
+                    try:
+                        response = client.competitions.competition_api_client.list_data_tree_files(request)
+                        break
+                    except HTTPError as exc:
+                        status = getattr(exc.response, "status_code", None)
+                        if status not in {429, 500, 502, 503, 504} or attempt >= tree_retry_attempts:
+                            raise RuntimeError(
+                                f"API de árvore retornou HTTP {status} após {attempt} tentativas; "
+                                f"cache preservado em {file_cache}"
+                            ) from exc
+                        delay = min(120, 10 * (2 ** (attempt - 1)))
+                        retry_after = getattr(getattr(exc, "response", None), "headers", {}).get("Retry-After")
+                        if retry_after:
+                            try:
+                                delay = max(delay, float(retry_after))
+                            except (TypeError, ValueError):
+                                pass
+                        print(
+                            f"tree_status={status}; retry={attempt}/{tree_retry_attempts}; "
+                            f"aguardando={delay:g}s; prefix={prefix}",
+                            flush=True,
+                        )
+                        time.sleep(delay)
+                assert response is not None
                 pages += 1
                 for file in response.files:
                     found[prefix].append((f"{prefix}{file.name}", int(getattr(file, "total_bytes", 0))))
+                if file_cache is not None:
+                    file_cache.parent.mkdir(parents=True, exist_ok=True)
+                    file_cache.write_text(json.dumps(found), encoding="utf-8")
                 token = response.next_page_token
                 if not token:
                     break
@@ -136,6 +188,9 @@ def download_manifest(
     workers: int = 1,
     request_delay: float = 0.75,
     retry_attempts: int = 6,
+    file_cache: Path | None = None,
+    tree_delay: float = 0.5,
+    tree_retry_attempts: int = 8,
 ) -> None:
     entries = manifest.get("studies", [])
     if not entries:
@@ -150,7 +205,16 @@ def download_manifest(
     api = KaggleApi()
     api.authenticate()
     prefixes = {_series_prefix(entry) for entry in entries}
-    files_by_prefix = _list_series_files(api, competition, prefixes, page_size, max_pages)
+    files_by_prefix = _list_series_files(
+        api,
+        competition,
+        prefixes,
+        page_size,
+        max_pages,
+        file_cache=file_cache,
+        tree_delay=tree_delay,
+        tree_retry_attempts=tree_retry_attempts,
+    )
     total_files = sum(len(files) for files in files_by_prefix.values())
     total_bytes = sum(size for files in files_by_prefix.values() for _, size in files)
     print(f"series={len(files_by_prefix)} files={total_files} api_bytes={total_bytes}")
@@ -241,6 +305,9 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--request-delay", type=float, default=0.75)
     parser.add_argument("--retry-attempts", type=int, default=6)
+    parser.add_argument("--file-cache", type=Path, default=None)
+    parser.add_argument("--tree-delay", type=float, default=0.5)
+    parser.add_argument("--tree-retry-attempts", type=int, default=8)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -255,6 +322,9 @@ def main() -> None:
         args.workers,
         args.request_delay,
         args.retry_attempts,
+        args.file_cache.expanduser() if args.file_cache else None,
+        args.tree_delay,
+        args.tree_retry_attempts,
     )
 
 
