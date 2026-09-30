@@ -137,6 +137,14 @@ pela competição foram fixados: T4×2, internet desligada e teto de12h.
   pública `351863321`, associada pelo autor a0,943.
 - A fonte e seus assets não constituem score nosso até a reexecução oculta.
 - Suíte local antes do lançamento: **269 testes + 44 subtestes passaram**.
+- Execução pública: `COMPLETE` em311,526s de log; pipeline finalizou em
+  300,975s com20DINO,5A5,4Raptor e3CoAt.
+- CSV:3×13, IDs únicos, esquema exato, finito em[0,1], SHA-256
+  `7c6dfe8ba6c71d557d2a6b21af8a96bddfeb4b75626ee38a7a8cae44ec80c23d`;
+  byte a byte igual ao CSV público das v3/v4.
+- Submissão Notebook-only: **56696639**, versão1, estado inicial `PENDING`.
+- Um primeiro request 400 não criou submissão: a API recebeu o caminho local
+  completo em vez do basename `submission.csv`; corrigido sem consumir cota.
 
 ## Verificação local
 
@@ -146,7 +154,6 @@ Resultado após a correção: **266 testes + 44 subtestes passaram**.
 
 ## Próxima decisão
 
-Aguardar o kernel **136476642**. Se o público concluir, baixar e auditar o CSV;
-só então criar uma submissão Notebook-only da versão1. Se o kernel ou o oculto
-falhar, encerrar H46 e preservar H43A0,941 em vez de consumir novas tentativas
-com derivados cegos. Não usar o score publicado de terceiros como score nosso.
+Aguardar a ref **56696639** sem duplicar. Se o oculto falhar, encerrar H46 e
+preservar H43A0,941 em vez de consumir novas tentativas com derivados cegos.
+Não usar o score publicado de terceiros como score nosso.

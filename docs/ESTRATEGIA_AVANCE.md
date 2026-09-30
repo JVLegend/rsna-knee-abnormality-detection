@@ -1444,6 +1444,8 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   DINOv2 da fonte pública. Metadados operacionais: T4×2, internet desligada,
   12h. O0,943 continua sendo apenas o resultado informado pela fonte.
 - 269testes+44subtestes passaram. Kernel136476642v1 aceito no slug
-  `jvlegend/rsna-knee-h46-exact-public-source`; estado inicial `RUNNING`.
-- Gate: só submeter Notebook-only após `COMPLETE`, download e auditoria do CSV.
-  Se a execução pública/oculta falhar, encerrar H46 e preservar H43A0,941.
+  `jvlegend/rsna-knee-h46-exact-public-source`; execução pública `COMPLETE`.
+- CSV3×13 auditado, finito/[0,1], SHA7c6dfe8…, byte a byte igual às v3/v4.
+- Submissão Notebook-only **56696639**, versão1, estado inicial `PENDING`;4
+  envios restantes. Aguardar sem duplicar. Se o oculto falhar, encerrar H46 e
+  preservar H43A0,941.
