@@ -4,13 +4,13 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-033 (29/09): a v3 ref **56652369** também terminou
-`Notebook Threw Exception`, sem score. A causa operacional encontrada foi o
-launcher ter salvo v2/v3 com timeout de apenas1.200s. A versão4 mantém
-exatamente notebook/receita/CSV, mas usa43.200s, passou execução pública T4×2
-e auditoria completa; submissão Notebook-only **56662611** está `PENDING`.
-H43A **0,941** continua melhor confirmado até o resultado. V04 permanece
-NOT_CONFIRMED.
+Atualizado na AV-035 (30/09): a ref **56696639**, fonte original H46,
+continua `PENDING`. A v4/ref56662611 terminou com exceção; aumentar o timeout
+para12h não resolveu a falha. H43A **0,941** continua melhor confirmado.
+G04 concluiu e passou a auditoria:224 reproduz o cache com diferença zero;
+336 tem forward2,22× mais lento e pico204MiB. Próximo: treino pareado224vs336
+no treino1000/novo dev300, com protocolo fixado antes de avaliá-lo.
+V04 permanece NOT_CONFIRMED.
 
 
 Espelho operacional da fonte de verdade no vault:
@@ -72,6 +72,21 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-035 (30/09): acompanhar primeiro a ref56696639, sem duplicar. Fonte
+  original H46 SHA7dc49666…, kernel136476642v1 COMPLETE, CSV público auditado
+  SHA7c6dfe8…. Se o oculto falhar, encerrar esta receita e preservar H43A0,941.
+  G04 kernel135300098v1 ERROR: comparação misturava esquemaG01 com hash
+  extra dentro de selected e esquemaV03 sem esse campo. Corrigido no builder;
+  hash de pixels224 e demais gates permanecem exatos.9testes passaram.
+  V2 COMPLETE/PASSED_G04_PREFLIGHT_NOT_MODEL_VALIDATION:20exames/60séries,
+  31,533s; diferença224=0; forward336/224=2,21996; pico336=213.534.208bytes.
+  Build37b72146…; outputs reports/avance_av035_g04/v2_output, auditoria
+  reports/avance_av035_g04/audit_v2.json. Não relançar o piloto.
+  Próximo: congelar treino pareado com cabeças próprias para cada resolução,
+  treino1000/dev300/seeds2026e42; confirmação300 fechada. Custo de planejamento
+  para1300casos/duasresoluções≈5570s, extrapolação de20casos sem garantia.
+  Detalhes docs/AV035_PILOTO_RESOLUCAO_G04.md no HD externo.
 
 - AV-033 em andamento29/09: ref56652369 reconciliada como
   `Notebook Threw Exception`, sem score. Diagnóstico objetivo: as versões2/3
@@ -1434,6 +1449,21 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   inicial `PENDING`;4 submissões restantes no dia. Não duplicar.
 - Próximo: aguardar/reconciliar essa ref. O melhor confirmado segue H43A0,941;
   o0,943 continua sendo referência da fonte até o Kaggle pontuar nossa execução.
+
+### AV-035 — 30/09/2026 — G04 concluído e resolução336 elegível
+
+- H46 original ref56696639 segue PENDING; não houve nova submissão.
+- G04v1 falhou por contrato de comparação; arquivo selected dos24registros
+  G01 incluía hash de imagem ausente na geometria atual. Builder normalizado
+  mantendo pixels/seleção/posições/feature gates;9testes passaram.
+- G04v2/kernel135300098 COMPLETE; auditor independente PASSED.20exames,
+  60séries,31,533s; features224 reproduzem o cacheV03 com diferença0.
+- Forward336/224=2,22; pico336≈204MiB. Features336 válidas/diferentes.
+  Estimativa1300casos/duasresoluções≈93min; não é garantia de runtime.
+- Decisão: preparar treino pareado1000/dev300/seeds2026e42 com cabeças
+  próprias224/336. Ainda sem métrica de qualidade336; confirmação300 fechada.
+- Recibo/auditoria privados noHD, scripts e documentação noGitHub.
+  AuditoriaSHA0b67b935…; detalhes docs/AV035_PILOTO_RESOLUCAO_G04.md.
 
 ### AV-034 — 30/09/2026 — reprodução byte a byte da fonte H46
 

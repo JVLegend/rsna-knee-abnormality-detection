@@ -2,6 +2,18 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-035 — 30/09/2026 — G04 auditado
+
+[Resultado e protocolo](AV035_PILOTO_RESOLUCAO_G04.md). H46 ref56696639
+seguePENDING. G04v1 falhou na comparação de esquema; normalizados os24
+registros G01 que traziam hash de imagem dentro de selected. Gate pixel224
+exato mantido;9testes passaram. V2/kernel135300098 COMPLETE/PASSED:
+20exames/60séries,31,533s, features224 idênticas ao cacheV03 (delta0).
+Forward336/224=2,21996; pico336=213.534.208bytes. Features336 finitas/diferentes.
+Decisão:336 tecnicamente elegível; falta treino pareado no treino1000/dev300
+antes de afirmar ganho. Confirmação300 fechada. Sem nova submissão/score.
+Código commits4a141ce/98a5499; auditoriaSHA0b67b935… noHD externo.
+
 ## AV-029 — 21/09/2026 — V05 auditado; piloto G04 sem vagaGPU
 
 [Protocolo e retomada](AV029_VALIDACAO_NOVA_E_RESOLUCAO.md).
