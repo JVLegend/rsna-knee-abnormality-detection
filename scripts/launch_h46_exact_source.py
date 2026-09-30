@@ -23,7 +23,7 @@ from kagglesdk.kernels.types.kernels_api_service import ApiSaveKernelRequest
 SOURCE = Path('reports/research_20260923/maverick-v3/rsna-knee-restructured-version-3.ipynb')
 METADATA = SOURCE.with_name('kernel-metadata.json')
 SOURCE_SHA256 = '7dc49666e01c46e5017d4975960b06b359e869d8fd916d1be41cb90561beb522'
-SLUG = 'jvlegend/rsna-knee-h46-exact-source'
+SLUG = 'jvlegend/rsna-knee-h46-exact-public-source'
 TITLE = 'RSNA Knee H46 Exact Public Source'
 SESSION_TIMEOUT_SECONDS = 12 * 60 * 60
 MINIMUM_GPU_SECONDS = 6 * 60 * 60

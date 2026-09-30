@@ -114,8 +114,29 @@ reexecução dos1.322 estudos ocultos. A v4 corrige somente esse parâmetro para
 - Composição:20DINO,5A5,4Raptor,3CoAt; zero warnings/fallbacks no público.
 - CSV SHA-256: `7c6dfe8ba6c71d557d2a6b21af8a96bddfeb4b75626ee38a7a8cae44ec80c23d`,
   idêntico à v3.
-- Submissão Notebook-only: **56662611**, versão4, estado inicial `PENDING`.
+- Submissão Notebook-only: **56662611**, versão4.
+- Resultado final: `ERROR — Notebook Threw Exception`; score público nulo.
 - Submissões restantes no dia após o envio:4.
+
+O teto de 12h não corrigiu a falha oculta. Portanto, o timeout de 20min era
+um defeito real do launcher anterior, mas não explica sozinho as três exceções.
+
+## AV-034 — recuperação pela fonte pública exata
+
+Para remover simultaneamente todas as alterações próprias como variável, foi
+lançada uma reprodução byte a byte da fonte pública H46 original, SHA-256
+`7dc49666e01c46e5017d4975960b06b359e869d8fd916d1be41cb90561beb522`.
+Nenhuma célula foi alterada: não há nosso preflight, gate final, correção de A5
+ou política adicional de publicação. Somente os metadados operacionais exigidos
+pela competição foram fixados: T4×2, internet desligada e teto de12h.
+
+- Kernel: **136476642**, versão1.
+- Slug: `jvlegend/rsna-knee-h46-exact-public-source`.
+- Estado inicial: `RUNNING` em 30/09/2026.
+- Fonte de terceiros: `maverickss26/rsna-knee-restructured-version-3`, versão
+  pública `351863321`, associada pelo autor a0,943.
+- A fonte e seus assets não constituem score nosso até a reexecução oculta.
+- Suíte local antes do lançamento: **269 testes + 44 subtestes passaram**.
 
 ## Verificação local
 
@@ -125,8 +146,7 @@ Resultado após a correção: **266 testes + 44 subtestes passaram**.
 
 ## Próxima decisão
 
-Aguardar a reexecução oculta da ref **56662611** sem reenviar ou duplicar o
-candidato. Quando o Kaggle concluir, registrar status, score público e eventuais
-erros, comparando com H43A0,941. Não usar o teste público de três estudos, o
-score publicado de terceiros ou os recibos de integridade como substitutos da
-avaliação no leaderboard.
+Aguardar o kernel **136476642**. Se o público concluir, baixar e auditar o CSV;
+só então criar uma submissão Notebook-only da versão1. Se o kernel ou o oculto
+falhar, encerrar H46 e preservar H43A0,941 em vez de consumir novas tentativas
+com derivados cegos. Não usar o score publicado de terceiros como score nosso.

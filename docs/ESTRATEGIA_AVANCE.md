@@ -1434,3 +1434,16 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
   inicial `PENDING`;4 submissões restantes no dia. Não duplicar.
 - Próximo: aguardar/reconciliar essa ref. O melhor confirmado segue H43A0,941;
   o0,943 continua sendo referência da fonte até o Kaggle pontuar nossa execução.
+
+### AV-034 — 30/09/2026 — reprodução byte a byte da fonte H46
+
+- A ref56662611/v4 também terminou `Notebook Threw Exception`, sem score. O
+  aumento de1.200s para43.200s falsificou timeout como causa única.
+- Próxima candidata remove todas as alterações próprias: SHA original
+  `7dc49666…`, zero células modificadas, mesmos14datasets,2kernels e modelo
+  DINOv2 da fonte pública. Metadados operacionais: T4×2, internet desligada,
+  12h. O0,943 continua sendo apenas o resultado informado pela fonte.
+- 269testes+44subtestes passaram. Kernel136476642v1 aceito no slug
+  `jvlegend/rsna-knee-h46-exact-public-source`; estado inicial `RUNNING`.
+- Gate: só submeter Notebook-only após `COMPLETE`, download e auditoria do CSV.
+  Se a execução pública/oculta falhar, encerrar H46 e preservar H43A0,941.

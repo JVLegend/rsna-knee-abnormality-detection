@@ -21,7 +21,7 @@ def test_exact_public_source_is_pinned_and_unmodified():
     assert digest == SOURCE_SHA256
     assert hashlib_sha256(text.encode()) == SOURCE_SHA256
     assert metadata['id'] == 'maverickss26/rsna-knee-restructured-version-3'
-    assert SLUG == 'jvlegend/rsna-knee-h46-exact-source'
+    assert SLUG == 'jvlegend/rsna-knee-h46-exact-public-source'
     assert SESSION_TIMEOUT_SECONDS == 43200
     assert FAILED_SUBMISSION_REFS == [56640374, 56652369, 56662611]
 
