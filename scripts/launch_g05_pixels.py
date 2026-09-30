@@ -9,6 +9,7 @@ import base64
 from datetime import datetime, timezone
 import hashlib
 import json
+import lzma
 from pathlib import Path
 import zlib
 
@@ -25,7 +26,10 @@ def source_spec(source):
     node = next(n for n in ast.parse(source).body if isinstance(n, ast.Assign) and
                 any(isinstance(t, ast.Name) and t.id == 'G05_SPEC' for t in n.targets))
     packed = ast.literal_eval(node.value.args[0].args[0].args[0])
-    spec = json.loads(zlib.decompress(base64.b85decode(packed)))
+    container = node.value.args[0].func.value.id
+    if container not in ('zlib', 'lzma'):
+        raise ValueError('Unsupported immutable spec container')
+    spec = json.loads((lzma if container == 'lzma' else zlib).decompress(base64.b85decode(packed)))
     expected = hashlib.sha256(json.dumps({k: v for k, v in spec.items() if k != 'contract_hash'},
                               sort_keys=True, allow_nan=False).encode()).hexdigest()
     if (expected != spec['contract_hash'] or spec['stage'] != 'pixels' or len(spec['rows']) != 1600 or

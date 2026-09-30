@@ -1,144 +1,126 @@
-# AV-036 — comparação controlada 224 × 336
+# Comparação controlada 224 versus 336 — G05
 
 #JoaoVictor #Kaggle #Tecnologia #Academia
 
-30/09/2026. Estado: **protocolo/código preparados; treino bloqueado por
-identidade de paciente e cobertura de pixels**. Não existe nova candidata
-qualificada para submissão. Não interpretar G04 como melhora de qualidade.
+30/09/2026. Fonte de verdade do protocolo; contexto operacional em
+[[07_Estrategia_AVANCE]]. Implementação e evidências no HD externo, repositório
+`/Volumes/Karine HD Externo/Dados_JV/Projetos_GitHub/rsna-knee-abnormality-detection`.
+Espelho detalhado: `docs/AV036_COMPARACAO_CONTROLADA_224_336.md`.
 
-## Referência preservada e recursos
+## Retomada AV-037 — 30/09
 
-- H46 original ref **56696639 COMPLETE, público 0,943**, novo melhor nosso;
-  kernel136476642v1 COMPLETE. Fonte SHA7dc49666… e CSV SHA7c6dfe8… preservados.
-  H43A0,941 é histórico. Não reexecutar, editar, enviar novamente nem alterar
-  seleção final automaticamente.
-- Consulta API em **30/09 às17:07:57 BRT**: prazo **22/10/2026 às20:59 BRT**
-  (23:59UTC); entrada/fusão15/10 às20:59BRT. Fonte:
-  [competição oficial](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection).
-- GPU:108.000s totais,39.483,928s usadas,0s reservadas, **68.516,072s/19,03h
-  restantes**. Reset03/10 00hUTC = **02/10 às21hBRT**. Usar timedelta completo;
-  a serialização antiga pode perder o componente de dias e sugerir só6h.
-- H46/G04/V03 COMPLETE, sem falha. Zero reserva não comprova vaga de execução:
-  reconsultar cotas/concorrrência imediatamente antes de qualquer dispatch.
-  Não duplicar esses jobs nem lançar a experiência se houver recibo de tentativa
-  não reconciliado. Nenhum job novo neste avanço.
-- Limite5submissões/dia;1observada na dataUTC, não promessa de4slots no futuro.
-  HD externo238.567.555.072bytes livres (~222GiB). Zero serviço pago novo.
-- Recibo privado: `reports/avance_av036_g05/resources_v1.json`.
-  Python local3.14.6/Node22.22.2/zsh; sem venv ativo/pwsh.
-  Kaggle2.1 do sistema não expõe quota_view; consulta utilizou o runtime2.2 já
-  existente no cacheuv/Python3.13.13, sem instalar/atualizar pacotes.
+Extrator pareado CPU/GPU implementado em `scripts/g05_pair_runtime.py`, builder
+`prepare_g05_extraction.py` e auditores independentes de headers/pixels. Gate
+GPU mantém exigência de fonte verificável de PatientID, replay dos shards e
+duplicatas; não confiar apenas nos booleanos de um recibo. Código testado não
+significa qualidade medida. Protocolo científico e split continuam inalterados.
 
-## Pergunta e receita fixadas antes dos resultados
+Auditoria exaustiva de todas as séries/headers dos1.600exames concluída,
+kernel136572534v1 COMPLETE, CPU privado/offline; não duplicar.8.813séries,
+296.241headers, zero inconsistências/SOPs repetidos entre exames;2.648,918s.
+Auditor independente aprovou cobertura técnica, **não independência de paciente**.
+1.600PatientIDs distintos, zero repetições; Issuer/StudyDate e declaração de
+desidentificação ausentes.73testes aprovados; extrator técnicov2 empacotado
+emLZMA, sem alterar receita científica. Sem GPU/treino/score da confirmação. A pesquisa
+não encontrou garantia específica de estabilidade longitudinal/namespace
+do PatientID. Documentação de ferramentas de anonimização não certifica dados.
+Custos, recibos e decisão consolidada: [[RELATORIO_PARA_JIRAYA]].
 
-G05 testa **somente tamanho224 versus336**, não densidade de fatias, FOV,
-backbone maior ou loss nova. V05 congelada SHA9bb462ae…: mesmos1.000estudos
-de treino,300dev e300confirmação, sem redividir ou escolher seed por prevalência.
+Os blocos seguintes registram a AV-036; o estado atual de execução e os
+bloqueios evoluídos estão no relatório AV-037, sem apagar o histórico.
 
-| Componente | Mantido nos dois braços |
-| --- | --- |
-| Séries/fatias | Mesmas3séries Sagittal/Coronal/Axial; adjacentes centrais por posição física; canaisgrayscale3; FOVnativo |
-| Pré-processamento | Mesmo decoder, percentis1–99, quantizaçãouint8 e resizebilinear; só224→336 muda |
-| Encoder | DINOv2-S oficial congelado, CLS384, float32, TF32off; SHA1051e25b…; config1809f83e… |
-| Pooling/head | StudyAttention384→64→Tanh→1/softmax; classificação384→12 |
-| Loss/treino | BCEWithLogits médio não ponderado; mesmo teacher congelado, incerto0,5 preservado; AdamWlr0,001/wd0,0001; batch4; semaugmentation |
-| Aleatoriedade/épocas | Seeds2026e42, mesma inicialização e mesma ordem por seed; **20épocas fixas**, sem early stopping/dev para escolhercheckpoint |
-| Comparador | Retreinar224 e336 em par; não comparar um novo336 com head224 previamente selecionado no dev antigo |
+## Estado e referência
 
-Contrato executável: `scripts/resolution_comparison.py`. O protocolo final é
-`reports/avance_av036_g05/protocol_v2.json`; v1 foi o registro preliminar da
-mesma receita, sem treino, anterior aos pins de código. Nenhum resultado real
-de desenvolvimento foi consultado para escolher estes critérios.
+**H46 ref56696639 COMPLETE, público0,943**, verificado pela API, novo melhor.
+Preservar fonte SHA7dc49666…, CSV SHA7c6dfe8…, pesos e seleção; não duplicar.
+G04v2 COMPLETE/auditado: 20 estudos, 60 séries, paridade224 exata; viabilidade
+técnica336, **nenhuma evidência de melhora de qualidade**.
 
-## Critérios pré-especificados
+Consulta em30/09 às17:07:57BRT: prazo22/10/2026 às20:59BRT; GPU19,03h
+restantes, reserva0; reset02/10 às21hBRT. H46/G04/V03 concluídos. Vaga de
+execução não é comprovada pela quota: reconsultar antes de dispatch. Limite
+5envios/dia, 1observado na dataUTC; HD ~222GiB livres. Não criar gastos novos.
+Recibo: `reports/avance_av036_g05/resources_v1.json`.
 
-Definir δ =336−224; menorBCE é melhor. Nos **dois conjuntos, separadamente**:
+## Receita pré-especificada
+
+- Mesmos1.000treinos/300dev/300confirmação da V05 SHA9bb462ae…; não redividir.
+- Mesmas séries/fatias: três planos, adjacentes centrais por posição física,
+  FOV nativo e três canais grayscale. Mesmo decoder/percentis1–99/uint8/resize
+  bilinear. Única variável experimental: tamanho224 ou336.
+- DINOv2-S oficial congelado, CLS384, fp32/TF32off, mesmas versões e hashes;
+  StudyAttention384→64→Tanh→1/softmax, classificador384→12.
+- BCEWithLogits média não ponderada, mesmos rótulos fracos e incerteza0,5;
+  AdamWlr0,001/wd0,0001, batch4, semaugmentation, seeds2026/42.
+- Mesma inicialização e ordem de treino por seed, **20épocas fixas** para ambos;
+  sem escolher época pelo dev, seed ou condição. Retreinar224 e336 em par.
+
+Protocolo executável final: `reports/avance_av036_g05/protocol_v2.json`.
+v1 foi rascunho prévio da mesma receita, sem resultado/treino; v2 acrescenta
+pins de código. Fontes: `scripts/resolution_comparison.py`,
+`scripts/run_resolution_heads.py`, `scripts/audit_resolution_patients.py`.
+
+## Gates definidos antes de ver resultados
+
+δ=336−224; menorBCE é melhor. Exigir no dev e depois, sem ajustes, na confirmação:
 
 1. Primário: médiaBCE suave sobre estudos/12condições/2seeds; δ≤−0,001,
-   limite superiorIC95%pareado<0 e melhora em cada seed.
-2. Segurança: nenhuma condição com regressãoBCE>0,01; limite superior do
-   ICsimultâneoBonferroni das12diferençasBCE≤0,02. Não chamar IC95%pontual de
-   simultâneo. Listar inclusive regressões menores, não só gates reprovados.
-3. AUC por condição e macro: somente rótulos exatos0/1; excluir0,5/outros
-   suaves e informar cobertura. Nenhuma queda pontualAUC>0,02; pelo menos
-   10positivos/10negativos por condição e≥95%réplicas com AUCdefinida.
-   Menos20porclasse recebe alerta de baixa potência (Fractureconfirm tem18
-   positivos conhecidos). Resultado inconclusivo não autoriza ressplit/tuning.
-4. IC95% paraBCE/AUC dos braços e suasdiferenças por condição;5.000bootstraps,
-   seed20260930. Unidade é **estudo**; estudos ligados por paciente OU laudo
-   são reamostrados juntos, mantendo pares/seeds. Nunca bootstrap por fatia.
-5. Custo: job completo≤7.200s, picoGPUalocado≤4GiB, forward336/224≤3,
-   quota disponível≥14.400s antes do início; T4existente, internetoff.
-   Reportar memóriaalocada/reservada e tempos de decoding/cache/forward/head,
-   separando custo reutilizado de custo incremental. Semcriarinfra paga.
+   IC95%pareado com limite superior<0 e melhora nas duas seeds.
+2. Nenhuma condição com regressãoBCE>0,01; limite superior do IC simultâneo
+   Bonferroni das12diferençasBCE≤0,02. Reportar todas as regressões menores.
+3. AUC por condição/macro em rótulos exatos0/1, excluindo incertos/suaves;
+   nenhuma queda pontual>0,02, pelo menos10positivos/10negativos por condição,
+   ≥95%réplicas com AUC definida. Alertar baixa potência abaixo20porclasse.
+4. Reportar IC95% dos braços e diferençasBCE/AUC por condição:5.000bootstraps,
+   seed20260930, **estudo como unidade**, agrupando pacientes/laudos ligados.
+   Manter pareamento; não contar fatias/seeds como pacientes independentes.
+5. Job completo≤7.200s, picoGPUalocado≤4GiB, forward336/224≤3; quota≥14.400s
+   antes de iniciar. Registrar memória alocada/reservada e tempos de decoding,
+   cache, forward e heads, com custo reutilizado/incremental separados.
 
-Referência fraca derivada de laudos/teacher, **não adjudicação clínica, nem
-estimativa garantida do leaderboard**. Independência em relação a nosso treino
-não prova independência de exposição histórica do professor. Sem laudos para
-APIs novas e sem selecionar blend/H46 pela confirmação.
+São métricas contra teacher fraco, não validação clínica nem garantia de score
+Kaggle. Independência do nosso treino não resolve exposição histórica do teacher.
+Resultado inconclusivo: não procurar split/seed/blend melhor na confirmação.
 
-## Gate de vazamento: motivo do bloqueio
+## Bloqueio de identidade e cobertura
 
-V05 tinha disjunção de StudyInstanceUID e hashnormalizado de laudo, não prova
-de pacientes. Cabeçalhos locais inventariados sem pixels: **299/1.600estudos
-com as3séries disponíveis, todos do treino original**;3.903séries ausentes.
-Os PatientID não coincidem com StudyUID nesses headers, mas não há fonte
-atestando que a chave anonimizada é estável entre exames/sites. Zero colisão
-entre splits é inconclusivo quando nenhumdev/confirm foi coberto.
+V05 separa IDs de estudos e hashes de laudos; **hash de laudo não é paciente**.
+Inventário local parcial de headers:299/1.600estudos com três séries, todos
+treino original;3.903séries ausentes. PatientID existe, mas não há fonte
+confirmando estabilidade da anonimização entre exames/sites. Zero colisões
+observadas não certifica dev/confirm sem cobertura.
 
-O inventário foi parcial (primeiroDICOM de cada série disponível), não auditoria
-completa; não afirmar pacientes independentes. MetadadosV05 contêm rótulos
-fracos previamente congelados: foram carregados, não pontuados. Nenhum pixel
-de confirmação/predição de modelo foi aberto. Recibo
-`reports/avance_av036_g05/patient_inventory_v1.json`.
+Exigir todos os headers das séries selecionadas, identidade consistente no
+exame e fonte/mapping verificável da chave de paciente. Unir componentes por
+paciente OU laudo. Qualquer ligação entre splits bloqueia os dois braços;
+não mover casos silenciosamente. Nova divisão exigirá protocolo novo.
+Inventário não leu pixels nem pontuou rótulos de confirmação; manifestos
+contêm os rótulos fracos previamente congelados, não resultados de modelos.
 
-Antes de treino: obter cobertura deheaders de todasasséries selecionadas,
-verificarPatientID consistente dentrodoestudo e obter documentação/mapping
-de anonimização estável entreexames. Evidência deve ter fonte verificável,
-não preencher flagTrue por conveniência. Unir componentes porpaciente/laudo;
-se houver ligação entrepartições, **bloquear ambas resoluções**. Não mover
-casos silenciosamente para manter a mesma divisão. Qualquer novo split exigirá
-versão/protocolo novo antes de avaliar resultados.
+## Execução e confirmação
 
-## Caches, execução e confirmação independente
+- Reusar V03/G04 com SHA verificado. G04 tem apenas20features336; não basta
+  para1.300estudos. Na AV-036 o extrator ainda não estava implementado;
+  na AV-037 CPU/GPU dev foram implementados, sem extração real completa.
+- Antes de fit: seleção física/hashes iguais nos braços, paridade224,
+  auditoria de duplicatas exatas/aproximadas e headers completos. Treinador
+  preparado falha antes do treino se gates/recibos/caches faltarem.
+- Dev positivo: congelar os mesmos quatroheads; inferir uma vez nos300casos
+  reservados, sem retreinar/ajustar. Mesmos gates. Marcador persistente de
+  exposição impede segunda avaliação. Falha/interrupção exige reconciliação.
+- Só depois de confirmação: preparar pacote offline, smoke e orçamento real
+  de inferência para decisão pessoal doJV. **Sem submissão automática**,
+  mesmo após aprovação. H46 não será substituído por este módulo sem evidência.
 
-- V03NPZ SHAverificado contra constante fixada; G04NPZ SHA3175b1a0…verificado;
-  auditoriaSHA0b67b935…verificada. G04224 delta0 contraV03;336 tem apenas20casos.
-  Reusar treino224 e as20features336 já verificadas, sem reextração gratuita.
-- **Falta extrator completo G05** para701treinos+dev/confirm336 e dev/confirm224:
-  manter seleção/hashes de pixels e conferirparidade224. Não declarar que o
-  NPZdoG04 basta para a comparação1.300estudos. Gate requer também auditoria
-  de duplicatas exatas/aproximadas entrepartições; isso ainda não foi feito.
-- Treinador preparado `scripts/run_resolution_heads.py`: exige contrato,
-  identidade completa, recibo/cacheSHA/IDs exatos, paridadeeproveniência de
-  features; falha antes de treino quandoausentes. Não contém APIdejob/envio.
-  Implementação aguarda integração/testeT4 comextratorcompleto, nãofoiexecutada.
-- Fit fixa épocas sem olhar métricasdev intermediárias; salva4heads/predições
-  e relatório comgates. Seed não é observação independente.
-- Se dev falhar, preservarH46 e encerrarreceita, sem abrirconfirmação.
-  Se passar, congelar hashes dosmesmos4heads e inferir **uma vez** nos300casos
-  reservados, semretreino/ajuste. Marcadorpersistente `confirmation_exposure.json`
-  impede repetição inadvertida. Interrupção requer reconciliar artefatos,
-  nunca apagar marcador para reconsultar. Exigir mesmosgates antesde promover.
-- Mesmo confirmação positiva não gera submissão: exige empacotamento/teste
-  completo nosrequisitosoffline/tempo e decisão pessoal doJV. Nunca substituir
-  H46 automaticamente nem anexar336 aoensemble sem validação própria.
+## Entrega e custo atual
 
-## Evidência/custo/recomendação nesta entrega
+G04:31,533s; forward336/224=2,219962; pico336≈204MiB. Extrapolação anterior
+~93min para1.300casos/duasresoluções, não medição nem garantiaG05. Reuso pode
+reduzir extração; auditoria completa acrescenta custo ainda não medido.
+Nesta rodada: headersCPU90,078s;35testes locais passaram;0GPU,0jobs novos,
+0envios e0serviços pagos novos. Métricas reais336/condições/IC: **não medidas**.
 
-- G04:20estudos/60séries,31,533s; forward336/224=2,219962,
-  picoalocado336=213.534.208bytes (~204MiB). Isso é viabilidadetécnica.
-- Estimativa conservadora anterior para1.300casos/duasresoluções=5.570s/~93min;
-  não é mediçãoG05 nem garante tempo/cota. Reuso reduzparte desse custo,
-  auditoriafullheaders/duplicatas pode acrescentar custo. Não presupor4GiB
-  para todaexecução com baseapenasnopiloto.
-- Custo novo: inventárioheaderCPU90,078s; testeslocais35passaram;
-  **0GPU/0jobs/0submissões/0novosserviçospagos** nesteavanço.
-- Qualidade336 real/AUC/BCE/IC porcondição **não medidos**. Apenas testes
-  sintéticos doavaliador; não inserir suasmétricas em logcomo resultadoMRI.
-- Recomendação: **não enviar G05 agora**. Manter H46público0,943. Próximo
-  passo seguro: completar evidência de paciente/coberturanoKaggle existente
-  e extratorpareado, reconsultandorecursos antesde executar; confirmaçãofechada.
-
-Fonte canônica no vault:
-`01_Projects/Competicoes/RSNA_Knee_Abnormality_Detection/08_Comparacao_Controlada_224_336.md`.
+**Recomendação: manter H46 0,943; não enviar G05 agora.** Candidato entregue
+é um protocolo/treinador de experimento, não checkpoint/Notebook apto ao envio.
+Próximo avanço deve completar fonte de pacientes/cobertura e extrator pareado,
+reconsultando recursos antes de executar. Confirmação permanece sem avaliação.

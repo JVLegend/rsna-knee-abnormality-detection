@@ -8,8 +8,8 @@ import ast
 import base64
 import hashlib
 import json
+import lzma
 from pathlib import Path
-import zlib
 
 from scripts.prepare_g04_preflight import sampling_identity
 from scripts.prepare_v04_confirmation import V03_BUILD, V03_SHA, literal
@@ -64,7 +64,7 @@ def assemble(stage, headers, identity=None, pixels=None):
     duplicate_source = Path('scripts/g05_duplicate_audit.py').read_text()
     runtime = Path('scripts/g05_pair_runtime.py').read_text()
     expected = geometry_contract()
-    spec = {'name': 'G05_paired_extraction_v1', 'stage': stage, 'rows': rows,
+    spec = {'name': 'G05_paired_extraction_v2', 'payload_encoding': 'lzma_base85_v2', 'stage': stage, 'rows': rows,
             'v05_sha256': V05_SHA, 'headers_sha256': digest(headers),
             'protocol_hash': protocol['contract_hash'], 'expected_geometry': expected,
             'model_sha256': RECIPE['model_sha256'], 'config_sha256': RECIPE['config_sha256'],
@@ -100,9 +100,12 @@ def assemble(stage, headers, identity=None, pixels=None):
         if stage != 'pixels':
             raise ValueError('Unknown extraction stage')
     spec['contract_hash'] = contract_hash(spec)
-    packed = base64.b85encode(zlib.compress(json.dumps(spec, sort_keys=True).encode(), 9)).decode()
-    imports = "import time\nG05_CODE_STARTED = time.perf_counter()\nimport os\nos.environ['CUBLAS_WORKSPACE_CONFIG']=':4096:8'\nos.environ['HF_HUB_OFFLINE']='1'\nos.environ['TRANSFORMERS_OFFLINE']='1'\nimport base64,zlib,hashlib,json\nfrom pathlib import Path\nimport numpy as np\n"
-    result = (imports+'G05_SPEC = json.loads(zlib.decompress(base64.b85decode('+repr(packed)+')))\n'
+    # zlib's 32 KiB window cannot reuse far-apart geometry/identity records.
+    # LZMA is stdlib and keeps both CPU and full GPU sources below 1 MB without
+    # dropping provenance or changing the frozen scientific recipe.
+    packed = base64.b85encode(lzma.compress(json.dumps(spec, sort_keys=True).encode(), preset=6)).decode()
+    imports = "import time\nG05_CODE_STARTED = time.perf_counter()\nimport os\nos.environ['CUBLAS_WORKSPACE_CONFIG']=':4096:8'\nos.environ['HF_HUB_OFFLINE']='1'\nos.environ['TRANSFORMERS_OFFLINE']='1'\nimport base64,lzma,hashlib,json\nfrom pathlib import Path\nimport numpy as np\n"
+    result = (imports+'G05_SPEC = json.loads(lzma.decompress(base64.b85decode('+repr(packed)+')))\n'
               +'CACHE_SOURCE = '+repr(literal(source, 'CACHE_SOURCE'))+'\n'
               +'\n\n'.join(definitions)+'\n'+duplicate_source+'\n')
     if stage == 'features':

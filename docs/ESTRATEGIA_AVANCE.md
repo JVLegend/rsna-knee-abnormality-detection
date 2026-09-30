@@ -4,14 +4,17 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-036 (30/09): **H46 ref56696639 COMPLETE, público0,943**,
+Atualizado na AV-037 (30/09): **H46 ref56696639 COMPLETE, público0,943**,
 novo melhor confirmado pela API. Fonte, pesos e CSV preservados; H43A0,941
 é histórico. G04v2 confirma apenas viabilidade técnica336, não qualidade.
 Protocolo G05 e avaliador/treinador pareados224/336 preparados antes de métricas;
-treino bloqueado até identidade de paciente e pixels completos. Inventário
-local cobre299/1.600estudos, todos treino. Confirmação300 sem avaliação de modelo.
+treino bloqueado até identidade de paciente e pixels completos. Extrator
+pareado e auditores independentes implementados; auditoria remota integral
+de headers concluída,8.813séries/296.241headers, sem duplicação/GPU/treino. Inventário anterior local
+de299estudos era parcial. Confirmação300 sem avaliação de modelo.
 **Submissão somente por ação pessoal doJV, sem envio automático**.
 V04 permanece NOT_CONFIRMED. Detalhes: [[08_Comparacao_Controlada_224_336]].
+Entrega atual e bloqueios: [[RELATORIO_PARA_JIRAYA]].
 
 
 Fonte de verdade: esta nota do vault. Base de pesquisa: [[05_Forum_Kaggle]];
@@ -74,6 +77,24 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-037 (30/09): preservar H46 0,943/ref56696639. Um jobCPU privado/offline
+  de auditoria integral dos1.600exames: `jvlegend/rsna-knee-g05-full-headers-v1`,
+  kernel136572534v1, lançamento21:00:20UTC, COMPLETE/auditado21:45UTC:
+  1.600/1.600estudos,8.813séries/296.241headers,2.648,918s CPU; zero
+  inconsistências/SOPs repetidos entre exames. Não relançar. Extrator224/336,
+  recibos por shard/série, referências exatas224 de3.000séries e triagem
+  exata/aproximada implementados; auditor independente recalcula hashes/pHash.
+  73testes passaram; técnicov2/LZMA resolve tamanho da fonteCPU/GPU sem
+  mudar protocolo científico. Pixelsv2.py preparado noHD, não despachado.
+  PatientID longitudinal/global ainda sem fonte específica;1.600chaves
+  únicas sem repeats, Issuer/StudyDate/desidentificação ausentes; laudo/ausência
+  de colisões não certificam pessoas distintas. SemGPU/treino/avaliação300confirm.
+  Quota19,03h, reserva0;100jobs recentes próprios examinados, semGPU recente
+  em fila/ativo observado, sem garantia física deT4; reset02/10às21hBRT,
+  prazo22/10às20:59BRT. Headers completos, treino continua bloqueado até gates
+  identidade+extração+recursos passarem. Recibos reports/avance_av037_g05/;
+  relatório [[RELATORIO_PARA_JIRAYA]]. Nenhum envio/custo pago novo.
 
 - AV-036 (30/09): H46 ref56696639 COMPLETE/0,943 confirmado. H46/G04/V03
   COMPLETE; preservar, sem reenvio/reexecução. Quota68.516,072s/19,03h livres,

@@ -153,3 +153,25 @@ def test_runtime_identity_failure_precedes_any_cuda_model_or_cache_access(tmp_pa
     with pytest.raises(ValueError, match='patient semantics missing'):
         runtime.extract_features(tmp_path, tmp_path, {'identity_sha256': 'not-used', 'split_identity_rows': {}})
     assert not (tmp_path/'g05_features.npz').exists()
+
+
+def test_full_gpu_source_budget_with_synthetic_identity_not_dataset_certification(tmp_path, monkeypatch):
+    import scripts.assess_g05_pixels as assessor
+    headers = tmp_path/'headers.json'; m = synthetic_full_headers(headers)
+    evidence = {'v05_sha256': manifest_sha(), 'stable_patient_key_verified': True,
+                'stable_patient_key_source': 'SYNTHETIC_TEST_ONLY_NOT_DATASET_PROVENANCE',
+                'studies': [{'StudyInstanceUID': r['StudyInstanceUID'],
+                             'patient_hash': hashlib.sha256(r['StudyInstanceUID'].encode()).hexdigest(),
+                             'all_headers_consistent': True, 'series_uids': [s['series_uid'] for s in r['series']],
+                             'headers_verified': 3}
+                            for split in ['train', 'development', 'confirmation'] for r in m['splits'][split]]}
+    identity = tmp_path/'synthetic_identity.json'; identity.write_text(json.dumps(evidence))
+    protocol = json.loads(Path('reports/avance_av036_g05/protocol_v2.json').read_text())
+    pixels = tmp_path/'synthetic_pixels.json'
+    pixels.write_text(json.dumps({'status': 'COMPLETE_G05_PIXELS_NOT_FEATURES_OR_PATIENT_CERTIFICATION',
+        'duplicate_screen_passed': True, 'studies': 1600, 'headers_sha256': digest(headers),
+        'spec': {'protocol_hash': protocol['contract_hash']}, 'contract_hash': 'a'*64}))
+    monkeypatch.setattr(assessor, 'verify', lambda *args: {'paired_pixel_gate_passed': True})
+    source, spec = assemble('features', headers, identity, pixels)
+    assert len(source.encode()) < 1_000_000
+    assert spec['stage'] == 'features' and not spec['confirmation_evaluated']
