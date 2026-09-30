@@ -4,19 +4,20 @@
 
 Criado em 14/09/2026. Plano operacional aprovado pelo pedido do JV para
 transformar as pesquisas em alternativas e testá-las a cada comando AVANCE.
-Atualizado na AV-035 (30/09): a ref **56696639**, fonte original H46,
-continua `PENDING`. A v4/ref56662611 terminou com exceção; aumentar o timeout
-para12h não resolveu a falha. H43A **0,941** continua melhor confirmado.
-G04 concluiu e passou a auditoria:224 reproduz o cache com diferença zero;
-336 tem forward2,22× mais lento e pico204MiB. Próximo: treino pareado224vs336
-no treino1000/novo dev300, com protocolo fixado antes de avaliá-lo.
-V04 permanece NOT_CONFIRMED.
+Atualizado na AV-036 (30/09): **H46 ref56696639 COMPLETE, público0,943**,
+novo melhor confirmado pela API. Fonte, pesos e CSV preservados; H43A0,941
+é histórico. G04v2 confirma apenas viabilidade técnica336, não qualidade.
+Protocolo G05 e avaliador/treinador pareados224/336 preparados antes de métricas;
+treino bloqueado até identidade de paciente e pixels completos. Inventário
+local cobre299/1.600estudos, todos treino. Confirmação300 sem avaliação de modelo.
+**Submissão somente por ação pessoal doJV, sem envio automático**.
+V04 permanece NOT_CONFIRMED. Detalhes: [[08_Comparacao_Controlada_224_336]].
 
 
-Espelho operacional da fonte de verdade no vault:
-/Users/iaparamedicos/Documents/GitHub/SuperJV/01_Projects/Competicoes/RSNA_Knee_Abnormality_Detection/07_Estrategia_AVANCE.md.
-Ao executar AVANCE, atualizar a nota canônica e este espelho. Evidências do
-repositório: docs/PLANO_MELHORIAS_2026-09-05.md e docs/LOG_EXPERIMENTOS.md.
+Fonte de verdade: esta nota do vault. Base de pesquisa: [[05_Forum_Kaggle]];
+revisão anterior: [[06_Revisao_Estrategica_2026-09-05]]. Espelho operacional no
+HD externo: docs/ESTRATEGIA_AVANCE.md. Ao executar, atualizar primeiro esta
+nota e sincronizar o espelho; em divergência, verificar os artefatos e logs.
 
 ## Objetivo e ponto de partida
 
@@ -24,7 +25,8 @@ Melhorar o modelo de imagem para os 12 alvos, com experimentos comparáveis,
 submissões rastreáveis e custo medido. Trabalhar em três frentes:
 reprodução pública forte, treino próprio e combinação/eficiência.
 
-Melhor referência pública: H43A probe22, público **0,941**, ref 56263721.
+Melhor referência pública: **H46 original, público0,943, ref56696639**.
+H43A probe22, público0,941, ref56263721, permanece comparador histórico.
 H43 parent 0,939, ref 56253529, permanece comparador histórico.
 H-38 0,929 e H-36 0,928 permanecem disponíveis; seleção final não alterada.
 H-42 terminou com 0,881 e não será promovida. Sua avaliação local de 0,995527
@@ -49,12 +51,12 @@ Meta pública de superar 0,94 alcançada; ganho público não garante o privado.
    executável ou progresso verificável de uma execução longa.
 4. O comando autoriza as etapas rotineiras dessa fila: código, testes,
    inferência/treino nos recursos já disponíveis, downloads incrementais
-   necessários no HD e submissão Notebook-only quando passar pelos critérios
-   abaixo. Não pedir novamente uma aprovação genérica de continuidade.
-5. No máximo uma nova submissão à competição por AVANCE, depois de consultar
-   a cota disponível e confirmar que o mesmo candidato não foi enviado.
-   Implementação e ablações locais podem avançar mais de uma linha da fila
-   quando forem baratas e independentes.
+   necessários no HD, dentro dos gates e recursos já disponíveis. Pela decisão
+   explícita de30/09, **não autoriza envio automático à competição**. Entregar
+   candidato, evidências, custo e recomendação para ação pessoal doJV.
+5. Não duplicar jobs, criar gastos/serviços novos nem alterar a seleção final
+   automaticamente. Submissão é ação pessoal doJV, mesmo com gates positivos.
+   Implementação e ablações locais podem avançar quando baratas e independentes.
 6. Se GPU, dados ou uma dependência impedirem o teste, registrar o bloqueio
    específico e trabalhar no próximo item elegível. Perguntar ao JV somente
    por escolha necessária que extrapole o plano, como serviço pago novo ou
@@ -72,6 +74,21 @@ Uma dependência reprovada pode impedir um teste derivado; nunca chamar isso
 de teste concluído nem treinar combinações sem base apenas para preencher a lista.
 
 ## Cursor de retomada
+
+- AV-036 (30/09): H46 ref56696639 COMPLETE/0,943 confirmado. H46/G04/V03
+  COMPLETE; preservar, sem reenvio/reexecução. Quota68.516,072s/19,03h livres,
+  reserva0; reset02/10 às21hBRT. Prazo22/10 às20:59BRT confirmado API;
+  recibo reports/avance_av036_g05/resources_v1.json,17:07:57BRT.
+  G05224/336: mesmos1000treinos/300dev/300confirm, DINOv2-S congelado,
+  atenção/BCE, seeds2026/42,20épocas fixas. Critérios antes dos resultados,
+  bootstrap por estudo agrupado por componentes paciente/laudo, gates de
+  regressão/memória/tempo e confirmação independente uma vez.35testes passaram.
+  NÃO treinado: headers completos só em299estudos originais de treino;
+  sem evidência de PatientID estável entre exames; auditoria foi parcial.
+  Extrator completo e pixels/duplicatas de dev/confirm ainda pendentes.
+  Próximo: fechar essas evidências antes de GPU; nunca tratar report_hash
+  como paciente. Detalhes [[08_Comparacao_Controlada_224_336]]. Sem novo job,
+  custo pago ou envio. O protocolo não promove candidato com qualidade ausente.
 
 - AV-035 (30/09): acompanhar primeiro a ref56696639, sem duplicar. Fonte
   original H46 SHA7dc49666…, kernel136476642v1 COMPLETE, CSV público auditado
@@ -123,7 +140,7 @@ de teste concluído nem treinar combinações sem base apenas para preencher a l
   266testes+44subtestes passaram. Artefatos em reports/avance_av031_h46*/.
   Não alegar reprodução0,943
   antes do score; `score_reproduced=false` e paridade privada não foi verificada.
-  Detalhes: docs/AV031_H46_EXECUCAO_E_SUBMISSAO.md.
+  Detalhes no espelho externo docs/AV031_H46_EXECUCAO_E_SUBMISSAO.md.
 
 - AV-030 concluída23/09: P1/H46CPU ID135536476v1 COMPLETE,
   PASSED_H46_ASSET_AUDIT_NOT_INFERENCE,63,3255s;20DINO,56registros
@@ -1424,7 +1441,7 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 - V3 construída com mesma receita e SHA9c9924f9ec55ebf193661e5b96e7f072b988e285f5a1d2a1cfc91e52d7cf58eb.
   O gate continua bloqueando perda de modelo/composição, mas grava warnings por
   linha sem transformar um DICOM atípico em falha global.
-- 266testes+44subtestes passaram. Commit e16e2b6.
+- 266testes+44subtestes passaram. Commit e16e2b6 no repo externo.
 - Após liberar vaga, kernel136214178v3/scriptVersion353696869 terminou COMPLETE
   em T4x2; pipeline194,159s e todos os recibos/gates/CSV passaram. O teste
   visível teve zero warnings/fallbacks e preservou o SHA7c6dfe8… da receita.
@@ -1469,13 +1486,12 @@ Nenhum treino, inferência ou envio novo nesta rodada. Próximo: A00.
 
 - A ref56662611/v4 também terminou `Notebook Threw Exception`, sem score. O
   aumento de1.200s para43.200s falsificou timeout como causa única.
-- Próxima candidata remove todas as alterações próprias: SHA original
-  `7dc49666…`, zero células modificadas, mesmos14datasets,2kernels e modelo
-  DINOv2 da fonte pública. Metadados operacionais: T4×2, internet desligada,
-  12h. O0,943 continua sendo apenas o resultado informado pela fonte.
-- 269testes+44subtestes passaram. Kernel136476642v1 aceito no slug
-  `jvlegend/rsna-knee-h46-exact-public-source`; execução pública `COMPLETE`.
-- CSV3×13 auditado, finito/[0,1], SHA7c6dfe8…, byte a byte igual às v3/v4.
+- A recuperação remove todas as alterações próprias: fonte pública original
+  SHA `7dc49666…`, zero células modificadas, mesmos datasets/kernels/modelos;
+  apenas T4×2, internet desligada e teto12h como metadados operacionais.
+- 269testes+44subtestes passaram. Kernel136476642v1 foi aceito no slug
+  `jvlegend/rsna-knee-h46-exact-public-source` e terminou `COMPLETE`.
+- CSV3×13 auditado, finito/[0,1], SHA7c6dfe8…, igual às v3/v4.
 - Submissão Notebook-only **56696639**, versão1, estado inicial `PENDING`;4
   envios restantes. Aguardar sem duplicar. Se o oculto falhar, encerrar H46 e
-  preservar H43A0,941.
+  preservar H43A0,941. O0,943 segue sendo de terceiros até nossa pontuação.

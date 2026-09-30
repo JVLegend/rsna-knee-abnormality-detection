@@ -2,6 +2,19 @@
 
 #RSNA #Kaggle #Pesquisa #Importante
 
+## AV-036 — 30/09/2026 — H46 0,943 e G05 pré-especificado
+
+H46 ref56696639 COMPLETE/público **0,943**, confirmado pela API; novo melhor
+preservado. [Protocolo e bloqueios](AV036_COMPARACAO_CONTROLADA_224_336.md):
+comparação224/336 com estudos/encoder/pooling/loss/seeds iguais,20épocas fixas,
+bootstrap por estudo agrupado por paciente/laudo, regressões por condição e
+gates de custo.35testes passaram; sem treino/qualidade real336 nesta rodada.
+Headers parciais299/1600, todos treino; estabilidadePatientID/pixels/duplicatas
+pendentes. Confirmação300 não avaliada por modelo. H46/G04/V03 COMPLETE;
+quota19,03h/reserva0, prazo22/10às20:59BRT.0jobs/0envios/0novosgastos pagos.
+**Não promover/submeterG05 agora; envio pessoal doJV, não automático.**
+Recibos privados: reports/avance_av036_g05/; contrato final protocol_v2.json.
+
 ## AV-035 — 30/09/2026 — G04 auditado
 
 [Resultado e protocolo](AV035_PILOTO_RESOLUCAO_G04.md). H46 ref56696639
