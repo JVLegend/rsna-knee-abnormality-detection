@@ -12,6 +12,13 @@ V05 = Path('data/processed/validation_weak_v5/manifest.json')
 V05_SHA = '9bb462aee209c132af51073851525e885545c76627fe542c0248361673e6de84'
 
 
+def sampling_identity(selected):
+    # G01 adds the image hash to its arm dict; V03 stores it separately.
+    # physical_plan returns geometry only, so compare that common schema.
+    # The original image hash is still checked separately after decoding.
+    return {key: selected[key] for key in ('indices', 'files', 'positions_mm', 'gaps_mm')}
+
+
 def select_training(rows, count=20):
     if count < 2 or len(rows) < count or len({r['StudyInstanceUID'] for r in rows}) != len(rows):
         raise ValueError('Invalid training pilot population')
@@ -43,7 +50,9 @@ def assemble():
              'selected': g['arms']['physical_adjacent']} for g in json.loads(first.read_text())['series']}
     geom.update({(g['study'], g['series']): {'pixel_sha256': g['pixel_sha256'], 'selected': g['selected']}
                  for g in json.loads(extra.read_text())})
-    expected = [geom[row['StudyInstanceUID'], s['series_uid']] for row in rows for s in row['series']]
+    expected = [dict(pixel_sha256=geom[row['StudyInstanceUID'], s['series_uid']]['pixel_sha256'],
+                     selected=sampling_identity(geom[row['StudyInstanceUID'], s['series_uid']]['selected']))
+                for row in rows for s in row['series']]
     runtime = Path('scripts/g04_preflight_runtime.py').read_text()
     spec = {'name': 'G04_train_only_resolution_preflight_v1', 'rows': rows, 'expected_geometry': expected,
             'v05_sha256': V05_SHA, 'v03_build_sha256': V03_SHA, 'feature_sha256': FEATURE_SHA,

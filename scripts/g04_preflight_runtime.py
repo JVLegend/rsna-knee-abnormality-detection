@@ -65,7 +65,11 @@ def main():
                 headers=[(p.name,pydicom.dcmread(p,stop_before_pixels=True,specific_tags=['ImageOrientationPatient','ImagePositionPatient'])) for p in files]
                 plan=physical_plan(headers,[files[0].name]*3); selected=plan['arms']['physical_adjacent']
                 expected=G04['expected_geometry'][len(records)]
-                if selected!=expected['selected']: raise ValueError('Pilot physical sampling drift')
+                if selected!=expected['selected']:
+                    (output/'g04_sampling_drift.json').write_text(json.dumps({
+                        'study':study['StudyInstanceUID'],'series':s['series_uid'],
+                        'actual':selected,'expected':expected['selected']},indent=2))
+                    raise ValueError('Pilot physical sampling drift; see g04_sampling_drift.json')
                 channels={size:[] for size in G04['resolutions']}
                 for name in selected['files']:
                     ds=pydicom.dcmread(folder/name,specific_tags=helper['PIXEL_TAGS'])

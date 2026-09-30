@@ -17,16 +17,17 @@ from scripts.launch_h46_exact_source import quota_record
 from scripts.prepare_g04_preflight import assemble
 
 SLUG = 'jvlegend/rsna-knee-g04-resolution-preflight'
-SOURCE = Path('reports/avance_av029_g04/preflight_v1.py')
-SOURCE_SHA = 'ca3dd37aea22cdacfc7899938d2a68f6475fc68bf55b90aa645546a857dfeb21'
+SOURCE = Path('reports/avance_av035_g04/preflight_v2.py')
+SOURCE_SHA = '37b721468b9a5273403014f9569707b32b23a023c3703baaef6e70346fb0d528'
 METADATA = Path('reports/avance_av035_g04/parent_metadata/kernel-metadata.json')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--launch', action='store_true')
+    parser.add_argument('--previous-failed-receipt', type=Path, required=True)
     parser.add_argument('--receipt', type=Path,
-                        default=Path('reports/avance_av035_g04/launch.json'))
+                        default=Path('reports/avance_av035_g04/launch_v2.json'))
     args = parser.parse_args()
     source = SOURCE.read_text()
     sha = hashlib.sha256(source.encode()).hexdigest()
@@ -37,18 +38,14 @@ def main():
         raise ValueError('V03 environment metadata identity changed')
     api = KaggleApi()
     api.authenticate()
-    try:
-        state = api.kernels_status(SLUG)
-    except HTTPError as exc:
-        if exc.response is None or exc.response.status_code != 404:
-            raise
-    else:
-        raise ValueError(f'Existing G04 job: reconcile {state}')
-    matches = api.kernels_list(mine=True, search='G04', page_size=100)
-    # Kaggle includes an anonymous [Private Notebook] placeholder with empty
-    # ref and timestamp 2010; the direct own-slug check above still requires404.
-    if any(kernel.ref for kernel in matches):
-        raise ValueError('Ambiguous G04 kernel search; reconcile before launch')
+    state = api.kernels_status(SLUG)
+    status = getattr(state.status, 'name', str(state.status).rsplit('.',1)[-1])
+    previous = json.loads(args.previous_failed_receipt.read_text())
+    if (status != 'ERROR' or previous.get('slug') != SLUG
+            or previous.get('kernel_id') != 135300098 or previous.get('version_number') != 1
+            or previous.get('source_sha256') !=
+            'ca3dd37aea22cdacfc7899938d2a68f6475fc68bf55b90aa645546a857dfeb21'):
+        raise ValueError('Expected reconciled failed G04 version1 before schema repair')
     quota = quota_record(api)
     if quota['remaining_gpu_seconds'] < 960:
         raise ValueError(f'Insufficient pilot quota: {quota}')

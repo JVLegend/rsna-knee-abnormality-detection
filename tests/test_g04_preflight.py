@@ -4,7 +4,7 @@ import copy
 from pathlib import Path
 import numpy as np
 import pytest
-from scripts.prepare_g04_preflight import assemble, literal, select_training, V05
+from scripts.prepare_g04_preflight import assemble, literal, select_training, sampling_identity, V05
 from scripts.assess_g04_preflight import check_arrays, summarize_timings
 
 
@@ -14,6 +14,16 @@ def test_selection_training_only_no_labels():
     assert len(result)==20 and result==select_training(list(reversed(rows)))
     assert all(set(r)=={'StudyInstanceUID','series'} for r in result)
     with pytest.raises(ValueError): select_training(rows[:5])
+
+
+def test_g01_and_v03_geometry_have_identical_sampling_schema():
+    geom={'indices':[1,2,3],'files':['a','b','c'],'positions_mm':[1.,2.,3.],
+          'gaps_mm':[1.,1.]}
+    assert sampling_identity(dict(geom,pixel_sha256='f'*64))==geom
+    assert sampling_identity(geom)==geom
+    spec=literal(assemble(),'G04')
+    assert all(set(item['selected'])==set(geom) and len(item['pixel_sha256'])==64
+               for item in spec['expected_geometry'])
 
 
 def test_arrays_enforce_parity_resolution_and_finitude():
